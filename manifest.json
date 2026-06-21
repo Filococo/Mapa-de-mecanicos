@@ -1,0 +1,32 @@
+{
+  "name": "Taller Cercano — Mecánicos de Rancagua",
+  "short_name": "Taller Cercano",
+  "description": "Encuentra mecánicos cerca de ti en Rancagua, con calificaciones reales y mapa.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#f2ede1",
+  "theme_color": "#1a1a18",
+  "lang": "es-CL",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
