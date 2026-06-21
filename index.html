@@ -1093,6 +1093,7 @@ function openProfile(id){
         <div class="cta-block">
           <div style="font-family:'JetBrains Mono'; font-size:11px; letter-spacing:1px; color:var(--caution-yellow); margin-bottom:14px; text-transform:uppercase;">¿Necesitas este servicio?</div>
           <button class="btn-primary" onclick="contactWhatsApp('${m.phone || ''}', '${m.name.replace(/'/g, "\\'")}')">Contactar por WhatsApp</button>
+          <button class="btn-secondary" onclick="openDirections(${m.lat}, ${m.lng}, '${m.name.replace(/'/g, "\\'")}')">📍 Cómo llegar</button>
           <button class="btn-secondary" onclick="viewOnMap('${m.id}')">Ver ubicación en mapa</button>
         </div>
 
@@ -1181,6 +1182,24 @@ function contactWhatsApp(phone, name){
   window.open(`https://wa.me/${cleanPhone}?text=${message}`, '_blank');
 }
 
+function openDirections(lat, lng, name){
+  if(lat == null || lng == null){
+    alert('Este taller no tiene ubicación GPS registrada todavía, así que no podemos trazar la ruta.');
+    return;
+  }
+  // Si tenemos el origen real del usuario, lo incluimos para que la ruta empiece ahí.
+  // Si no, Google Maps usa la ubicación actual del dispositivo automáticamente.
+  const destination = `${lat},${lng}`;
+  let url;
+  if(usingRealLocation && USER_LOCATION){
+    const origin = `${USER_LOCATION.lat},${USER_LOCATION.lng}`;
+    url = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}&travelmode=driving`;
+  } else {
+    url = `https://www.google.com/maps/dir/?api=1&destination=${destination}&travelmode=driving`;
+  }
+  window.open(url, '_blank');
+}
+
 function viewOnMap(id){
   const m = mechanics.find(x => x.id === id);
   if(!m) return;
@@ -1267,7 +1286,10 @@ function renderMap(){
       <div class="popup-name">${m.name}</div>
       <div class="popup-spec">${m.spec.toUpperCase()} · ${m.dist != null ? m.dist + 'KM' : ''}</div>
       <div class="popup-rating">★ ${m.rating > 0 ? m.rating.toFixed(1) : 'Sin calificar'} (${m.reviews}) · ${m.status==='open'?'Abierto':'Cerrado'}</div>
-      <span class="popup-btn" onclick="openProfile('${m.id}')">Ver ficha →</span>
+      <div style="display:flex; gap:6px; margin-top:4px;">
+        <span class="popup-btn" onclick="openProfile('${m.id}')">Ver ficha →</span>
+        <span class="popup-btn" style="background:var(--carbon); border:1px solid var(--safety-orange);" onclick="openDirections(${m.lat}, ${m.lng}, '${m.name.replace(/'/g, "\\'")}')">📍 Cómo llegar</span>
+      </div>
     `);
     leafletMapInstance._mechMarkers.push(marker);
   });
