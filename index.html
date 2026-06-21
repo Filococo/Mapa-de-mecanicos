@@ -1031,7 +1031,7 @@ function openProfile(id){
         <div class="p-name display" style="font-family:'Archivo Black'; text-transform:none;">${m.name}</div>
         <div class="p-spec">${m.spec.toUpperCase()} · ${m.years} AÑOS EN EL RUBRO</div>
         <div class="p-meta-row">
-          <span class="p-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>${m.address}</span>
+          <span class="p-meta-item" onclick="openDirections(${m.lat}, ${m.lng}, '${m.name.replace(/'/g, "\\'")}')" style="cursor:pointer; text-decoration:underline; text-decoration-style:dotted;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>${m.address}</span>
           <span class="p-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>${m.phone}</span>
           <span class="p-meta-item"><span class="status-dot ${m.status}" style="margin-right:6px;"></span>${m.status==='open'?'Abierto ahora':'Cerrado ahora'}</span>
         </div>
