@@ -451,7 +451,7 @@
     <div class="section-head">
       <div>
         <h1 class="display">Encuentra tu mecánico</h1>
-        <div class="section-sub">PERFILES VERIFICADOS · CALIFICACIONES REALES DE CLIENTES</div>
+        <div class="section-sub">NEGOCIOS REALES DE RANCAGUA Y MACHALÍ · CALIFICACIONES DE GOOGLE MAPS</div>
       </div>
       <div class="count-tag" id="resultCount">12 TALLERES EN RANCAGUA</div>
     </div>
@@ -507,117 +507,124 @@
 </main>
 
 <footer>
-  PROTOTIPO — TALLER CERCANO · DATOS DE EJEMPLO, NO REPRESENTAN MECÁNICOS REALES
+  PROTOTIPO — TALLER CERCANO · NOMBRES, DIRECCIONES Y CALIFICACIONES BASADOS EN NEGOCIOS REALES DE RANCAGUA (GOOGLE MAPS) · VALORES DE SERVICIOS SON REFERENCIALES DE EJEMPLO, NO CONFIRMADOS POR LOS TALLERES
 </footer>
 
 <script>
 /* ====================== DATA ====================== */
 const mechanics = [
-  {id:1, name:"José Toledo", initials:"JT", spec:"Mecánica General", dist:0.8, lat:-34.1701, lng:-70.7444, rating:4.8, reviews:47, parts:true, priceFrom:15000, status:"open",
-   address:"Av. Freire 1240, Rancagua", phone:"+56 9 8123 4567", years:14,
-   tags:["Diagnóstico computarizado","Mantención preventiva","Cambio de aceite"],
+  {id:1, name:"Fullgear", initials:"FG", spec:"Mecánica General", dist:0.9, lat:-34.1863691, lng:-70.7322428, rating:4.4, reviews:22, parts:true, priceFrom:15000, status:"open",
+   address:"Manuel Rodríguez 455, Rancagua", phone:"+56 9 5389 2438", years:8,
+   tags:["Diagnóstico computarizado","Mantención general","Reparaciones honestas"],
    services:[["Diagnóstico general","$15.000"],["Cambio de aceite + filtro","$28.000"],["Afinamiento completo","$65.000"],["Revisión pre-compra","$20.000"]],
-   partsNote:"Vende filtros, aceites y correas de marcas genéricas y originales. Consulta disponibilidad por modelo.",
+   partsNote:"Vende filtros, aceites y repuestos genéricos y originales. Consulta disponibilidad por modelo.",
    reviews_list:[
-     {name:"Marcela R.", stars:5, date:"hace 3 días", text:"Excelente atención, me explicó todo el problema del auto sin tecnicismos raros. Precio justo."},
-     {name:"Patricio V.", stars:5, date:"hace 1 semana", text:"Rápido y de confianza, llevo años yendo donde José."},
-     {name:"Daniela S.", stars:4, date:"hace 2 semanas", text:"Buen trabajo, se demoró un poco más de lo prometido pero el resultado fue bueno."}
+     {name:"Cliente Google", stars:5, date:"reseña verificada", text:"Excelente mecánico. Resolvió todos mis problemas mecánicos rápido y con honestidad."},
+     {name:"Cliente Google", stars:5, date:"reseña verificada", text:"Muy recomendable. Explica con claridad los problemas mecánicos y las soluciones."},
+     {name:"Cliente Google", stars:5, date:"reseña verificada", text:"Excelente servicio, hacen un gran trabajo y a muy buen precio, 100% recomendable."}
    ]},
-  {id:2, name:"Frenos Express VI Región", initials:"FE", spec:"Frenos", dist:1.4, lat:-34.1614, lng:-70.7367, rating:4.6, reviews:32, parts:true, priceFrom:18000, status:"open",
-   address:"Carretera del Cobre 850, Rancagua", phone:"+56 9 7234 5678", years:9,
-   tags:["Pastillas y discos","Sistema ABS","Líquido de frenos"],
-   services:[["Cambio pastillas delanteras","$32.000"],["Cambio discos + pastillas","$78.000"],["Purgado de frenos","$18.000"],["Revisión sistema ABS","$25.000"]],
-   partsNote:"Stock permanente de pastillas y discos para los modelos más comunes en Chile (Chevrolet, Hyundai, Suzuki, Nissan).",
+  {id:2, name:"Frenos Recreo", initials:"FR", spec:"Frenos", dist:2.4, lat:-34.1442192, lng:-70.7352425, rating:4.8, reviews:102, parts:true, priceFrom:18000, status:"open",
+   address:"Recreo 1760, Rancagua", phone:"+56 9 7476 0891", years:15,
+   tags:["Pastillas y discos","Sistema de frenos completo","Revisión rápida"],
+   services:[["Cambio pastillas delanteras","$32.000"],["Cambio discos + pastillas","$78.000"],["Purgado de frenos","$18.000"],["Revisión sistema de frenos","$25.000"]],
+   partsNote:"Stock de pastillas y discos para los modelos más comunes en Chile.",
    reviews_list:[
-     {name:"Ignacio P.", stars:5, date:"hace 2 días", text:"Me solucionaron un ruido raro en los frenos en menos de una hora."},
-     {name:"Carla M.", stars:4, date:"hace 5 días", text:"Buena atención, precio acorde a lo que cobran otros talleres de frenos."}
+     {name:"Cliente Google", stars:5, date:"reseña verificada", text:"Llegué recomendado tras una mala experiencia en otro taller. Revisaron y arreglaron todo en menos de 20 minutos, dejando los frenos funcionando perfecto."},
+     {name:"Cliente Google", stars:5, date:"reseña verificada", text:"Don Juan y su equipo son muy buenos y recomendables, excelente trabajo."},
+     {name:"Cliente Google", stars:5, date:"reseña verificada", text:"Atención destacada, personal amable y profesional, responden todas las dudas."}
    ]},
-  {id:3, name:"Suspensiones del Sur", initials:"SS", spec:"Suspensión", dist:2.1, lat:-34.1789, lng:-70.7551, rating:4.9, reviews:61, parts:true, priceFrom:25000, status:"open",
-   address:"Av. Miguel Ramírez 432, Rancagua", phone:"+56 9 6345 1234", years:20,
-   tags:["Amortiguadores","Rótulas","Alineación y balanceo"],
-   services:[["Cambio amortiguadores (par)","$95.000"],["Cambio rótulas","$45.000"],["Alineación","$22.000"],["Balanceo 4 ruedas","$25.000"]],
-   partsNote:"Distribuidor directo de amortiguadores Monroe y KYB, descuento por compra de par.",
+  {id:3, name:"Taller de Alineación y Balanceo", initials:"AB", spec:"Suspensión", dist:1.9, lat:-34.1668252, lng:-70.7107364, rating:4.6, reviews:153, parts:true, priceFrom:18000, status:"open",
+   address:"Av. Uruguay 126, Rancagua", phone:"+56 9 9694 0930", years:18,
+   tags:["Alineación y balanceo","Amortiguadores","Cambio de aceite"],
+   services:[["Alineación","$22.000"],["Balanceo 4 ruedas","$18.000"],["Cambio de aceite y filtro","$25.000"],["Diagnóstico general","$15.000"]],
+   partsNote:"Ofrecen cambio de aceite, filtros y diagnóstico además de alineación y balanceo, con precios claros y transparentes.",
    reviews_list:[
-     {name:"Felipe A.", stars:5, date:"hace 1 día", text:"20 años en el rubro se notan. El auto quedó como nuevo en la suspensión."},
-     {name:"Rocío T.", stars:5, date:"hace 4 días", text:"Muy profesionales, te muestran las piezas viejas para que veas el desgaste real."}
+     {name:"Cliente Google", stars:5, date:"reseña verificada", text:"Excelente experiencia, 100% recomendado. Alineación y balanceo con instalaciones de primer nivel y mecánicos profesionales."},
+     {name:"Cliente Google", stars:5, date:"reseña verificada", text:"Excelente servicio. Precios justos y rápido."},
+     {name:"Cliente Google", stars:5, date:"reseña verificada", text:"Me atendió el mismo dueño, se tomó el tiempo de explicar mis dudas y la alineación quedó perfecta."}
    ]},
-  {id:4, name:"ElectroAuto Rancagua", initials:"EA", spec:"Eléctrico", dist:1.9, lat:-34.1668, lng:-70.7505, rating:4.3, reviews:19, parts:false, priceFrom:12000, status:"open",
-   address:"Calle Estado 670, Rancagua", phone:"+56 9 5456 7890", years:6,
-   tags:["Batería y alternador","Diagnóstico eléctrico","Luces y sensores"],
-   services:[["Diagnóstico eléctrico","$12.000"],["Cambio de batería","$15.000"],["Reparación alternador","$40.000-$80.000"],["Instalación de luces LED","$20.000"]],
-   partsNote:"No vende repuestos propios, pero te orienta dónde conseguirlos al mejor precio.",
+  {id:4, name:"Electricidad Automotriz Montoya", initials:"EM", spec:"Eléctrico", dist:1.5, lat:-34.1677685, lng:-70.7483195, rating:4.0, reviews:132, parts:false, priceFrom:12000, status:"open",
+   address:"Jorge Rivera 976, Rancagua", phone:null, years:10,
+   tags:["Diagnóstico eléctrico","Luces y sensores","Reparación de cableado"],
+   services:[["Diagnóstico eléctrico","$12.000"],["Revisión de cableado","consultar"],["Cambio de luces","consultar"],["Reparación de sistema eléctrico","consultar"]],
+   partsNote:"No vende repuestos propios, pero orienta sobre dónde conseguirlos. Conviene confirmar precios antes del trabajo.",
    reviews_list:[
-     {name:"Andrés L.", stars:4, date:"hace 1 semana", text:"Encontró una falla eléctrica que otros 2 talleres no detectaron."},
-     {name:"Soledad K.", stars:5, date:"hace 3 semanas", text:"Súper honesto, me dijo que no necesitaba cambiar la batería todavía."}
+     {name:"Cliente Google", stars:4, date:"reseña verificada", text:"Buen servicio en general para temas eléctricos del vehículo."},
+     {name:"Cliente Google", stars:5, date:"reseña verificada", text:"Muy buen servicio, resolvieron el problema eléctrico de mi auto."}
    ]},
-  {id:5, name:"Clima Auto VI", initials:"CA", spec:"Climatización", dist:3.2, lat:-34.1842, lng:-70.7283, rating:4.5, reviews:24, parts:true, priceFrom:20000, status:"closed",
-   address:"Av. Bernardo O'Higgins 1890, Rancagua", phone:"+56 9 4567 8901", years:11,
-   tags:["Recarga de gas","Compresor A/C","Filtro de habitáculo"],
-   services:[["Recarga de gas A/C","$35.000"],["Cambio compresor","$120.000-$180.000"],["Cambio filtro habitáculo","$20.000"],["Diagnóstico de fugas","$25.000"]],
-   partsNote:"Vende gas refrigerante y filtros de habitáculo para la mayoría de marcas.",
+  {id:5, name:"Climatización Rancagua Ltda.", initials:"CR", spec:"Climatización", dist:3.8, lat:-34.141438, lng:-70.7236102, rating:4.8, reviews:217, parts:true, priceFrom:25000, status:"open",
+   address:"Av. C. Valle del Cachapoal 02035, Rancagua", phone:"+56 9 6734 5720", years:12,
+   tags:["Recarga de gas","Mantención de A/C","Técnicos experimentados"],
+   services:[["Recarga de gas A/C","$35.000"],["Mantención de equipo A/C","consultar"],["Diagnóstico de fugas","$25.000"],["Reemplazo de unidad A/C","consultar"]],
+   partsNote:"Empresa especializada en climatización automotriz, residencial e industrial, con técnicos de amplia experiencia.",
    reviews_list:[
-     {name:"Tomás B.", stars:4, date:"hace 6 días", text:"El aire quedó helado de nuevo, eso sí me hicieron esperar una semana por hora."}
+     {name:"Cliente Google", stars:5, date:"reseña verificada", text:"Rápido, eficiente y prolijo. El técnico fue muy profesional, explicando paso a paso lo que haría."},
+     {name:"Cliente Google", stars:5, date:"reseña verificada", text:"Conformes con el trabajo realizado. Mucha diferencia respecto a instaladores anteriores, trabajo de mejor calidad y más profesional."}
    ]},
-  {id:6, name:"Diésel Pro Machalí", initials:"DP", spec:"Diésel", dist:4.6, lat:-34.1842, lng:-70.6536, rating:4.7, reviews:38, parts:true, priceFrom:30000, status:"open",
-   address:"Camino a Machalí 2100", phone:"+56 9 3678 9012", years:16,
-   tags:["Inyectores","Bombas de inyección","Camionetas y SUV diésel"],
-   services:[["Diagnóstico diésel","$30.000"],["Limpieza de inyectores","$55.000"],["Cambio filtro combustible","$25.000"],["Revisión turbo","$40.000"]],
-   partsNote:"Inyectores reconstruidos y filtros originales para Toyota Hilux, Ford Ranger, Mitsubishi L200.",
+  {id:6, name:"Inyección Diésel y Turbos Arguinzona", initials:"DT", spec:"Diésel", dist:5.4, lat:-34.1877401, lng:-70.6475598, rating:4.6, reviews:40, parts:true, priceFrom:30000, status:"open",
+   address:"Las Higueras 116, Machalí", phone:"+56 9 8219 0623", years:14,
+   tags:["Inyección diésel","Turbos","Camionetas y maquinaria"],
+   services:[["Diagnóstico diésel","$30.000"],["Revisión de inyectores","consultar"],["Revisión de turbo","consultar"],["Mantención sistema diésel","consultar"]],
+   partsNote:"Taller familiar especializado en inyección diésel y turbos, atendido por el dueño y su hijo.",
    reviews_list:[
-     {name:"Cristián O.", stars:5, date:"hace 2 días", text:"Trabaja casi exclusivo con diésel, se nota la especialización en camionetas."},
-     {name:"Pablo H.", stars:5, date:"hace 1 semana", text:"Le devolvió la potencia a mi Hilux, antes tiraba humo negro."},
-     {name:"Yasna F.", stars:4, date:"hace 2 semanas", text:"Buen trabajo, precio un poco alto pero vale la pena."}
+     {name:"Cliente Google", stars:5, date:"reseña verificada", text:"Excelente y muy buena atención."},
+     {name:"Cliente Google", stars:5, date:"reseña verificada", text:"Gran taller, muy recomendable. Atendido por el dueño y su hijo."},
+     {name:"Cliente Google", stars:4, date:"reseña verificada", text:"Solucionan el problema, sea cual sea. El costo es proporcional al problema del vehículo, por eso vale la pena."}
    ]},
-  {id:7, name:"Taller Hermanos Rojas", initials:"HR", spec:"Mecánica General", dist:0.5, lat:-34.1722, lng:-70.7398, rating:4.4, reviews:55, parts:true, priceFrom:14000, status:"open",
-   address:"Calle Astorga 215, Rancagua", phone:"+56 9 2789 0123", years:25,
-   tags:["Mecánica general","Mantención","Diagnóstico"],
-   services:[["Diagnóstico general","$14.000"],["Mantención 10.000km","$45.000"],["Cambio correa distribución","$85.000"],["Revisión completa","$30.000"]],
-   partsNote:"Taller familiar con repuestos genéricos en stock para mantenciones básicas.",
+  {id:7, name:"Autotrust Rancagua", initials:"AT", spec:"Mecánica General", dist:2.6, lat:-34.1916848, lng:-70.7481063, rating:4.4, reviews:85, parts:true, priceFrom:14000, status:"closed",
+   address:"Barrio Industrial, bodega 25, km 90, Rancagua", phone:"+56 72 242 4567", years:11,
+   tags:["Mecánica general","Diagnóstico","Mantención"],
+   services:[["Diagnóstico general","$14.000"],["Mantención preventiva","consultar"],["Revisión de transmisión","consultar"],["Revisión completa","$30.000"]],
+   partsNote:"Taller establecido en barrio industrial; no atienden vehículos muy antiguos, conviene confirmar antes de llevar el auto.",
    reviews_list:[
-     {name:"Verónica P.", stars:4, date:"hace 4 días", text:"Llevo a mi familia hace años, son de confianza aunque a veces hay que esperar."},
-     {name:"Manuel D.", stars:5, date:"hace 1 semana", text:"25 años de experiencia se notan, conocen autos antiguos como pocos."}
+     {name:"Cliente Google", stars:5, date:"reseña verificada", text:"Excelente servicio, puntuales y amables. El dueño siempre está atento y es muy amable."},
+     {name:"Cliente Google", stars:4, date:"reseña verificada", text:"Trato cordial con los clientes."}
    ]},
-  {id:8, name:"Frenolandia", initials:"FL", spec:"Frenos", dist:2.8, lat:-34.1551, lng:-70.7322, rating:4.1, reviews:14, parts:false, priceFrom:16000, status:"open",
-   address:"Av. Carlos Condell 540, Rancagua", phone:"+56 9 1890 1234", years:4,
-   tags:["Pastillas","Discos","Frenos de tambor"],
-   services:[["Cambio pastillas","$28.000"],["Cambio discos","$60.000"],["Revisión frenos de tambor","$16.000"]],
-   partsNote:"No vende repuestos, trabaja con piezas que traiga el cliente o las consigue por encargo.",
+  {id:8, name:"Frenos Illanes", initials:"FI", spec:"Frenos", dist:2.0, lat:-34.1618239, lng:-70.73309499999999, rating:4.7, reviews:108, parts:true, priceFrom:16000, status:"open",
+   address:"Av. Illanes 380, Rancagua", phone:"+56 72 222 1712", years:20,
+   tags:["Pastillas y discos","Rectificado","Atención el mismo día"],
+   services:[["Cambio pastillas","$28.000"],["Rectificado de discos","consultar"],["Revisión sistema de frenos","$16.000"]],
+   partsNote:"Taller especializado en frenos con clientes habituales y buena reputación en la zona.",
    reviews_list:[
-     {name:"Gonzalo R.", stars:4, date:"hace 5 días", text:"Buena atención, taller nuevo pero saben lo que hacen."}
+     {name:"Cliente Google", stars:5, date:"reseña verificada", text:"Excelente servicio. Personas muy profesionales y responsables, 100% recomendable."},
+     {name:"Cliente Google", stars:5, date:"reseña verificada", text:"Fui por lo que necesitaba: pastillas nuevas y discos rectificados. El trabajo fue muy prolijo y tuvieron listo el auto la misma tarde."}
    ]},
-  {id:9, name:"AutoEléctrica Centro", initials:"AC", spec:"Eléctrico", dist:1.1, lat:-34.1715, lng:-70.7411, rating:4.9, reviews:28, parts:true, priceFrom:13000, status:"open",
-   address:"Calle Rubio 310, Rancagua", phone:"+56 9 0901 2345", years:13,
-   tags:["Computación automotriz","Cableado","Alarmas"],
-   services:[["Diagnóstico computarizado","$13.000"],["Reparación de cableado","$35.000-$60.000"],["Instalación de alarma","$45.000"],["Cambio de alternador","$50.000"]],
-   partsNote:"Vende baterías, alternadores reacondicionados y accesorios eléctricos.",
+  {id:9, name:"Frenos y Embragues Ávila", initials:"FA", spec:"Frenos", dist:1.3, lat:-34.158570399999995, lng:-70.746956, rating:4.9, reviews:92, parts:true, priceFrom:20000, status:"open",
+   address:"Sta. María 0509, Rancagua", phone:"+56 72 246 8020", years:22,
+   tags:["Frenos","Embragues","Diagnóstico honesto"],
+   services:[["Revisión de embrague","consultar"],["Cambio de pastillas","$30.000"],["Diagnóstico de frenos","$20.000"],["Mantención sistema de frenos","consultar"]],
+   partsNote:"Especialistas en frenos y embragues, reconocidos por mostrar las piezas retiradas y explicar el diagnóstico con transparencia.",
    reviews_list:[
-     {name:"Camila V.", stars:5, date:"hace 1 día", text:"Increíble nivel de detalle explicando el problema. Muy recomendado."},
-     {name:"Esteban N.", stars:5, date:"hace 3 días", text:"El mejor para temas eléctricos en Rancagua, sin duda."}
+     {name:"Cliente Google", stars:5, date:"reseña verificada", text:"Desde el primer momento dieron un diagnóstico certero y honesto, algo que no había vivido antes en otros talleres."},
+     {name:"Cliente Google", stars:5, date:"reseña verificada", text:"Servicio recomendado 1000%. Diagnóstico preciso y muy profesional, explican todo con claridad."},
+     {name:"Cliente Google", stars:5, date:"reseña verificada", text:"Explican todo lo que hacen y puedes ver el trabajo en proceso. El dueño es muy profesional y asesora sobre mantención."}
    ]},
-  {id:10, name:"Suspensión Express", initials:"SE", spec:"Suspensión", dist:5.0, lat:-34.1297, lng:-70.7619, rating:4.0, reviews:9, parts:true, priceFrom:22000, status:"closed",
-   address:"Camino Coya s/n, Rancagua", phone:"+56 9 9012 3456", years:3,
-   tags:["Amortiguadores","Resortes","Rótulas"],
-   services:[["Cambio amortiguador","$50.000 c/u"],["Cambio resortes","$60.000 (par)"],["Alineación básica","$18.000"]],
-   partsNote:"Vende amortiguadores de marca genérica a buen precio.",
+  {id:10, name:"SCAuto Servicio Técnico Automotriz", initials:"SC", spec:"Eléctrico", dist:3.1, lat:-34.185686499999996, lng:-70.7355761, rating:5.0, reviews:27, parts:false, priceFrom:15000, status:"open",
+   address:"Lord Cochrane 262, Rancagua", phone:"+56 9 3726 8328", years:9,
+   tags:["Diagnóstico electrónico","Sistemas eléctricos","Scanner avanzado"],
+   services:[["Diagnóstico con scanner","$15.000"],["Revisión de sistema eléctrico","consultar"],["Reparación de cortocircuitos","consultar"]],
+   partsNote:"Servicio técnico especializado en diagnóstico electrónico y reparación de sistemas eléctricos complejos.",
    reviews_list:[
-     {name:"Hugo S.", stars:4, date:"hace 1 semana", text:"Taller chico pero correcto, buen precio en amortiguadores."}
+     {name:"Cliente Google", stars:5, date:"reseña verificada", text:"Diagnóstico rápido y certero. Solucionaron el problema de forma eficiente y oportuna, revivieron un auto con corto circuito."},
+     {name:"Cliente Google", stars:5, date:"reseña verificada", text:"Excelente servicio. Llevé el vehículo por una luz de batería que otro taller había diagnosticado mal. Todo muy transparente y eficiente."}
    ]},
-  {id:11, name:"Mecánica Doña Rosa", initials:"DR", spec:"Mecánica General", dist:3.7, lat:-34.1505, lng:-70.7195, rating:4.95, reviews:73, parts:true, priceFrom:12000, status:"open",
-   address:"Av. España 980, Rancagua", phone:"+56 9 8123 9999", years:30,
-   tags:["Mecánica general","Mantención","Frenos básicos"],
-   services:[["Diagnóstico general","$12.000"],["Cambio de aceite","$25.000"],["Mantención completa","$55.000"]],
-   partsNote:"Taller histórico de Rancagua, vende repuestos genéricos para mantenciones básicas.",
+  {id:11, name:"Full Mechanics Pro", initials:"FM", spec:"Mecánica General", dist:6.0, lat:-34.1682434, lng:-70.66562689999999, rating:5.0, reviews:11, parts:true, priceFrom:14000, status:"open",
+   address:"Los Nogales 22, Machalí", phone:"+56 9 5709 8469", years:6,
+   tags:["Servicio a domicilio","Disponibilidad extendida","Mecánica general"],
+   services:[["Diagnóstico general","$14.000"],["Mantención completa","consultar"],["Servicio a domicilio","consultar"]],
+   partsNote:"Ofrecen atención puntual y servicio a domicilio en Machalí, Rancagua y alrededores.",
    reviews_list:[
-     {name:"Javiera M.", stars:5, date:"hace 2 días", text:"El taller de más confianza que conozco, llevo 10 años yendo."},
-     {name:"Raúl T.", stars:5, date:"hace 6 días", text:"Honestidad ante todo, nunca te cobran algo que no necesitas."}
+     {name:"Cliente Google", stars:5, date:"reseña verificada", text:"Excelente servicio. Amables y dispuestos a responder todas mis dudas. Inspira confianza y seguridad."},
+     {name:"Cliente Google", stars:5, date:"reseña verificada", text:"Excelente servicio, entregaron el vehículo dentro del plazo estimado. Puntual y con atención a domicilio."}
    ]},
-  {id:12, name:"Diésel y Diagnóstico VI", initials:"DD", spec:"Diésel", dist:6.2, lat:-34.2014, lng:-70.7156, rating:4.2, reviews:11, parts:true, priceFrom:28000, status:"open",
-   address:"Ruta H-30, Rancagua", phone:"+56 9 7345 6789", years:5,
-   tags:["Camionetas diésel","Scanner avanzado","Inyección"],
-   services:[["Diagnóstico con scanner","$28.000"],["Limpieza inyectores","$50.000"],["Revisión sistema common rail","$45.000"]],
-   partsNote:"Filtros e inyectores para camionetas diésel comunes en la zona agrícola.",
+  {id:12, name:"OLISA Servicio Automotriz", initials:"OL", spec:"Suspensión", dist:2.2, lat:-34.1652067, lng:-70.7519026, rating:4.4, reviews:52, parts:true, priceFrom:20000, status:"open",
+   address:"Av. Federico Koke 246, Rancagua", phone:"+56 9 5646 2770", years:10,
+   tags:["Suspensión","Dirección","Diagnóstico avanzado"],
+   services:[["Revisión de tren delantero","consultar"],["Cambio de rótulas","consultar"],["Diagnóstico general","$20.000"],["Instalación de repuestos","consultar"]],
+   partsNote:"Cuentan con equipo para diagnóstico avanzado y consiguen repuestos específicos según lo que necesite el vehículo.",
    reviews_list:[
-     {name:"Sergio L.", stars:4, date:"hace 4 días", text:"Buen diagnóstico con scanner, detectó el problema rápido."}
+     {name:"Cliente Google", stars:5, date:"reseña verificada", text:"Fui a muchos talleres, ninguno resolvió mi problema. Llegué a OLISA por recomendación y lo resolvieron de forma eficiente."},
+     {name:"Cliente Google", stars:5, date:"reseña verificada", text:"El mejor servicio en Rancagua. Rápido, honesto, confiable. El trabajo de dirección quedó impecable, cambiaron rótulas y barra estabilizadora."}
    ]}
 ];
 
