@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Taller Cercano — Mecánicos de Rancagua</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+  :root{
+    --carbon:#1a1a18;
+    --carbon-soft:#26241f;
+    --steel:#43423d;
+    --paper:#f2ede1;
+    --paper-dim:#e7e0cf;
+    --safety-orange:#e0521c;
+    --caution-yellow:#f0b429;
+    --ok-green:#4a7c59;
+    --line:#3a382f;
+    --line-light:#cfc7ad;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--paper);
+    color:var(--carbon);
+    font-family:'Archivo',sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .mono{font-family:'JetBrains Mono',monospace;}
+  .display{font-family:'Archivo Black',sans-serif; text-transform:uppercase;}
+
+  /* ===== Hazard stripe utility ===== */
+  .hazard-strip{
+    height:8px;
+    background:repeating-linear-gradient(135deg, var(--caution-yellow) 0 14px, var(--carbon) 14px 28px);
+  }
+
+  /* ===== Top bar ===== */
+  header.app-top{
+    background:var(--carbon);
+    color:var(--paper);
+    position:sticky; top:0; z-index:50;
+    border-bottom:3px solid var(--safety-orange);
+  }
+  .app-top-inner{
+    max-width:1180px; margin:0 auto;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 20px;
+  }
+  .brand{
+    display:flex; align-items:center; gap:10px;
+  }
+  .brand-mark{
+    width:34px; height:34px;
+    background:var(--safety-orange);
+    display:flex; align-items:center; justify-content:center;
+    transform:rotate(45deg);
+    flex-shrink:0;
+  }
+  .brand-mark svg{transform:rotate(-45deg); width:18px; height:18px;}
+  .brand-name{display:flex; flex-direction:column; line-height:1;}
+  .brand-name .t1{font-family:'Archivo Black'; font-size:18px; letter-spacing:0.5px;}
+  .brand-name .t2{font-family:'JetBrains Mono'; font-size:10px; letter-spacing:2px; color:var(--caution-yellow); margin-top:3px;}
+  .top-loc{
+    display:flex; align-items:center; gap:8px;
+    font-family:'JetBrains Mono'; font-size:12px;
+    color:var(--paper-dim);
+    border:1px solid var(--steel);
+    padding:7px 12px;
+    cursor:pointer;
+  }
+  .top-loc:hover{border-color:var(--safety-orange); color:var(--paper);}
+  .top-loc svg{width:14px; height:14px; flex-shrink:0;}
+
+  /* ===== Nav tabs ===== */
+  nav.tabs{
+    max-width:1180px; margin:0 auto;
+    display:flex; gap:0;
+    padding:0 20px;
+    border-bottom:1px solid var(--line);
+    background:var(--paper);
+  }
+  .tab-btn{
+    font-family:'JetBrains Mono'; font-size:12px; letter-spacing:1px; text-transform:uppercase;
+    padding:14px 18px;
+    background:none; border:none; cursor:pointer;
+    color:var(--steel);
+    border-bottom:3px solid transparent;
+    position:relative; top:1px;
+  }
+  .tab-btn.active{color:var(--carbon); border-bottom-color:var(--safety-orange); font-weight:700;}
+  .tab-btn:hover:not(.active){color:var(--carbon);}
+
+  main{max-width:1180px; margin:0 auto; padding:28px 20px 80px;}
+
+  /* ===== Section heading ===== */
+  .section-head{
+    display:flex; align-items:flex-end; justify-content:space-between;
+    margin-bottom:18px;
+    flex-wrap:wrap; gap:10px;
+  }
+  .section-head h1{
+    font-size:30px;
+    letter-spacing:-0.5px;
+  }
+  .section-sub{
+    font-family:'JetBrains Mono'; font-size:12px; color:var(--steel); margin-top:4px;
+  }
+  .count-tag{
+    font-family:'JetBrains Mono'; font-size:11px;
+    background:var(--carbon); color:var(--caution-yellow);
+    padding:5px 10px;
+  }
+
+  /* ===== Filter bar ===== */
+  .filter-bar{
+    display:flex; gap:8px; flex-wrap:wrap;
+    margin-bottom:22px;
+  }
+  .chip{
+    font-family:'JetBrains Mono'; font-size:11px; letter-spacing:0.5px;
+    padding:8px 14px;
+    border:1px solid var(--line-light);
+    background:var(--paper);
+    cursor:pointer;
+    color:var(--steel);
+    text-transform:uppercase;
+  }
+  .chip.active{
+    background:var(--carbon); color:var(--paper); border-color:var(--carbon);
+  }
+  .chip:hover:not(.active){border-color:var(--carbon); color:var(--carbon);}
+
+  /* ===== Directory grid ===== */
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(290px,1fr));
+    gap:16px;
+  }
+  .card{
+    background:var(--carbon);
+    color:var(--paper);
+    cursor:pointer;
+    position:relative;
+    overflow:hidden;
+    border:1px solid var(--carbon);
+    transition:transform .15s ease;
+  }
+  .card:hover{transform:translateY(-3px);}
+  .card-top{
+    padding:16px 16px 0;
+    display:flex; gap:12px;
+  }
+  .avatar{
+    width:54px; height:54px;
+    background:var(--steel);
+    flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Archivo Black'; font-size:18px;
+    color:var(--paper);
+    border:2px solid var(--safety-orange);
+  }
+  .card-id{flex:1; min-width:0;}
+  .card-name{font-family:'Archivo Black'; font-size:15px; text-transform:uppercase; line-height:1.15;}
+  .card-spec{font-family:'JetBrains Mono'; font-size:10.5px; color:var(--caution-yellow); margin-top:4px; letter-spacing:0.5px;}
+  .card-dist{font-family:'JetBrains Mono'; font-size:10.5px; color:#9c9a8f; margin-top:3px;}
+
+  .rating-row{
+    display:flex; align-items:center; gap:6px;
+    padding:12px 16px 0;
+  }
+  .stars{display:flex; gap:2px;}
+  .star{width:13px; height:13px;}
+  .rating-num{font-family:'JetBrains Mono'; font-size:12px; font-weight:700;}
+  .rating-count{font-family:'JetBrains Mono'; font-size:11px; color:#9c9a8f;}
+
+  .tag-row{
+    display:flex; gap:6px; flex-wrap:wrap;
+    padding:12px 16px 0;
+  }
+  .mini-tag{
+    font-family:'JetBrains Mono'; font-size:9.5px;
+    border:1px solid var(--steel);
+    padding:3px 7px;
+    color:#cfc7ad;
+    text-transform:uppercase;
+  }
+  .mini-tag.parts{border-color:var(--ok-green); color:#8fc99e;}
+
+  .card-bottom{
+    margin-top:14px;
+    padding:10px 16px;
+    background:var(--carbon-soft);
+    display:flex; align-items:center; justify-content:space-between;
+    border-top:1px solid var(--line);
+  }
+  .price-tag{font-family:'JetBrains Mono'; font-size:11px; color:var(--paper-dim);}
+  .price-tag b{color:var(--caution-yellow); font-size:13px;}
+  .status-dot{
+    width:8px; height:8px; border-radius:50%;
+    display:inline-block; margin-right:5px;
+  }
+  .status-dot.open{background:var(--ok-green);}
+  .status-dot.closed{background:#a45;}
+  .status-txt{font-family:'JetBrains Mono'; font-size:10px; color:#cfc7ad;}
+
+  /* ===== Profile view ===== */
+  .back-btn{
+    font-family:'JetBrains Mono'; font-size:12px;
+    display:inline-flex; align-items:center; gap:6px;
+    background:none; border:none; cursor:pointer;
+    color:var(--steel); margin-bottom:18px;
+    text-transform:uppercase; letter-spacing:0.5px;
+  }
+  .back-btn:hover{color:var(--carbon);}
+
+  .profile-head{
+    background:var(--carbon); color:var(--paper);
+    padding:28px; display:flex; gap:22px; flex-wrap:wrap;
+    position:relative;
+  }
+  .profile-head::after{
+    content:''; position:absolute; left:0; right:0; bottom:0; height:5px;
+    background:repeating-linear-gradient(135deg, var(--caution-yellow) 0 10px, var(--carbon) 10px 20px);
+  }
+  .p-avatar{
+    width:96px; height:96px;
+    background:var(--steel);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Archivo Black'; font-size:34px;
+    border:3px solid var(--safety-orange);
+    flex-shrink:0;
+  }
+  .p-info{flex:1; min-width:220px;}
+  .p-name{font-size:26px; letter-spacing:-0.5px; margin-bottom:6px;}
+  .p-spec{font-family:'JetBrains Mono'; font-size:12px; color:var(--caution-yellow); letter-spacing:0.5px; margin-bottom:10px;}
+  .p-meta-row{display:flex; gap:18px; flex-wrap:wrap; margin-top:10px;}
+  .p-meta-item{font-family:'JetBrains Mono'; font-size:11.5px; color:#cfc7ad; display:flex; align-items:center; gap:6px;}
+  .p-meta-item svg{width:13px; height:13px; flex-shrink:0;}
+  .p-rating-block{
+    text-align:center;
+    border-left:1px solid var(--line);
+    padding-left:22px;
+    flex-shrink:0;
+  }
+  .p-rating-num{font-family:'Archivo Black'; font-size:38px; line-height:1; color:var(--caution-yellow);}
+  .p-rating-stars{display:flex; gap:3px; justify-content:center; margin:6px 0;}
+  .p-rating-count{font-family:'JetBrains Mono'; font-size:10.5px; color:#9c9a8f;}
+
+  .profile-body{
+    display:grid; grid-template-columns:1.5fr 1fr; gap:18px;
+    margin-top:18px;
+  }
+  @media (max-width:760px){.profile-body{grid-template-columns:1fr;}}
+
+  .panel{
+    background:#fff;
+    border:1px solid var(--line-light);
+  }
+  .panel-head{
+    padding:14px 18px;
+    border-bottom:1px solid var(--line-light);
+    display:flex; align-items:center; justify-content:between;
+  }
+  .panel-head h3{
+    font-family:'JetBrains Mono'; font-size:12px; letter-spacing:1.5px; text-transform:uppercase;
+    color:var(--steel);
+  }
+  .panel-body{padding:18px;}
+
+  .service-row{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:11px 0; border-bottom:1px dashed var(--line-light);
+    font-size:14px;
+  }
+  .service-row:last-child{border-bottom:none;}
+  .service-price{font-family:'JetBrains Mono'; font-weight:700; color:var(--safety-orange); font-size:13.5px;}
+
+  .parts-note{
+    background:#eef4ef; border-left:3px solid var(--ok-green);
+    padding:12px 14px; font-size:13px; line-height:1.5; margin-top:4px;
+  }
+
+  .review{
+    padding:14px 0; border-bottom:1px solid var(--line-light);
+  }
+  .review:last-child{border-bottom:none;}
+  .review-top{display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;}
+  .review-name{font-weight:700; font-size:13.5px;}
+  .review-date{font-family:'JetBrains Mono'; font-size:10.5px; color:var(--steel);}
+  .review-stars{display:flex; gap:2px; margin-bottom:6px;}
+  .review-text{font-size:13.5px; line-height:1.55; color:#3a382f;}
+
+  .cta-block{
+    background:var(--carbon); color:var(--paper);
+    padding:18px;
+  }
+  .cta-block .btn-primary{
+    width:100%; padding:13px;
+    background:var(--safety-orange); color:#fff;
+    border:none; font-family:'JetBrains Mono'; font-size:12px; letter-spacing:1px; text-transform:uppercase;
+    cursor:pointer; font-weight:700;
+    margin-bottom:10px;
+  }
+  .cta-block .btn-primary:hover{background:#c64517;}
+  .cta-block .btn-secondary{
+    width:100%; padding:13px;
+    background:none; border:1px solid var(--steel); color:var(--paper-dim);
+    font-family:'JetBrains Mono'; font-size:12px; letter-spacing:1px; text-transform:uppercase;
+    cursor:pointer;
+  }
+  .cta-block .btn-secondary:hover{border-color:var(--paper);}
+
+  .add-review-box{
+    margin-top:14px; padding-top:14px; border-top:1px solid var(--line-light);
+  }
+  .add-review-box textarea{
+    width:100%; border:1px solid var(--line-light); padding:10px;
+    font-family:'Archivo'; font-size:13px; resize:vertical; min-height:60px;
+  }
+  .star-picker{display:flex; gap:4px; margin:8px 0;}
+  .star-picker svg{width:20px; height:20px; cursor:pointer;}
+  .submit-review-btn{
+    background:var(--carbon); color:var(--paper); border:none;
+    padding:9px 16px; font-family:'JetBrains Mono'; font-size:11px; text-transform:uppercase;
+    cursor:pointer; letter-spacing:0.5px;
+  }
+
+  /* ===== Map view (Leaflet) ===== */
+  .map-wrap{
+    background:var(--carbon-soft);
+    border:1px solid var(--line);
+    height:460px;
+    position:relative;
+    overflow:hidden;
+  }
+  #leafletMap{
+    width:100%; height:100%;
+    filter:saturate(0.85) contrast(1.05);
+  }
+  .map-legend{
+    position:absolute; bottom:12px; left:12px; z-index:1000;
+    background:var(--carbon); color:var(--paper-dim);
+    font-family:'JetBrains Mono'; font-size:10px;
+    padding:8px 12px; line-height:1.8;
+    pointer-events:none;
+  }
+  /* custom divIcon markers */
+  .pin-mech{
+    width:30px; height:30px;
+    background:var(--safety-orange);
+    transform:rotate(45deg);
+    border:2px solid var(--carbon);
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 2px 4px rgba(0,0,0,0.3);
+  }
+  .pin-mech span{
+    transform:rotate(-45deg);
+    font-family:'Archivo Black'; font-size:10.5px; color:#fff;
+  }
+  .pin-mech.closed{background:var(--steel);}
+  .pin-you{
+    width:18px; height:18px; background:var(--caution-yellow);
+    border:3px solid var(--carbon); border-radius:50%;
+    box-shadow:0 0 0 7px rgba(240,180,41,0.25);
+  }
+  .leaflet-popup-content-wrapper{
+    background:var(--carbon); color:var(--paper);
+    border-radius:0; font-family:'Archivo',sans-serif;
+  }
+  .leaflet-popup-tip{background:var(--carbon);}
+  .leaflet-popup-content{margin:12px 14px; min-width:160px;}
+  .popup-name{font-family:'Archivo Black'; font-size:13px; text-transform:uppercase; margin-bottom:4px;}
+  .popup-spec{font-family:'JetBrains Mono'; font-size:10px; color:var(--caution-yellow); margin-bottom:6px;}
+  .popup-rating{font-family:'JetBrains Mono'; font-size:11px; color:var(--paper-dim); margin-bottom:8px;}
+  .popup-btn{
+    display:inline-block; background:var(--safety-orange); color:#fff;
+    font-family:'JetBrains Mono'; font-size:10px; text-transform:uppercase;
+    padding:6px 10px; cursor:pointer; letter-spacing:0.5px;
+  }
+  .leaflet-control-zoom a{
+    background:var(--carbon) !important; color:var(--paper) !important;
+    border-color:var(--line) !important;
+  }
+  .leaflet-control-zoom a:hover{background:var(--safety-orange) !important;}
+  .map-list{margin-top:18px; display:flex; flex-direction:column; gap:10px;}
+  .map-list-item{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 16px; background:#fff; border:1px solid var(--line-light);
+    cursor:pointer;
+  }
+  .map-list-item:hover{border-color:var(--safety-orange);}
+  .mli-left{display:flex; align-items:center; gap:12px;}
+  .mli-dist{font-family:'JetBrains Mono'; font-size:13px; font-weight:700; color:var(--safety-orange); min-width:48px;}
+  .mli-name{font-weight:700; font-size:14px;}
+  .mli-spec{font-family:'JetBrains Mono'; font-size:10.5px; color:var(--steel); margin-top:2px;}
+
+  /* ===== empty state ===== */
+  .empty{
+    text-align:center; padding:60px 20px;
+    color:var(--steel);
+  }
+  .empty .display{font-size:20px; margin-bottom:8px; color:var(--carbon);}
+  .empty p{font-family:'JetBrains Mono'; font-size:12px;}
+
+  footer{
+    border-top:1px solid var(--line); margin-top:40px;
+    padding:24px 20px; text-align:center;
+    font-family:'JetBrains Mono'; font-size:10.5px; color:var(--steel);
+  }
+
+  ::-webkit-scrollbar{width:10px;}
+  ::-webkit-scrollbar-track{background:var(--paper-dim);}
+  ::-webkit-scrollbar-thumb{background:var(--steel);}
+
+  .hidden{display:none !important;}
+</style>
+</head>
+<body>
+
+<header class="app-top">
+  <div class="app-top-inner">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#1a1a18" stroke-width="2.5"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+      </div>
+      <div class="brand-name">
+        <span class="t1">Taller Cercano</span>
+        <span class="t2">RANCAGUA · O'HIGGINS</span>
+      </div>
+    </div>
+    <div class="top-loc" id="locBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      <span>Rancagua Centro</span>
+    </div>
+  </div>
+  <nav class="tabs">
+    <button class="tab-btn active" data-tab="directorio">Directorio</button>
+    <button class="tab-btn" data-tab="mapa">Cerca de mí</button>
+    <button class="tab-btn" data-tab="perfil-mecanico" id="tabSoyMecanico">Soy mecánico</button>
+  </nav>
+</header>
+
+<main>
+
+  <!-- ===================== DIRECTORIO ===================== -->
+  <section id="view-directorio">
+    <div class="section-head">
+      <div>
+        <h1 class="display">Encuentra tu mecánico</h1>
+        <div class="section-sub">PERFILES VERIFICADOS · CALIFICACIONES REALES DE CLIENTES</div>
+      </div>
+      <div class="count-tag" id="resultCount">12 TALLERES EN RANCAGUA</div>
+    </div>
+
+    <div class="filter-bar" id="filterBar">
+      <button class="chip active" data-filter="todos">Todos</button>
+      <button class="chip" data-filter="Mecánica General">Mecánica general</button>
+      <button class="chip" data-filter="Frenos">Frenos</button>
+      <button class="chip" data-filter="Suspensión">Suspensión</button>
+      <button class="chip" data-filter="Eléctrico">Eléctrico</button>
+      <button class="chip" data-filter="Climatización">Climatización</button>
+      <button class="chip" data-filter="Diésel">Diésel</button>
+    </div>
+
+    <div class="grid" id="grid"></div>
+  </section>
+
+  <!-- ===================== PERFIL ===================== -->
+  <section id="view-perfil" class="hidden">
+    <button class="back-btn" id="backFromProfile">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Volver al directorio
+    </button>
+    <div id="profileContent"></div>
+  </section>
+
+  <!-- ===================== MAPA ===================== -->
+  <section id="view-mapa" class="hidden">
+    <div class="section-head">
+      <div>
+        <h1 class="display">Cerca de ti</h1>
+        <div class="section-sub">ORDENADO POR DISTANCIA DESDE TU UBICACIÓN</div>
+      </div>
+    </div>
+    <div class="map-wrap" id="mapWrap">
+      <div id="leafletMap"></div>
+      <div class="map-legend">◆ TALLER &nbsp; · &nbsp; ● TÚ ESTÁS AQUÍ</div>
+    </div>
+    <div class="map-list" id="mapList"></div>
+  </section>
+
+  <!-- ===================== SOY MECANICO (placeholder) ===================== -->
+  <section id="view-soy-mecanico" class="hidden">
+    <div class="empty">
+      <div class="display">Súmate como mecánico</div>
+      <p style="max-width:420px; margin:0 auto; line-height:1.8;">CREA TU FICHA, RECIBE CALIFICACIONES REALES Y APARECE EN BÚSQUEDAS CERCA DE TI.<br><br>SUSCRIPCIÓN MENSUAL · SIN PERMANENCIA · PRIMER MES GRATIS</p>
+      <button class="cta-block" style="display:inline-block; margin-top:24px; cursor:pointer; border:none;" onclick="alert('Esto abriría el formulario de registro de mecánico — pendiente de construir.')">
+        <span class="btn-primary" style="display:block; padding:14px 32px;">Crear mi ficha →</span>
+      </button>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  PROTOTIPO — TALLER CERCANO · DATOS DE EJEMPLO, NO REPRESENTAN MECÁNICOS REALES
+</footer>
+
+<script>
+/* ====================== DATA ====================== */
+const mechanics = [
+  {id:1, name:"José Toledo", initials:"JT", spec:"Mecánica General", dist:0.8, lat:-34.1701, lng:-70.7444, rating:4.8, reviews:47, parts:true, priceFrom:15000, status:"open",
+   address:"Av. Freire 1240, Rancagua", phone:"+56 9 8123 4567", years:14,
+   tags:["Diagnóstico computarizado","Mantención preventiva","Cambio de aceite"],
+   services:[["Diagnóstico general","$15.000"],["Cambio de aceite + filtro","$28.000"],["Afinamiento completo","$65.000"],["Revisión pre-compra","$20.000"]],
+   partsNote:"Vende filtros, aceites y correas de marcas genéricas y originales. Consulta disponibilidad por modelo.",
+   reviews_list:[
+     {name:"Marcela R.", stars:5, date:"hace 3 días", text:"Excelente atención, me explicó todo el problema del auto sin tecnicismos raros. Precio justo."},
+     {name:"Patricio V.", stars:5, date:"hace 1 semana", text:"Rápido y de confianza, llevo años yendo donde José."},
+     {name:"Daniela S.", stars:4, date:"hace 2 semanas", text:"Buen trabajo, se demoró un poco más de lo prometido pero el resultado fue bueno."}
+   ]},
+  {id:2, name:"Frenos Express VI Región", initials:"FE", spec:"Frenos", dist:1.4, lat:-34.1614, lng:-70.7367, rating:4.6, reviews:32, parts:true, priceFrom:18000, status:"open",
+   address:"Carretera del Cobre 850, Rancagua", phone:"+56 9 7234 5678", years:9,
+   tags:["Pastillas y discos","Sistema ABS","Líquido de frenos"],
+   services:[["Cambio pastillas delanteras","$32.000"],["Cambio discos + pastillas","$78.000"],["Purgado de frenos","$18.000"],["Revisión sistema ABS","$25.000"]],
+   partsNote:"Stock permanente de pastillas y discos para los modelos más comunes en Chile (Chevrolet, Hyundai, Suzuki, Nissan).",
+   reviews_list:[
+     {name:"Ignacio P.", stars:5, date:"hace 2 días", text:"Me solucionaron un ruido raro en los frenos en menos de una hora."},
+     {name:"Carla M.", stars:4, date:"hace 5 días", text:"Buena atención, precio acorde a lo que cobran otros talleres de frenos."}
+   ]},
+  {id:3, name:"Suspensiones del Sur", initials:"SS", spec:"Suspensión", dist:2.1, lat:-34.1789, lng:-70.7551, rating:4.9, reviews:61, parts:true, priceFrom:25000, status:"open",
+   address:"Av. Miguel Ramírez 432, Rancagua", phone:"+56 9 6345 1234", years:20,
+   tags:["Amortiguadores","Rótulas","Alineación y balanceo"],
+   services:[["Cambio amortiguadores (par)","$95.000"],["Cambio rótulas","$45.000"],["Alineación","$22.000"],["Balanceo 4 ruedas","$25.000"]],
+   partsNote:"Distribuidor directo de amortiguadores Monroe y KYB, descuento por compra de par.",
+   reviews_list:[
+     {name:"Felipe A.", stars:5, date:"hace 1 día", text:"20 años en el rubro se notan. El auto quedó como nuevo en la suspensión."},
+     {name:"Rocío T.", stars:5, date:"hace 4 días", text:"Muy profesionales, te muestran las piezas viejas para que veas el desgaste real."}
+   ]},
+  {id:4, name:"ElectroAuto Rancagua", initials:"EA", spec:"Eléctrico", dist:1.9, lat:-34.1668, lng:-70.7505, rating:4.3, reviews:19, parts:false, priceFrom:12000, status:"open",
+   address:"Calle Estado 670, Rancagua", phone:"+56 9 5456 7890", years:6,
+   tags:["Batería y alternador","Diagnóstico eléctrico","Luces y sensores"],
+   services:[["Diagnóstico eléctrico","$12.000"],["Cambio de batería","$15.000"],["Reparación alternador","$40.000-$80.000"],["Instalación de luces LED","$20.000"]],
+   partsNote:"No vende repuestos propios, pero te orienta dónde conseguirlos al mejor precio.",
+   reviews_list:[
+     {name:"Andrés L.", stars:4, date:"hace 1 semana", text:"Encontró una falla eléctrica que otros 2 talleres no detectaron."},
+     {name:"Soledad K.", stars:5, date:"hace 3 semanas", text:"Súper honesto, me dijo que no necesitaba cambiar la batería todavía."}
+   ]},
+  {id:5, name:"Clima Auto VI", initials:"CA", spec:"Climatización", dist:3.2, lat:-34.1842, lng:-70.7283, rating:4.5, reviews:24, parts:true, priceFrom:20000, status:"closed",
+   address:"Av. Bernardo O'Higgins 1890, Rancagua", phone:"+56 9 4567 8901", years:11,
+   tags:["Recarga de gas","Compresor A/C","Filtro de habitáculo"],
+   services:[["Recarga de gas A/C","$35.000"],["Cambio compresor","$120.000-$180.000"],["Cambio filtro habitáculo","$20.000"],["Diagnóstico de fugas","$25.000"]],
+   partsNote:"Vende gas refrigerante y filtros de habitáculo para la mayoría de marcas.",
+   reviews_list:[
+     {name:"Tomás B.", stars:4, date:"hace 6 días", text:"El aire quedó helado de nuevo, eso sí me hicieron esperar una semana por hora."}
+   ]},
+  {id:6, name:"Diésel Pro Machalí", initials:"DP", spec:"Diésel", dist:4.6, lat:-34.1842, lng:-70.6536, rating:4.7, reviews:38, parts:true, priceFrom:30000, status:"open",
+   address:"Camino a Machalí 2100", phone:"+56 9 3678 9012", years:16,
+   tags:["Inyectores","Bombas de inyección","Camionetas y SUV diésel"],
+   services:[["Diagnóstico diésel","$30.000"],["Limpieza de inyectores","$55.000"],["Cambio filtro combustible","$25.000"],["Revisión turbo","$40.000"]],
+   partsNote:"Inyectores reconstruidos y filtros originales para Toyota Hilux, Ford Ranger, Mitsubishi L200.",
+   reviews_list:[
+     {name:"Cristián O.", stars:5, date:"hace 2 días", text:"Trabaja casi exclusivo con diésel, se nota la especialización en camionetas."},
+     {name:"Pablo H.", stars:5, date:"hace 1 semana", text:"Le devolvió la potencia a mi Hilux, antes tiraba humo negro."},
+     {name:"Yasna F.", stars:4, date:"hace 2 semanas", text:"Buen trabajo, precio un poco alto pero vale la pena."}
+   ]},
+  {id:7, name:"Taller Hermanos Rojas", initials:"HR", spec:"Mecánica General", dist:0.5, lat:-34.1722, lng:-70.7398, rating:4.4, reviews:55, parts:true, priceFrom:14000, status:"open",
+   address:"Calle Astorga 215, Rancagua", phone:"+56 9 2789 0123", years:25,
+   tags:["Mecánica general","Mantención","Diagnóstico"],
+   services:[["Diagnóstico general","$14.000"],["Mantención 10.000km","$45.000"],["Cambio correa distribución","$85.000"],["Revisión completa","$30.000"]],
+   partsNote:"Taller familiar con repuestos genéricos en stock para mantenciones básicas.",
+   reviews_list:[
+     {name:"Verónica P.", stars:4, date:"hace 4 días", text:"Llevo a mi familia hace años, son de confianza aunque a veces hay que esperar."},
+     {name:"Manuel D.", stars:5, date:"hace 1 semana", text:"25 años de experiencia se notan, conocen autos antiguos como pocos."}
+   ]},
+  {id:8, name:"Frenolandia", initials:"FL", spec:"Frenos", dist:2.8, lat:-34.1551, lng:-70.7322, rating:4.1, reviews:14, parts:false, priceFrom:16000, status:"open",
+   address:"Av. Carlos Condell 540, Rancagua", phone:"+56 9 1890 1234", years:4,
+   tags:["Pastillas","Discos","Frenos de tambor"],
+   services:[["Cambio pastillas","$28.000"],["Cambio discos","$60.000"],["Revisión frenos de tambor","$16.000"]],
+   partsNote:"No vende repuestos, trabaja con piezas que traiga el cliente o las consigue por encargo.",
+   reviews_list:[
+     {name:"Gonzalo R.", stars:4, date:"hace 5 días", text:"Buena atención, taller nuevo pero saben lo que hacen."}
+   ]},
+  {id:9, name:"AutoEléctrica Centro", initials:"AC", spec:"Eléctrico", dist:1.1, lat:-34.1715, lng:-70.7411, rating:4.9, reviews:28, parts:true, priceFrom:13000, status:"open",
+   address:"Calle Rubio 310, Rancagua", phone:"+56 9 0901 2345", years:13,
+   tags:["Computación automotriz","Cableado","Alarmas"],
+   services:[["Diagnóstico computarizado","$13.000"],["Reparación de cableado","$35.000-$60.000"],["Instalación de alarma","$45.000"],["Cambio de alternador","$50.000"]],
+   partsNote:"Vende baterías, alternadores reacondicionados y accesorios eléctricos.",
+   reviews_list:[
+     {name:"Camila V.", stars:5, date:"hace 1 día", text:"Increíble nivel de detalle explicando el problema. Muy recomendado."},
+     {name:"Esteban N.", stars:5, date:"hace 3 días", text:"El mejor para temas eléctricos en Rancagua, sin duda."}
+   ]},
+  {id:10, name:"Suspensión Express", initials:"SE", spec:"Suspensión", dist:5.0, lat:-34.1297, lng:-70.7619, rating:4.0, reviews:9, parts:true, priceFrom:22000, status:"closed",
+   address:"Camino Coya s/n, Rancagua", phone:"+56 9 9012 3456", years:3,
+   tags:["Amortiguadores","Resortes","Rótulas"],
+   services:[["Cambio amortiguador","$50.000 c/u"],["Cambio resortes","$60.000 (par)"],["Alineación básica","$18.000"]],
+   partsNote:"Vende amortiguadores de marca genérica a buen precio.",
+   reviews_list:[
+     {name:"Hugo S.", stars:4, date:"hace 1 semana", text:"Taller chico pero correcto, buen precio en amortiguadores."}
+   ]},
+  {id:11, name:"Mecánica Doña Rosa", initials:"DR", spec:"Mecánica General", dist:3.7, lat:-34.1505, lng:-70.7195, rating:4.95, reviews:73, parts:true, priceFrom:12000, status:"open",
+   address:"Av. España 980, Rancagua", phone:"+56 9 8123 9999", years:30,
+   tags:["Mecánica general","Mantención","Frenos básicos"],
+   services:[["Diagnóstico general","$12.000"],["Cambio de aceite","$25.000"],["Mantención completa","$55.000"]],
+   partsNote:"Taller histórico de Rancagua, vende repuestos genéricos para mantenciones básicas.",
+   reviews_list:[
+     {name:"Javiera M.", stars:5, date:"hace 2 días", text:"El taller de más confianza que conozco, llevo 10 años yendo."},
+     {name:"Raúl T.", stars:5, date:"hace 6 días", text:"Honestidad ante todo, nunca te cobran algo que no necesitas."}
+   ]},
+  {id:12, name:"Diésel y Diagnóstico VI", initials:"DD", spec:"Diésel", dist:6.2, lat:-34.2014, lng:-70.7156, rating:4.2, reviews:11, parts:true, priceFrom:28000, status:"open",
+   address:"Ruta H-30, Rancagua", phone:"+56 9 7345 6789", years:5,
+   tags:["Camionetas diésel","Scanner avanzado","Inyección"],
+   services:[["Diagnóstico con scanner","$28.000"],["Limpieza inyectores","$50.000"],["Revisión sistema common rail","$45.000"]],
+   partsNote:"Filtros e inyectores para camionetas diésel comunes en la zona agrícola.",
+   reviews_list:[
+     {name:"Sergio L.", stars:4, date:"hace 4 días", text:"Buen diagnóstico con scanner, detectó el problema rápido."}
+   ]}
+];
+
+// Ubicación simulada del usuario: Plaza de los Héroes, Rancagua (centro)
+const USER_LOCATION = {lat:-34.1708, lng:-70.7444};
+
+/* ====================== HELPERS ====================== */
+function starsSVG(filled, size=13){
+  return `<svg class="star" width="${size}" height="${size}" viewBox="0 0 24 24" fill="${filled?'#f0b429':'none'}" stroke="${filled?'#f0b429':'#7a7869'}" stroke-width="1.5"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`;
+}
+function renderStars(rating, size=13){
+  let out = '';
+  for(let i=1;i<=5;i++){
+    out += starsSVG(i <= Math.round(rating), size);
+  }
+  return out;
+}
+function fmtCLP(n){ return '$' + n.toLocaleString('es-CL'); }
+
+/* ====================== DIRECTORY RENDER ====================== */
+let currentFilter = 'todos';
+
+function renderGrid(){
+  const grid = document.getElementById('grid');
+  const filtered = currentFilter === 'todos' ? mechanics : mechanics.filter(m => m.spec === currentFilter);
+  document.getElementById('resultCount').textContent = `${filtered.length} TALLERES EN RANCAGUA`;
+
+  if(filtered.length === 0){
+    grid.innerHTML = `<div class="empty" style="grid-column:1/-1;">
+      <div class="display">Sin resultados</div>
+      <p>No hay talleres en esta categoría todavía. Prueba con otro filtro.</p>
+    </div>`;
+    return;
+  }
+
+  grid.innerHTML = filtered.map(m => `
+    <div class="card" onclick="openProfile(${m.id})">
+      <div class="card-top">
+        <div class="avatar">${m.initials}</div>
+        <div class="card-id">
+          <div class="card-name">${m.name}</div>
+          <div class="card-spec">${m.spec.toUpperCase()}</div>
+          <div class="card-dist">${m.dist} km de tu ubicación</div>
+        </div>
+      </div>
+      <div class="rating-row">
+        <div class="stars">${renderStars(m.rating)}</div>
+        <span class="rating-num">${m.rating.toFixed(1)}</span>
+        <span class="rating-count">(${m.reviews} reseñas)</span>
+      </div>
+      <div class="tag-row">
+        ${m.parts ? `<span class="mini-tag parts">Vende repuestos</span>` : `<span class="mini-tag">Sin repuestos propios</span>`}
+        <span class="mini-tag">${m.years} años en el rubro</span>
+      </div>
+      <div class="card-bottom">
+        <span class="price-tag">Desde <b>${fmtCLP(m.priceFrom)}</b></span>
+        <span class="status-txt"><span class="status-dot ${m.status}"></span>${m.status === 'open' ? 'Abierto ahora' : 'Cerrado'}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+document.getElementById('filterBar').addEventListener('click', (e)=>{
+  const btn = e.target.closest('.chip');
+  if(!btn) return;
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+  btn.classList.add('active');
+  currentFilter = btn.dataset.filter;
+  renderGrid();
+});
+
+/* ====================== PROFILE RENDER ====================== */
+let selectedStars = 0;
+
+function openProfile(id){
+  const m = mechanics.find(x => x.id === id);
+  if(!m) return;
+  const content = document.getElementById('profileContent');
+  selectedStars = 0;
+
+  content.innerHTML = `
+    <div class="profile-head">
+      <div class="p-avatar">${m.initials}</div>
+      <div class="p-info">
+        <div class="p-name display" style="font-family:'Archivo Black'; text-transform:none;">${m.name}</div>
+        <div class="p-spec">${m.spec.toUpperCase()} · ${m.years} AÑOS EN EL RUBRO</div>
+        <div class="p-meta-row">
+          <span class="p-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>${m.address}</span>
+          <span class="p-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>${m.phone}</span>
+          <span class="p-meta-item"><span class="status-dot ${m.status}" style="margin-right:6px;"></span>${m.status==='open'?'Abierto ahora':'Cerrado ahora'}</span>
+        </div>
+      </div>
+      <div class="p-rating-block">
+        <div class="p-rating-num">${m.rating.toFixed(1)}</div>
+        <div class="p-rating-stars">${renderStars(m.rating, 16)}</div>
+        <div class="p-rating-count">${m.reviews} RESEÑAS</div>
+      </div>
+    </div>
+
+    <div class="profile-body">
+      <div style="display:flex; flex-direction:column; gap:18px;">
+
+        <div class="panel">
+          <div class="panel-head"><h3>Servicios y valores referenciales</h3></div>
+          <div class="panel-body">
+            ${m.services.map(s => `<div class="service-row"><span>${s[0]}</span><span class="service-price">${s[1]}</span></div>`).join('')}
+            <div style="font-family:'JetBrains Mono'; font-size:10px; color:var(--steel); margin-top:10px;">
+              * VALORES REFERENCIALES. PUEDEN VARIAR SEGÚN MODELO Y DIAGNÓSTICO.
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head"><h3>Venta de repuestos / materiales</h3></div>
+          <div class="panel-body">
+            <div class="parts-note">${m.partsNote}</div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head"><h3>Reseñas de clientes (${m.reviews})</h3></div>
+          <div class="panel-body">
+            ${m.reviews_list.map(r => `
+              <div class="review">
+                <div class="review-top"><span class="review-name">${r.name}</span><span class="review-date">${r.date}</span></div>
+                <div class="review-stars">${renderStars(r.stars, 13)}</div>
+                <div class="review-text">${r.text}</div>
+              </div>
+            `).join('')}
+
+            <div class="add-review-box">
+              <div style="font-family:'JetBrains Mono'; font-size:11px; text-transform:uppercase; letter-spacing:0.5px; color:var(--steel); margin-bottom:8px;">Deja tu calificación</div>
+              <div class="star-picker" id="starPicker">
+                ${[1,2,3,4,5].map(i => `<span data-val="${i}">${starsSVG(false,20)}</span>`).join('')}
+              </div>
+              <textarea placeholder="Cuenta cómo fue tu experiencia..." id="reviewText"></textarea>
+              <div style="margin-top:10px;">
+                <button class="submit-review-btn" onclick="submitReview('${m.name}')">Publicar reseña</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:18px;">
+        <div class="cta-block">
+          <div style="font-family:'JetBrains Mono'; font-size:11px; letter-spacing:1px; color:var(--caution-yellow); margin-bottom:14px; text-transform:uppercase;">¿Necesitas este servicio?</div>
+          <button class="btn-primary" onclick="alert('Esto abriría WhatsApp / formulario de contacto — pendiente de construir.')">Contactar por WhatsApp</button>
+          <button class="btn-secondary" onclick="viewOnMap(${m.id})">Ver ubicación en mapa</button>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head"><h3>Especialidades</h3></div>
+          <div class="panel-body" style="display:flex; flex-wrap:wrap; gap:8px;">
+            ${m.tags.map(t => `<span class="mini-tag" style="color:var(--carbon); border-color:var(--line-light);">${t}</span>`).join('')}
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // star picker interaction
+  const picker = document.getElementById('starPicker');
+  picker.addEventListener('click', (e)=>{
+    const span = e.target.closest('span[data-val]');
+    if(!span) return;
+    selectedStars = parseInt(span.dataset.val);
+    [...picker.children].forEach((c, idx)=>{
+      c.innerHTML = starsSVG(idx < selectedStars, 20);
+    });
+  });
+
+  document.getElementById('view-directorio').classList.add('hidden');
+  document.getElementById('view-mapa').classList.add('hidden');
+  document.getElementById('view-soy-mecanico').classList.add('hidden');
+  document.getElementById('view-perfil').classList.remove('hidden');
+  document.querySelectorAll('.tab-btn').forEach(t=>t.classList.remove('active'));
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function submitReview(name){
+  const text = document.getElementById('reviewText').value.trim();
+  if(selectedStars === 0){
+    alert('Selecciona una calificación de estrellas antes de publicar.');
+    return;
+  }
+  if(text === ''){
+    alert('Cuéntanos brevemente tu experiencia antes de publicar.');
+    return;
+  }
+  alert(`Reseña enviada (${selectedStars}★) para ${name}.\n\nEn la versión real, esto quedaría guardado y vinculado a un contacto/trabajo verificado para evitar reseñas falsas.`);
+  document.getElementById('reviewText').value = '';
+  selectedStars = 0;
+  document.querySelectorAll('#starPicker span').forEach(c => c.innerHTML = starsSVG(false,20));
+}
+
+function viewOnMap(id){
+  const m = mechanics.find(x => x.id === id);
+  if(!m) return;
+  document.querySelectorAll('.tab-btn').forEach(t=>t.classList.remove('active'));
+  document.querySelector('[data-tab="mapa"]').classList.add('active');
+  document.getElementById('view-perfil').classList.add('hidden');
+  document.getElementById('view-directorio').classList.add('hidden');
+  document.getElementById('view-soy-mecanico').classList.add('hidden');
+  document.getElementById('view-mapa').classList.remove('hidden');
+  renderMap();
+  setTimeout(()=>{
+    leafletMapInstance.setView([m.lat, m.lng], 15);
+    leafletMapInstance._mechMarkers.find((mk, i)=>{
+      const sorted = [...mechanics].sort((a,b)=>a.dist-b.dist);
+      return sorted[i].id === id;
+    });
+    const sorted = [...mechanics].sort((a,b)=>a.dist-b.dist);
+    const idx = sorted.findIndex(x=>x.id===id);
+    if(idx > -1) leafletMapInstance._mechMarkers[idx].openPopup();
+  }, 150);
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+document.getElementById('backFromProfile').addEventListener('click', ()=>{
+  document.getElementById('view-perfil').classList.add('hidden');
+  document.getElementById('view-directorio').classList.remove('hidden');
+  document.querySelectorAll('.tab-btn').forEach(t=>t.classList.remove('active'));
+  document.querySelector('[data-tab="directorio"]').classList.add('active');
+  window.scrollTo({top:0, behavior:'smooth'});
+});
+
+/* ====================== MAP RENDER (Leaflet) ====================== */
+let leafletMapInstance = null;
+let mapInitialized = false;
+
+function renderMap(){
+  const sorted = [...mechanics].sort((a,b)=>a.dist-b.dist);
+
+  // Init map only once, then just invalidate size on tab switch
+  if(!mapInitialized){
+    /*
+      NOTA PARA MIGRAR A GOOGLE MAPS:
+      Reemplazar este bloque L.map(...) + L.tileLayer(...) por:
+      const map = new google.maps.Map(document.getElementById('leafletMap'), {...});
+      y usar new google.maps.Marker({...}) en vez de L.marker(...).
+      Requiere <script src="https://maps.googleapis.com/maps/api/js?key=TU_API_KEY"></script>
+    */
+    leafletMapInstance = L.map('leafletMap', {
+      zoomControl:true,
+      attributionControl:true
+    }).setView([USER_LOCATION.lat, USER_LOCATION.lng], 13);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom:18,
+      attribution:'&copy; OpenStreetMap contributors'
+    }).addTo(leafletMapInstance);
+
+    // "You are here" marker
+    const youIcon = L.divIcon({className:'', html:'<div class="pin-you"></div>', iconSize:[18,18], iconAnchor:[9,9]});
+    L.marker([USER_LOCATION.lat, USER_LOCATION.lng], {icon:youIcon, zIndexOffset:1000})
+      .addTo(leafletMapInstance)
+      .bindPopup('<div class="popup-name">Tú estás aquí</div><div class="popup-spec">Plaza de los Héroes, Rancagua</div>');
+
+    mapInitialized = true;
+  }
+
+  // clear previous mechanic markers
+  if(leafletMapInstance._mechMarkers){
+    leafletMapInstance._mechMarkers.forEach(m => leafletMapInstance.removeLayer(m));
+  }
+  leafletMapInstance._mechMarkers = [];
+
+  sorted.forEach(m => {
+    const icon = L.divIcon({
+      className:'',
+      html:`<div class="pin-mech ${m.status==='closed'?'closed':''}"><span>${m.initials}</span></div>`,
+      iconSize:[30,30],
+      iconAnchor:[15,28]
+    });
+    const marker = L.marker([m.lat, m.lng], {icon}).addTo(leafletMapInstance);
+    marker.bindPopup(`
+      <div class="popup-name">${m.name}</div>
+      <div class="popup-spec">${m.spec.toUpperCase()} · ${m.dist}KM</div>
+      <div class="popup-rating">★ ${m.rating.toFixed(1)} (${m.reviews}) · ${m.status==='open'?'Abierto':'Cerrado'}</div>
+      <span class="popup-btn" onclick="openProfile(${m.id})">Ver ficha →</span>
+    `);
+    leafletMapInstance._mechMarkers.push(marker);
+  });
+
+  // ensure tiles render correctly after being hidden/shown via tabs
+  setTimeout(()=>{ leafletMapInstance.invalidateSize(); }, 80);
+
+  document.getElementById('mapList').innerHTML = sorted.map(m => `
+    <div class="map-list-item" onclick="openProfile(${m.id})">
+      <div class="mli-left">
+        <span class="mli-dist">${m.dist}km</span>
+        <div>
+          <div class="mli-name">${m.name}</div>
+          <div class="mli-spec">${m.spec.toUpperCase()} · ${'★'.repeat(Math.round(m.rating))} ${m.rating.toFixed(1)}</div>
+        </div>
+      </div>
+      <span class="status-txt"><span class="status-dot ${m.status}"></span>${m.status==='open'?'Abierto':'Cerrado'}</span>
+    </div>
+  `).join('');
+}
+
+/* ====================== TABS ====================== */
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const tab = btn.dataset.tab;
+    document.querySelectorAll('.tab-btn').forEach(t=>t.classList.remove('active'));
+    btn.classList.add('active');
+
+    document.getElementById('view-directorio').classList.add('hidden');
+    document.getElementById('view-mapa').classList.add('hidden');
+    document.getElementById('view-perfil').classList.add('hidden');
+    document.getElementById('view-soy-mecanico').classList.add('hidden');
+
+    if(tab === 'directorio'){ document.getElementById('view-directorio').classList.remove('hidden'); }
+    if(tab === 'mapa'){ document.getElementById('view-mapa').classList.remove('hidden'); renderMap(); }
+    if(tab === 'perfil-mecanico'){ document.getElementById('view-soy-mecanico').classList.remove('hidden'); }
+    window.scrollTo({top:0, behavior:'smooth'});
+  });
+});
+
+document.getElementById('locBtn').addEventListener('click', ()=>{
+  alert('En la versión real, esto pediría permiso de geolocalización del navegador/celular para calcular distancias reales.');
+});
+
+/* ====================== INIT ====================== */
+renderGrid();
+</script>
+</body>
+</html>
