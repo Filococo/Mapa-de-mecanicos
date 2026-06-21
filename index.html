@@ -850,121 +850,58 @@ function traduceErrorAuth(msg){
 }
 
 /* ====================== DATA ====================== */
-const mechanics = [
-  {id:1, name:"Fullgear", initials:"FG", spec:"Mecánica General", dist:0.9, lat:-34.1863691, lng:-70.7322428, rating:4.4, reviews:22, parts:true, priceFrom:15000, status:"open",
-   address:"Manuel Rodríguez 455, Rancagua", phone:"+56 9 5389 2438", years:8,
-   tags:["Diagnóstico computarizado","Mantención general","Reparaciones honestas"],
-   services:[["Diagnóstico general","$15.000"],["Cambio de aceite + filtro","$28.000"],["Afinamiento completo","$65.000"],["Revisión pre-compra","$20.000"]],
-   partsNote:"Vende filtros, aceites y repuestos genéricos y originales. Consulta disponibilidad por modelo.",
-   reviews_list:[
-     {name:"Cliente Google", stars:5, date:"reseña verificada", text:"Excelente mecánico. Resolvió todos mis problemas mecánicos rápido y con honestidad."},
-     {name:"Cliente Google", stars:5, date:"reseña verificada", text:"Muy recomendable. Explica con claridad los problemas mecánicos y las soluciones."},
-     {name:"Cliente Google", stars:5, date:"reseña verificada", text:"Excelente servicio, hacen un gran trabajo y a muy buen precio, 100% recomendable."}
-   ]},
-  {id:2, name:"Frenos Recreo", initials:"FR", spec:"Frenos", dist:2.4, lat:-34.1442192, lng:-70.7352425, rating:4.8, reviews:102, parts:true, priceFrom:18000, status:"open",
-   address:"Recreo 1760, Rancagua", phone:"+56 9 7476 0891", years:15,
-   tags:["Pastillas y discos","Sistema de frenos completo","Revisión rápida"],
-   services:[["Cambio pastillas delanteras","$32.000"],["Cambio discos + pastillas","$78.000"],["Purgado de frenos","$18.000"],["Revisión sistema de frenos","$25.000"]],
-   partsNote:"Stock de pastillas y discos para los modelos más comunes en Chile.",
-   reviews_list:[
-     {name:"Cliente Google", stars:5, date:"reseña verificada", text:"Llegué recomendado tras una mala experiencia en otro taller. Revisaron y arreglaron todo en menos de 20 minutos, dejando los frenos funcionando perfecto."},
-     {name:"Cliente Google", stars:5, date:"reseña verificada", text:"Don Juan y su equipo son muy buenos y recomendables, excelente trabajo."},
-     {name:"Cliente Google", stars:5, date:"reseña verificada", text:"Atención destacada, personal amable y profesional, responden todas las dudas."}
-   ]},
-  {id:3, name:"Taller de Alineación y Balanceo", initials:"AB", spec:"Suspensión", dist:1.9, lat:-34.1668252, lng:-70.7107364, rating:4.6, reviews:153, parts:true, priceFrom:18000, status:"open",
-   address:"Av. Uruguay 126, Rancagua", phone:"+56 9 9694 0930", years:18,
-   tags:["Alineación y balanceo","Amortiguadores","Cambio de aceite"],
-   services:[["Alineación","$22.000"],["Balanceo 4 ruedas","$18.000"],["Cambio de aceite y filtro","$25.000"],["Diagnóstico general","$15.000"]],
-   partsNote:"Ofrecen cambio de aceite, filtros y diagnóstico además de alineación y balanceo, con precios claros y transparentes.",
-   reviews_list:[
-     {name:"Cliente Google", stars:5, date:"reseña verificada", text:"Excelente experiencia, 100% recomendado. Alineación y balanceo con instalaciones de primer nivel y mecánicos profesionales."},
-     {name:"Cliente Google", stars:5, date:"reseña verificada", text:"Excelente servicio. Precios justos y rápido."},
-     {name:"Cliente Google", stars:5, date:"reseña verificada", text:"Me atendió el mismo dueño, se tomó el tiempo de explicar mis dudas y la alineación quedó perfecta."}
-   ]},
-  {id:4, name:"Electricidad Automotriz Montoya", initials:"EM", spec:"Eléctrico", dist:1.5, lat:-34.1677685, lng:-70.7483195, rating:4.0, reviews:132, parts:false, priceFrom:12000, status:"open",
-   address:"Jorge Rivera 976, Rancagua", phone:null, years:10,
-   tags:["Diagnóstico eléctrico","Luces y sensores","Reparación de cableado"],
-   services:[["Diagnóstico eléctrico","$12.000"],["Revisión de cableado","consultar"],["Cambio de luces","consultar"],["Reparación de sistema eléctrico","consultar"]],
-   partsNote:"No vende repuestos propios, pero orienta sobre dónde conseguirlos. Conviene confirmar precios antes del trabajo.",
-   reviews_list:[
-     {name:"Cliente Google", stars:4, date:"reseña verificada", text:"Buen servicio en general para temas eléctricos del vehículo."},
-     {name:"Cliente Google", stars:5, date:"reseña verificada", text:"Muy buen servicio, resolvieron el problema eléctrico de mi auto."}
-   ]},
-  {id:5, name:"Climatización Rancagua Ltda.", initials:"CR", spec:"Climatización", dist:3.8, lat:-34.141438, lng:-70.7236102, rating:4.8, reviews:217, parts:true, priceFrom:25000, status:"open",
-   address:"Av. C. Valle del Cachapoal 02035, Rancagua", phone:"+56 9 6734 5720", years:12,
-   tags:["Recarga de gas","Mantención de A/C","Técnicos experimentados"],
-   services:[["Recarga de gas A/C","$35.000"],["Mantención de equipo A/C","consultar"],["Diagnóstico de fugas","$25.000"],["Reemplazo de unidad A/C","consultar"]],
-   partsNote:"Empresa especializada en climatización automotriz, residencial e industrial, con técnicos de amplia experiencia.",
-   reviews_list:[
-     {name:"Cliente Google", stars:5, date:"reseña verificada", text:"Rápido, eficiente y prolijo. El técnico fue muy profesional, explicando paso a paso lo que haría."},
-     {name:"Cliente Google", stars:5, date:"reseña verificada", text:"Conformes con el trabajo realizado. Mucha diferencia respecto a instaladores anteriores, trabajo de mejor calidad y más profesional."}
-   ]},
-  {id:6, name:"Inyección Diésel y Turbos Arguinzona", initials:"DT", spec:"Diésel", dist:5.4, lat:-34.1877401, lng:-70.6475598, rating:4.6, reviews:40, parts:true, priceFrom:30000, status:"open",
-   address:"Las Higueras 116, Machalí", phone:"+56 9 8219 0623", years:14,
-   tags:["Inyección diésel","Turbos","Camionetas y maquinaria"],
-   services:[["Diagnóstico diésel","$30.000"],["Revisión de inyectores","consultar"],["Revisión de turbo","consultar"],["Mantención sistema diésel","consultar"]],
-   partsNote:"Taller familiar especializado en inyección diésel y turbos, atendido por el dueño y su hijo.",
-   reviews_list:[
-     {name:"Cliente Google", stars:5, date:"reseña verificada", text:"Excelente y muy buena atención."},
-     {name:"Cliente Google", stars:5, date:"reseña verificada", text:"Gran taller, muy recomendable. Atendido por el dueño y su hijo."},
-     {name:"Cliente Google", stars:4, date:"reseña verificada", text:"Solucionan el problema, sea cual sea. El costo es proporcional al problema del vehículo, por eso vale la pena."}
-   ]},
-  {id:7, name:"Autotrust Rancagua", initials:"AT", spec:"Mecánica General", dist:2.6, lat:-34.1916848, lng:-70.7481063, rating:4.4, reviews:85, parts:true, priceFrom:14000, status:"closed",
-   address:"Barrio Industrial, bodega 25, km 90, Rancagua", phone:"+56 72 242 4567", years:11,
-   tags:["Mecánica general","Diagnóstico","Mantención"],
-   services:[["Diagnóstico general","$14.000"],["Mantención preventiva","consultar"],["Revisión de transmisión","consultar"],["Revisión completa","$30.000"]],
-   partsNote:"Taller establecido en barrio industrial; no atienden vehículos muy antiguos, conviene confirmar antes de llevar el auto.",
-   reviews_list:[
-     {name:"Cliente Google", stars:5, date:"reseña verificada", text:"Excelente servicio, puntuales y amables. El dueño siempre está atento y es muy amable."},
-     {name:"Cliente Google", stars:4, date:"reseña verificada", text:"Trato cordial con los clientes."}
-   ]},
-  {id:8, name:"Frenos Illanes", initials:"FI", spec:"Frenos", dist:2.0, lat:-34.1618239, lng:-70.73309499999999, rating:4.7, reviews:108, parts:true, priceFrom:16000, status:"open",
-   address:"Av. Illanes 380, Rancagua", phone:"+56 72 222 1712", years:20,
-   tags:["Pastillas y discos","Rectificado","Atención el mismo día"],
-   services:[["Cambio pastillas","$28.000"],["Rectificado de discos","consultar"],["Revisión sistema de frenos","$16.000"]],
-   partsNote:"Taller especializado en frenos con clientes habituales y buena reputación en la zona.",
-   reviews_list:[
-     {name:"Cliente Google", stars:5, date:"reseña verificada", text:"Excelente servicio. Personas muy profesionales y responsables, 100% recomendable."},
-     {name:"Cliente Google", stars:5, date:"reseña verificada", text:"Fui por lo que necesitaba: pastillas nuevas y discos rectificados. El trabajo fue muy prolijo y tuvieron listo el auto la misma tarde."}
-   ]},
-  {id:9, name:"Frenos y Embragues Ávila", initials:"FA", spec:"Frenos", dist:1.3, lat:-34.158570399999995, lng:-70.746956, rating:4.9, reviews:92, parts:true, priceFrom:20000, status:"open",
-   address:"Sta. María 0509, Rancagua", phone:"+56 72 246 8020", years:22,
-   tags:["Frenos","Embragues","Diagnóstico honesto"],
-   services:[["Revisión de embrague","consultar"],["Cambio de pastillas","$30.000"],["Diagnóstico de frenos","$20.000"],["Mantención sistema de frenos","consultar"]],
-   partsNote:"Especialistas en frenos y embragues, reconocidos por mostrar las piezas retiradas y explicar el diagnóstico con transparencia.",
-   reviews_list:[
-     {name:"Cliente Google", stars:5, date:"reseña verificada", text:"Desde el primer momento dieron un diagnóstico certero y honesto, algo que no había vivido antes en otros talleres."},
-     {name:"Cliente Google", stars:5, date:"reseña verificada", text:"Servicio recomendado 1000%. Diagnóstico preciso y muy profesional, explican todo con claridad."},
-     {name:"Cliente Google", stars:5, date:"reseña verificada", text:"Explican todo lo que hacen y puedes ver el trabajo en proceso. El dueño es muy profesional y asesora sobre mantención."}
-   ]},
-  {id:10, name:"SCAuto Servicio Técnico Automotriz", initials:"SC", spec:"Eléctrico", dist:3.1, lat:-34.185686499999996, lng:-70.7355761, rating:5.0, reviews:27, parts:false, priceFrom:15000, status:"open",
-   address:"Lord Cochrane 262, Rancagua", phone:"+56 9 3726 8328", years:9,
-   tags:["Diagnóstico electrónico","Sistemas eléctricos","Scanner avanzado"],
-   services:[["Diagnóstico con scanner","$15.000"],["Revisión de sistema eléctrico","consultar"],["Reparación de cortocircuitos","consultar"]],
-   partsNote:"Servicio técnico especializado en diagnóstico electrónico y reparación de sistemas eléctricos complejos.",
-   reviews_list:[
-     {name:"Cliente Google", stars:5, date:"reseña verificada", text:"Diagnóstico rápido y certero. Solucionaron el problema de forma eficiente y oportuna, revivieron un auto con corto circuito."},
-     {name:"Cliente Google", stars:5, date:"reseña verificada", text:"Excelente servicio. Llevé el vehículo por una luz de batería que otro taller había diagnosticado mal. Todo muy transparente y eficiente."}
-   ]},
-  {id:11, name:"Full Mechanics Pro", initials:"FM", spec:"Mecánica General", dist:6.0, lat:-34.1682434, lng:-70.66562689999999, rating:5.0, reviews:11, parts:true, priceFrom:14000, status:"open",
-   address:"Los Nogales 22, Machalí", phone:"+56 9 5709 8469", years:6,
-   tags:["Servicio a domicilio","Disponibilidad extendida","Mecánica general"],
-   services:[["Diagnóstico general","$14.000"],["Mantención completa","consultar"],["Servicio a domicilio","consultar"]],
-   partsNote:"Ofrecen atención puntual y servicio a domicilio en Machalí, Rancagua y alrededores.",
-   reviews_list:[
-     {name:"Cliente Google", stars:5, date:"reseña verificada", text:"Excelente servicio. Amables y dispuestos a responder todas mis dudas. Inspira confianza y seguridad."},
-     {name:"Cliente Google", stars:5, date:"reseña verificada", text:"Excelente servicio, entregaron el vehículo dentro del plazo estimado. Puntual y con atención a domicilio."}
-   ]},
-  {id:12, name:"OLISA Servicio Automotriz", initials:"OL", spec:"Suspensión", dist:2.2, lat:-34.1652067, lng:-70.7519026, rating:4.4, reviews:52, parts:true, priceFrom:20000, status:"open",
-   address:"Av. Federico Koke 246, Rancagua", phone:"+56 9 5646 2770", years:10,
-   tags:["Suspensión","Dirección","Diagnóstico avanzado"],
-   services:[["Revisión de tren delantero","consultar"],["Cambio de rótulas","consultar"],["Diagnóstico general","$20.000"],["Instalación de repuestos","consultar"]],
-   partsNote:"Cuentan con equipo para diagnóstico avanzado y consiguen repuestos específicos según lo que necesite el vehículo.",
-   reviews_list:[
-     {name:"Cliente Google", stars:5, date:"reseña verificada", text:"Fui a muchos talleres, ninguno resolvió mi problema. Llegué a OLISA por recomendación y lo resolvieron de forma eficiente."},
-     {name:"Cliente Google", stars:5, date:"reseña verificada", text:"El mejor servicio en Rancagua. Rápido, honesto, confiable. El trabajo de dirección quedó impecable, cambiaron rótulas y barra estabilizadora."}
-   ]}
-];
+let mechanics = []; // Se carga de forma asíncrona desde Supabase (tabla mecanicos + servicios)
+
+async function loadMechanicsFromSupabase(){
+  const { data: mecanicosData, error: mecanicosError } = await sb
+    .from('mecanicos')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if(mecanicosError){
+    console.error('Error cargando mecánicos:', mecanicosError.message);
+    mechanics = [];
+    return;
+  }
+
+  const { data: serviciosData } = await sb.from('servicios').select('*');
+  const { data: resenasData } = await sb.from('resenas').select('*');
+
+  mechanics = (mecanicosData || []).map(m => {
+    const misServicios = (serviciosData || []).filter(s => s.mecanico_id === m.id);
+    const misResenas = (resenasData || []).filter(r => r.mecanico_id === m.id);
+    const avgRating = misResenas.length
+      ? misResenas.reduce((sum, r) => sum + r.stars, 0) / misResenas.length
+      : 0;
+
+    return {
+      id: m.id,
+      name: m.name,
+      initials: (m.name || '').split(' ').filter(Boolean).slice(0,2).map(w => w[0]).join('').toUpperCase() || '?',
+      spec: m.spec,
+      dist: (m.lat && m.lng) ? haversineKm(USER_LOCATION.lat, USER_LOCATION.lng, m.lat, m.lng) : null,
+      lat: m.lat,
+      lng: m.lng,
+      rating: avgRating,
+      reviews: misResenas.length,
+      parts: !!m.sells_parts,
+      priceFrom: misServicios.length ? misServicios[0].price : null,
+      status: m.status || 'open',
+      address: m.address,
+      phone: m.phone,
+      years: m.years || 0,
+      tags: [],
+      services: misServicios.map(s => [s.name, s.price]),
+      partsNote: m.parts_note || 'Este taller no especificó información sobre venta de repuestos.',
+      reviews_list: misResenas.map(r => ({ name: r.cliente_nombre, stars: r.stars, date: new Date(r.created_at).toLocaleDateString('es-CL'), text: r.texto })),
+      trial_ends_at: m.trial_ends_at,
+      subscription_active: m.subscription_active
+    };
+  });
+
+  if(USER_LOCATION) recalcDistances();
+}
+
 
 // Ubicación del usuario: por defecto Plaza de los Héroes, Rancagua (centro), hasta que el GPS responda
 let USER_LOCATION = {lat:-34.1708, lng:-70.7444};
@@ -983,6 +920,10 @@ function haversineKm(lat1, lng1, lat2, lng2){
 // Recalcula m.dist para todos los mecánicos según USER_LOCATION actual
 function recalcDistances(){
   mechanics.forEach(m => {
+    if(m.lat == null || m.lng == null){
+      m.dist = null;
+      return;
+    }
     m.dist = Math.round(haversineKm(USER_LOCATION.lat, USER_LOCATION.lng, m.lat, m.lng) * 10) / 10;
   });
 }
@@ -999,7 +940,7 @@ function renderStars(rating, size=13){
   }
   return out;
 }
-function fmtCLP(n){ return '$' + n.toLocaleString('es-CL'); }
+function fmtCLP(n){ return typeof n === 'number' ? '$' + n.toLocaleString('es-CL') : n; }
 
 /* ====================== DIRECTORY RENDER ====================== */
 let currentFilter = 'todos';
@@ -1008,8 +949,16 @@ function renderGrid(){
   const grid = document.getElementById('grid');
   const filtered = (currentFilter === 'todos' ? mechanics : mechanics.filter(m => m.spec === currentFilter))
     .slice()
-    .sort((a,b) => a.dist - b.dist);
-  document.getElementById('resultCount').textContent = `${filtered.length} TALLERES EN RANCAGUA`;
+    .sort((a,b) => (a.dist ?? Infinity) - (b.dist ?? Infinity));
+  document.getElementById('resultCount').textContent = `${filtered.length} TALLERES REGISTRADOS`;
+
+  if(mechanics.length === 0){
+    grid.innerHTML = `<div class="empty" style="grid-column:1/-1;">
+      <div class="display">Aún no hay talleres registrados</div>
+      <p>Sé el primero en sumar tu taller en la pestaña "Soy mecánico".</p>
+    </div>`;
+    return;
+  }
 
   if(filtered.length === 0){
     grid.innerHTML = `<div class="empty" style="grid-column:1/-1;">
@@ -1020,18 +969,18 @@ function renderGrid(){
   }
 
   grid.innerHTML = filtered.map(m => `
-    <div class="card" onclick="openProfile(${m.id})">
+    <div class="card" onclick="openProfile('${m.id}')">
       <div class="card-top">
         <div class="avatar">${m.initials}</div>
         <div class="card-id">
           <div class="card-name">${m.name}</div>
           <div class="card-spec">${m.spec.toUpperCase()}</div>
-          <div class="card-dist">${m.dist} km de tu ubicación</div>
+          <div class="card-dist">${m.dist != null ? m.dist + ' km de tu ubicación' : 'Distancia no disponible'}</div>
         </div>
       </div>
       <div class="rating-row">
         <div class="stars">${renderStars(m.rating)}</div>
-        <span class="rating-num">${m.rating.toFixed(1)}</span>
+        <span class="rating-num">${m.rating > 0 ? m.rating.toFixed(1) : 'Sin calificar'}</span>
         <span class="rating-count">(${m.reviews} reseñas)</span>
       </div>
       <div class="tag-row">
@@ -1039,7 +988,7 @@ function renderGrid(){
         <span class="mini-tag">${m.years} años en el rubro</span>
       </div>
       <div class="card-bottom">
-        <span class="price-tag">Desde <b>${fmtCLP(m.priceFrom)}</b></span>
+        <span class="price-tag">${m.priceFrom ? `Desde <b>${fmtCLP(m.priceFrom)}</b>` : 'Consultar valores'}</span>
         <span class="status-txt"><span class="status-dot ${m.status}"></span>${m.status === 'open' ? 'Abierto ahora' : 'Cerrado'}</span>
       </div>
     </div>
@@ -1077,7 +1026,7 @@ function openProfile(id){
         </div>
       </div>
       <div class="p-rating-block">
-        <div class="p-rating-num">${m.rating.toFixed(1)}</div>
+        <div class="p-rating-num">${m.rating > 0 ? m.rating.toFixed(1) : '—'}</div>
         <div class="p-rating-stars">${renderStars(m.rating, 16)}</div>
         <div class="p-rating-count">${m.reviews} RESEÑAS</div>
       </div>
@@ -1089,7 +1038,7 @@ function openProfile(id){
         <div class="panel">
           <div class="panel-head"><h3>Servicios y valores referenciales</h3></div>
           <div class="panel-body">
-            ${m.services.map(s => `<div class="service-row"><span>${s[0]}</span><span class="service-price">${s[1]}</span></div>`).join('')}
+            ${m.services.length ? m.services.map(s => `<div class="service-row"><span>${s[0]}</span><span class="service-price">${s[1]}</span></div>`).join('') : '<div style="font-size:13px; color:var(--steel);">Este taller aún no agregó servicios.</div>'}
             <div style="font-family:'JetBrains Mono'; font-size:10px; color:var(--steel); margin-top:10px;">
               * VALORES REFERENCIALES. PUEDEN VARIAR SEGÚN MODELO Y DIAGNÓSTICO.
             </div>
@@ -1106,13 +1055,13 @@ function openProfile(id){
         <div class="panel">
           <div class="panel-head"><h3>Reseñas de clientes (${m.reviews})</h3></div>
           <div class="panel-body">
-            ${m.reviews_list.map(r => `
+            ${m.reviews_list.length ? m.reviews_list.map(r => `
               <div class="review">
                 <div class="review-top"><span class="review-name">${r.name}</span><span class="review-date">${r.date}</span></div>
                 <div class="review-stars">${renderStars(r.stars, 13)}</div>
                 <div class="review-text">${r.text}</div>
               </div>
-            `).join('')}
+            `).join('') : '<div style="font-size:13px; color:var(--steel); margin-bottom:12px;">Aún no hay reseñas. ¡Sé el primero en calificar!</div>'}
 
             <div class="add-review-box">
               <div style="font-family:'JetBrains Mono'; font-size:11px; text-transform:uppercase; letter-spacing:0.5px; color:var(--steel); margin-bottom:8px;">Deja tu calificación</div>
@@ -1121,7 +1070,7 @@ function openProfile(id){
               </div>
               <textarea placeholder="Cuenta cómo fue tu experiencia..." id="reviewText"></textarea>
               <div style="margin-top:10px;">
-                <button class="submit-review-btn" onclick="submitReview('${m.name}')">Publicar reseña</button>
+                <button class="submit-review-btn" onclick="submitReview('${m.name.replace(/'/g, "\\'")}', '${m.id}')">Publicar reseña</button>
               </div>
             </div>
           </div>
@@ -1132,14 +1081,14 @@ function openProfile(id){
       <div style="display:flex; flex-direction:column; gap:18px;">
         <div class="cta-block">
           <div style="font-family:'JetBrains Mono'; font-size:11px; letter-spacing:1px; color:var(--caution-yellow); margin-bottom:14px; text-transform:uppercase;">¿Necesitas este servicio?</div>
-          <button class="btn-primary" onclick="alert('Esto abriría WhatsApp / formulario de contacto — pendiente de construir.')">Contactar por WhatsApp</button>
-          <button class="btn-secondary" onclick="viewOnMap(${m.id})">Ver ubicación en mapa</button>
+          <button class="btn-primary" onclick="contactWhatsApp('${m.phone || ''}', '${m.name.replace(/'/g, "\\'")}')">Contactar por WhatsApp</button>
+          <button class="btn-secondary" onclick="viewOnMap('${m.id}')">Ver ubicación en mapa</button>
         </div>
 
         <div class="panel">
           <div class="panel-head"><h3>Especialidades</h3></div>
           <div class="panel-body" style="display:flex; flex-wrap:wrap; gap:8px;">
-            ${m.tags.map(t => `<span class="mini-tag" style="color:var(--carbon); border-color:var(--line-light);">${t}</span>`).join('')}
+            ${m.tags.length ? m.tags.map(t => `<span class="mini-tag" style="color:var(--carbon); border-color:var(--line-light);">${t}</span>`).join('') : `<span style="font-size:13px; color:var(--steel);">${m.spec}</span>`}
           </div>
         </div>
       </div>
@@ -1165,7 +1114,7 @@ function openProfile(id){
   window.scrollTo({top:0, behavior:'smooth'});
 }
 
-function submitReview(name){
+async function submitReview(name, mecanicoId){
   if(!currentSession){
     document.getElementById('authOverlay').classList.remove('hidden');
     authMode = 'login';
@@ -1186,15 +1135,48 @@ function submitReview(name){
     alert('Cuéntanos brevemente tu experiencia antes de publicar.');
     return;
   }
-  alert(`Reseña enviada (${selectedStars}★) para ${name}, asociada a tu cuenta (${currentSession.user.email}).\n\nEste taller de ejemplo no está conectado aún a la base de datos real — los mecánicos registrados desde "Soy mecánico" sí guardan reseñas de forma permanente.`);
+
+  const clienteNombre = currentSession.user.email.split('@')[0];
+
+  const { error } = await sb.from('resenas').upsert({
+    mecanico_id: mecanicoId,
+    cliente_id: currentSession.user.id,
+    cliente_nombre: clienteNombre,
+    stars: selectedStars,
+    texto: text
+  }, { onConflict: 'mecanico_id,cliente_id' });
+
+  if(error){
+    alert('No pudimos guardar tu reseña: ' + error.message);
+    return;
+  }
+
+  alert(`¡Gracias! Tu reseña (${selectedStars}★) para ${name} quedó guardada.`);
   document.getElementById('reviewText').value = '';
   selectedStars = 0;
   document.querySelectorAll('#starPicker span').forEach(c => c.innerHTML = starsSVG(false,20));
+
+  await loadMechanicsFromSupabase();
+  openProfile(mecanicoId);
+}
+
+function contactWhatsApp(phone, name){
+  if(!phone){
+    alert('Este taller no registró un teléfono de contacto todavía.');
+    return;
+  }
+  const cleanPhone = phone.replace(/[^0-9]/g, '');
+  const message = encodeURIComponent(`Hola, vi tu taller "${name}" en Taller Cercano y quisiera consultar por un servicio.`);
+  window.open(`https://wa.me/${cleanPhone}?text=${message}`, '_blank');
 }
 
 function viewOnMap(id){
   const m = mechanics.find(x => x.id === id);
   if(!m) return;
+  if(m.lat == null || m.lng == null){
+    alert('Este taller no tiene una ubicación registrada en el mapa todavía.');
+    return;
+  }
   document.querySelectorAll('.tab-btn').forEach(t=>t.classList.remove('active'));
   document.querySelector('[data-tab="mapa"]').classList.add('active');
   document.getElementById('view-perfil').classList.add('hidden');
@@ -1204,13 +1186,9 @@ function viewOnMap(id){
   renderMap();
   setTimeout(()=>{
     leafletMapInstance.setView([m.lat, m.lng], 15);
-    leafletMapInstance._mechMarkers.find((mk, i)=>{
-      const sorted = [...mechanics].sort((a,b)=>a.dist-b.dist);
-      return sorted[i].id === id;
-    });
-    const sorted = [...mechanics].sort((a,b)=>a.dist-b.dist);
-    const idx = sorted.findIndex(x=>x.id===id);
-    if(idx > -1) leafletMapInstance._mechMarkers[idx].openPopup();
+    const withCoords = mechanics.filter(x => x.lat != null && x.lng != null).sort((a,b)=>(a.dist??Infinity)-(b.dist??Infinity));
+    const idx = withCoords.findIndex(x=>x.id===id);
+    if(idx > -1 && leafletMapInstance._mechMarkers[idx]) leafletMapInstance._mechMarkers[idx].openPopup();
   }, 150);
   window.scrollTo({top:0, behavior:'smooth'});
 }
@@ -1228,7 +1206,9 @@ let leafletMapInstance = null;
 let mapInitialized = false;
 
 function renderMap(){
-  const sorted = [...mechanics].sort((a,b)=>a.dist-b.dist);
+  // Solo los mecánicos con coordenadas pueden mostrarse como pin en el mapa
+  const withCoords = mechanics.filter(m => m.lat != null && m.lng != null);
+  const sorted = withCoords.slice().sort((a,b)=>(a.dist??Infinity)-(b.dist??Infinity));
 
   // Init map only once, then just invalidate size on tab switch
   if(!mapInitialized){
@@ -1253,7 +1233,7 @@ function renderMap(){
     const youIcon = L.divIcon({className:'', html:'<div class="pin-you"></div>', iconSize:[18,18], iconAnchor:[9,9]});
     leafletMapInstance._youMarker = L.marker([USER_LOCATION.lat, USER_LOCATION.lng], {icon:youIcon, zIndexOffset:1000})
       .addTo(leafletMapInstance)
-      .bindPopup('<div class="popup-name">Tú estás aquí</div><div class="popup-spec" id="youPopupLabel">Plaza de los Héroes, Rancagua</div>');
+      .bindPopup('<div class="popup-name">Tú estás aquí</div><div class="popup-spec" id="youPopupLabel">Ubicación aproximada</div>');
 
     mapInitialized = true;
   }
@@ -1274,9 +1254,9 @@ function renderMap(){
     const marker = L.marker([m.lat, m.lng], {icon}).addTo(leafletMapInstance);
     marker.bindPopup(`
       <div class="popup-name">${m.name}</div>
-      <div class="popup-spec">${m.spec.toUpperCase()} · ${m.dist}KM</div>
-      <div class="popup-rating">★ ${m.rating.toFixed(1)} (${m.reviews}) · ${m.status==='open'?'Abierto':'Cerrado'}</div>
-      <span class="popup-btn" onclick="openProfile(${m.id})">Ver ficha →</span>
+      <div class="popup-spec">${m.spec.toUpperCase()} · ${m.dist != null ? m.dist + 'KM' : ''}</div>
+      <div class="popup-rating">★ ${m.rating > 0 ? m.rating.toFixed(1) : 'Sin calificar'} (${m.reviews}) · ${m.status==='open'?'Abierto':'Cerrado'}</div>
+      <span class="popup-btn" onclick="openProfile('${m.id}')">Ver ficha →</span>
     `);
     leafletMapInstance._mechMarkers.push(marker);
   });
@@ -1284,18 +1264,25 @@ function renderMap(){
   // ensure tiles render correctly after being hidden/shown via tabs
   setTimeout(()=>{ leafletMapInstance.invalidateSize(); }, 80);
 
-  document.getElementById('mapList').innerHTML = sorted.map(m => `
-    <div class="map-list-item" onclick="openProfile(${m.id})">
-      <div class="mli-left">
-        <span class="mli-dist">${m.dist}km</span>
-        <div>
-          <div class="mli-name">${m.name}</div>
-          <div class="mli-spec">${m.spec.toUpperCase()} · ${'★'.repeat(Math.round(m.rating))} ${m.rating.toFixed(1)}</div>
+  const mapList = document.getElementById('mapList');
+  if(mechanics.length === 0){
+    mapList.innerHTML = `<div class="empty"><div class="display">Aún no hay talleres registrados</div><p>Sé el primero en sumar tu taller en la pestaña "Soy mecánico".</p></div>`;
+  } else if(sorted.length === 0){
+    mapList.innerHTML = `<div class="empty"><div class="display">Sin ubicaciones disponibles</div><p>Los talleres registrados todavía no agregaron su ubicación GPS.</p></div>`;
+  } else {
+    mapList.innerHTML = sorted.map(m => `
+      <div class="map-list-item" onclick="openProfile('${m.id}')">
+        <div class="mli-left">
+          <span class="mli-dist">${m.dist != null ? m.dist + 'km' : '—'}</span>
+          <div>
+            <div class="mli-name">${m.name}</div>
+            <div class="mli-spec">${m.spec.toUpperCase()} · ${m.rating > 0 ? '★'.repeat(Math.round(m.rating)) + ' ' + m.rating.toFixed(1) : 'Sin calificar'}</div>
+          </div>
         </div>
+        <span class="status-txt"><span class="status-dot ${m.status}"></span>${m.status==='open'?'Abierto':'Cerrado'}</span>
       </div>
-      <span class="status-txt"><span class="status-dot ${m.status}"></span>${m.status==='open'?'Abierto':'Cerrado'}</span>
-    </div>
-  `).join('');
+    `).join('');
+  }
 }
 
 /* ====================== TABS ====================== */
@@ -1310,8 +1297,14 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     document.getElementById('view-perfil').classList.add('hidden');
     document.getElementById('view-soy-mecanico').classList.add('hidden');
 
-    if(tab === 'directorio'){ document.getElementById('view-directorio').classList.remove('hidden'); }
-    if(tab === 'mapa'){ document.getElementById('view-mapa').classList.remove('hidden'); renderMap(); }
+    if(tab === 'directorio'){
+      document.getElementById('view-directorio').classList.remove('hidden');
+      loadMechanicsFromSupabase().then(renderGrid);
+    }
+    if(tab === 'mapa'){
+      document.getElementById('view-mapa').classList.remove('hidden');
+      loadMechanicsFromSupabase().then(renderMap);
+    }
     if(tab === 'perfil-mecanico'){
       document.getElementById('view-soy-mecanico').classList.remove('hidden');
       if(!currentSession){
@@ -1582,7 +1575,10 @@ async function submitMecanicoForm(){
 addServiceRow();
 
 /* ====================== INIT ====================== */
-renderGrid();
+(async () => {
+  await loadMechanicsFromSupabase();
+  renderGrid();
+})();
 refreshSession();
 
 /* ====================== PWA: Service Worker + Install Prompt ====================== */
