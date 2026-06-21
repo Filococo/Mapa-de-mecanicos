@@ -8,6 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 
 <!-- PWA -->
 <link rel="manifest" href="manifest.json">
@@ -484,6 +485,10 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
       <span>Instalar app</span>
     </button>
+    <button class="top-loc" id="accountBtn" style="cursor:pointer;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span id="accountLabel">Iniciar sesión</span>
+    </button>
   </div>
   <nav class="tabs">
     <button class="tab-btn active" data-tab="directorio">Directorio</button>
@@ -548,7 +553,7 @@
       <div class="empty">
         <div class="display">Súmate como mecánico</div>
         <p style="max-width:420px; margin:0 auto; line-height:1.8;">CREA TU FICHA, RECIBE CALIFICACIONES REALES Y APARECE EN BÚSQUEDAS CERCA DE TI.<br><br>SUSCRIPCIÓN MENSUAL · SIN PERMANENCIA · PRIMER MES GRATIS</p>
-        <button class="cta-block" style="display:inline-block; margin-top:24px; cursor:pointer; border:none;" onclick="document.getElementById('soyMecanicoIntro').classList.add('hidden'); document.getElementById('soyMecanicoForm').classList.remove('hidden'); window.scrollTo({top:0,behavior:'smooth'});">
+        <button class="cta-block" style="display:inline-block; margin-top:24px; cursor:pointer; border:none;" onclick="startMecanicoFlow()">
           <span class="btn-primary" style="display:block; padding:14px 32px;">Crear mi ficha →</span>
         </button>
       </div>
@@ -668,11 +673,182 @@
 
 </main>
 
+<!-- ===================== MODAL DE AUTENTICACIÓN ===================== -->
+<div id="authOverlay" class="hidden" style="position:fixed; inset:0; background:rgba(26,26,24,0.75); z-index:2000; display:flex; align-items:center; justify-content:center; padding:20px;">
+  <div style="background:#fff; max-width:380px; width:100%; max-height:90vh; overflow-y:auto;">
+    <div style="background:var(--carbon); color:var(--paper); padding:18px 20px; display:flex; justify-content:space-between; align-items:center;">
+      <span id="authTitle" style="font-family:'Archivo Black'; font-size:15px; text-transform:uppercase;">Iniciar sesión</span>
+      <button id="authClose" style="background:none; border:none; color:var(--paper); font-size:22px; cursor:pointer; line-height:1;">✕</button>
+    </div>
+    <div style="padding:22px;">
+
+      <div id="authRoleTabs" style="display:flex; gap:0; margin-bottom:18px; border-bottom:1px solid var(--line-light);">
+        <button type="button" class="auth-role-tab active" data-role="cliente" style="flex:1; padding:10px; background:none; border:none; font-family:'JetBrains Mono'; font-size:11px; text-transform:uppercase; cursor:pointer; border-bottom:2px solid var(--safety-orange); color:var(--carbon); font-weight:700;">Soy cliente</button>
+        <button type="button" class="auth-role-tab" data-role="mecanico" style="flex:1; padding:10px; background:none; border:none; font-family:'JetBrains Mono'; font-size:11px; text-transform:uppercase; cursor:pointer; border-bottom:2px solid transparent; color:var(--steel);">Soy mecánico</button>
+      </div>
+
+      <div id="authModeToggle" style="font-family:'JetBrains Mono'; font-size:11px; color:var(--steel); margin-bottom:14px; text-align:center;">
+        <span id="authModeText">¿No tienes cuenta?</span>
+        <a href="#" id="authModeSwitch" style="color:var(--safety-orange); text-decoration:underline;">Regístrate aquí</a>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <label class="form-label">Correo electrónico
+          <input type="email" class="form-input" id="auth-email" placeholder="tucorreo@ejemplo.com">
+        </label>
+        <label class="form-label">Contraseña
+          <input type="password" class="form-input" id="auth-password" placeholder="Mínimo 6 caracteres">
+        </label>
+        <div id="authError" style="font-family:'JetBrains Mono'; font-size:11px; color:#a45;"></div>
+        <button type="button" class="btn-primary" id="authSubmit" style="padding:13px; background:var(--safety-orange); color:#fff; border:none; font-family:'JetBrains Mono'; font-size:12px; letter-spacing:1px; text-transform:uppercase; cursor:pointer; font-weight:700;">Iniciar sesión</button>
+        <div id="authTrialNote" class="hidden" style="font-family:'JetBrains Mono'; font-size:10.5px; color:var(--ok-green); text-align:center;">
+          ✓ 30 días de prueba gratis al registrarte como mecánico
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <footer>
   PROTOTIPO — TALLER CERCANO · NOMBRES, DIRECCIONES Y CALIFICACIONES BASADOS EN NEGOCIOS REALES DE RANCAGUA (GOOGLE MAPS) · VALORES DE SERVICIOS SON REFERENCIALES DE EJEMPLO, NO CONFIRMADOS POR LOS TALLERES
 </footer>
 
 <script>
+/* ====================== SUPABASE ====================== */
+const SUPABASE_URL = 'https://vdkvbwlzjrqcmegkxslp.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_afbIDXILgu4oM1v3GUuzDQ_jWZnds9v';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let currentSession = null;
+let currentUserRole = null; // 'cliente' | 'mecanico'
+let authMode = 'login'; // 'login' | 'signup'
+let authSelectedRole = 'cliente';
+
+async function refreshSession(){
+  const { data } = await sb.auth.getSession();
+  currentSession = data.session;
+  updateAccountUI();
+}
+
+function updateAccountUI(){
+  const label = document.getElementById('accountLabel');
+  if(!label) return;
+  if(currentSession){
+    const email = currentSession.user.email || '';
+    label.textContent = email.length > 18 ? email.slice(0,16) + '…' : email;
+  } else {
+    label.textContent = 'Iniciar sesión';
+  }
+}
+
+document.getElementById('accountBtn').addEventListener('click', async () => {
+  if(currentSession){
+    if(confirm('¿Cerrar sesión?')){
+      await sb.auth.signOut();
+      currentSession = null;
+      updateAccountUI();
+    }
+  } else {
+    openAuthModal('cliente');
+  }
+});
+
+function openAuthModal(preselectRole){
+  document.getElementById('authOverlay').classList.remove('hidden');
+  authSelectedRole = preselectRole || 'cliente';
+  document.querySelectorAll('.auth-role-tab').forEach(t => {
+    const active = t.dataset.role === authSelectedRole;
+    t.classList.toggle('active', active);
+    t.style.borderBottomColor = active ? 'var(--safety-orange)' : 'transparent';
+    t.style.color = active ? 'var(--carbon)' : 'var(--steel)';
+    t.style.fontWeight = active ? '700' : '400';
+  });
+  document.getElementById('authTrialNote').classList.toggle('hidden', authSelectedRole !== 'mecanico' || authMode !== 'signup');
+  document.getElementById('authError').textContent = '';
+}
+
+document.getElementById('authClose').addEventListener('click', () => {
+  document.getElementById('authOverlay').classList.add('hidden');
+});
+
+document.querySelectorAll('.auth-role-tab').forEach(tab => {
+  tab.addEventListener('click', () => openAuthModal(tab.dataset.role));
+});
+
+document.getElementById('authModeSwitch').addEventListener('click', (e) => {
+  e.preventDefault();
+  authMode = authMode === 'login' ? 'signup' : 'login';
+  const title = document.getElementById('authTitle');
+  const modeText = document.getElementById('authModeText');
+  const modeSwitch = document.getElementById('authModeSwitch');
+  const submitBtn = document.getElementById('authSubmit');
+  if(authMode === 'signup'){
+    title.textContent = 'Crear cuenta';
+    modeText.textContent = '¿Ya tienes cuenta?';
+    modeSwitch.textContent = 'Inicia sesión';
+    submitBtn.textContent = 'Crear cuenta';
+  } else {
+    title.textContent = 'Iniciar sesión';
+    modeText.textContent = '¿No tienes cuenta?';
+    modeSwitch.textContent = 'Regístrate aquí';
+    submitBtn.textContent = 'Iniciar sesión';
+  }
+  document.getElementById('authTrialNote').classList.toggle('hidden', authSelectedRole !== 'mecanico' || authMode !== 'signup');
+});
+
+document.getElementById('authSubmit').addEventListener('click', async () => {
+  const email = document.getElementById('auth-email').value.trim();
+  const password = document.getElementById('auth-password').value;
+  const errorBox = document.getElementById('authError');
+  errorBox.textContent = '';
+
+  if(!email || !password){
+    errorBox.textContent = 'Completa correo y contraseña.';
+    return;
+  }
+  if(password.length < 6){
+    errorBox.textContent = 'La contraseña debe tener al menos 6 caracteres.';
+    return;
+  }
+
+  if(authMode === 'signup'){
+    const { data, error } = await sb.auth.signUp({ email, password });
+    if(error){
+      errorBox.textContent = traduceErrorAuth(error.message);
+      return;
+    }
+    if(!data.session){
+      errorBox.style.color = 'var(--ok-green)';
+      errorBox.textContent = 'Cuenta creada. Si tu proyecto exige confirmación, revisa tu correo antes de iniciar sesión.';
+      return;
+    }
+    currentSession = data.session;
+    currentUserRole = authSelectedRole;
+    updateAccountUI();
+    document.getElementById('authOverlay').classList.add('hidden');
+    if(authSelectedRole === 'mecanico'){
+      alert('Cuenta creada. Ahora puedes completar tu ficha de mecánico — tienes 30 días de prueba gratis.');
+      document.querySelector('[data-tab="perfil-mecanico"]').click();
+    }
+  } else {
+    const { data, error } = await sb.auth.signInWithPassword({ email, password });
+    if(error){
+      errorBox.textContent = traduceErrorAuth(error.message);
+      return;
+    }
+    currentSession = data.session;
+    updateAccountUI();
+    document.getElementById('authOverlay').classList.add('hidden');
+  }
+});
+
+function traduceErrorAuth(msg){
+  if(msg.includes('Invalid login credentials')) return 'Correo o contraseña incorrectos.';
+  if(msg.includes('User already registered')) return 'Ese correo ya tiene una cuenta. Intenta iniciar sesión.';
+  if(msg.includes('Email not confirmed')) return 'Debes confirmar tu correo antes de iniciar sesión (revisa tu bandeja de entrada).';
+  return msg;
+}
+
 /* ====================== DATA ====================== */
 const mechanics = [
   {id:1, name:"Fullgear", initials:"FG", spec:"Mecánica General", dist:0.9, lat:-34.1863691, lng:-70.7322428, rating:4.4, reviews:22, parts:true, priceFrom:15000, status:"open",
@@ -990,6 +1166,17 @@ function openProfile(id){
 }
 
 function submitReview(name){
+  if(!currentSession){
+    document.getElementById('authOverlay').classList.remove('hidden');
+    authMode = 'login';
+    document.getElementById('authTitle').textContent = 'Iniciar sesión';
+    document.getElementById('authModeText').textContent = '¿No tienes cuenta?';
+    document.getElementById('authModeSwitch').textContent = 'Regístrate aquí';
+    document.getElementById('authSubmit').textContent = 'Iniciar sesión';
+    openAuthModal('cliente');
+    alert('Para dejar una reseña verificada, primero inicia sesión como cliente.');
+    return;
+  }
   const text = document.getElementById('reviewText').value.trim();
   if(selectedStars === 0){
     alert('Selecciona una calificación de estrellas antes de publicar.');
@@ -999,7 +1186,7 @@ function submitReview(name){
     alert('Cuéntanos brevemente tu experiencia antes de publicar.');
     return;
   }
-  alert(`Reseña enviada (${selectedStars}★) para ${name}.\n\nEn la versión real, esto quedaría guardado y vinculado a un contacto/trabajo verificado para evitar reseñas falsas.`);
+  alert(`Reseña enviada (${selectedStars}★) para ${name}, asociada a tu cuenta (${currentSession.user.email}).\n\nEste taller de ejemplo no está conectado aún a la base de datos real — los mecánicos registrados desde "Soy mecánico" sí guardan reseñas de forma permanente.`);
   document.getElementById('reviewText').value = '';
   selectedStars = 0;
   document.querySelectorAll('#starPicker span').forEach(c => c.innerHTML = starsSVG(false,20));
@@ -1125,7 +1312,13 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
 
     if(tab === 'directorio'){ document.getElementById('view-directorio').classList.remove('hidden'); }
     if(tab === 'mapa'){ document.getElementById('view-mapa').classList.remove('hidden'); renderMap(); }
-    if(tab === 'perfil-mecanico'){ document.getElementById('view-soy-mecanico').classList.remove('hidden'); }
+    if(tab === 'perfil-mecanico'){
+      document.getElementById('view-soy-mecanico').classList.remove('hidden');
+      if(!currentSession){
+        document.getElementById('soyMecanicoIntro').classList.remove('hidden');
+        document.getElementById('soyMecanicoForm').classList.add('hidden');
+      }
+    }
     window.scrollTo({top:0, behavior:'smooth'});
   });
 });
@@ -1295,10 +1488,30 @@ document.getElementById('f-photos').addEventListener('change', (e) => {
   });
 });
 
-function submitMecanicoForm(){
+function startMecanicoFlow(){
+  if(!currentSession){
+    authMode = 'signup';
+    document.getElementById('authTitle').textContent = 'Crear cuenta';
+    document.getElementById('authModeText').textContent = '¿Ya tienes cuenta?';
+    document.getElementById('authModeSwitch').textContent = 'Inicia sesión';
+    document.getElementById('authSubmit').textContent = 'Crear cuenta';
+    openAuthModal('mecanico');
+    return;
+  }
+  document.getElementById('soyMecanicoIntro').classList.add('hidden');
+  document.getElementById('soyMecanicoForm').classList.remove('hidden');
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+async function submitMecanicoForm(){
+  if(!currentSession){
+    alert('Tu sesión expiró. Inicia sesión de nuevo para guardar tu ficha.');
+    return;
+  }
+
   const name = document.getElementById('f-name').value.trim();
   const spec = document.getElementById('f-spec').value;
-  const years = document.getElementById('f-years').value || '0';
+  const years = parseInt(document.getElementById('f-years').value) || 0;
   const phone = document.getElementById('f-phone').value.trim();
   const address = document.getElementById('f-address').value.trim();
   const sellsParts = document.getElementById('f-sells-parts').checked;
@@ -1307,19 +1520,57 @@ function submitMecanicoForm(){
   const services = [...document.querySelectorAll('.service-row-form')].map(row => {
     const n = row.querySelector('.svc-name').value.trim();
     const p = row.querySelector('.svc-price').value.trim();
-    return n ? `${n}: ${p || 'a consultar'}` : null;
+    return n ? { name: n, price: p || 'a consultar' } : null;
   }).filter(Boolean);
 
+  const submitBtn = document.getElementById('f-next');
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Guardando…';
+
+  // 1. Crear o actualizar la ficha del mecánico
+  const mecanicoPayload = {
+    id: currentSession.user.id,
+    name, spec, years, phone, address,
+    lat: formTallerLocation ? formTallerLocation.lat : null,
+    lng: formTallerLocation ? formTallerLocation.lng : null,
+    sells_parts: sellsParts,
+    parts_note: partsNote || null,
+    photos: formPhotos.length ? formPhotos.slice(0,1) : [] // guardamos solo 1 foto en base64 para no exceder límites; en producción esto iría a Storage
+  };
+
+  const { error: upsertError } = await sb.from('mecanicos').upsert(mecanicoPayload);
+
+  if(upsertError){
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Crear mi ficha ✓';
+    alert('No pudimos guardar tu ficha: ' + upsertError.message);
+    return;
+  }
+
+  // 2. Reemplazar servicios: borra los anteriores y crea los nuevos
+  await sb.from('servicios').delete().eq('mecanico_id', currentSession.user.id);
+  if(services.length){
+    const servicesPayload = services.map(s => ({ mecanico_id: currentSession.user.id, name: s.name, price: s.price }));
+    await sb.from('servicios').insert(servicesPayload);
+  }
+
+  submitBtn.disabled = false;
+  submitBtn.textContent = 'Crear mi ficha ✓';
+
   const summary = document.getElementById('successSummary');
+  const trialEnd = new Date();
+  trialEnd.setDate(trialEnd.getDate() + 30);
   summary.innerHTML = `
     <div style="font-family:'Archivo Black'; font-size:15px; margin-bottom:10px;">${name}</div>
     <div style="font-family:'JetBrains Mono'; font-size:11px; color:var(--safety-orange); margin-bottom:10px;">${spec.toUpperCase()} · ${years} AÑOS</div>
     <div><b>Teléfono:</b> ${phone}</div>
     <div><b>Dirección:</b> ${address}</div>
     <div><b>Ubicación GPS:</b> ${formTallerLocation ? 'capturada ✓' : 'no capturada'}</div>
-    <div style="margin-top:8px;"><b>Servicios:</b><br>${services.length ? services.join('<br>') : 'No se agregaron servicios'}</div>
+    <div style="margin-top:8px;"><b>Servicios:</b><br>${services.length ? services.map(s=>`${s.name}: ${s.price}`).join('<br>') : 'No se agregaron servicios'}</div>
     <div style="margin-top:8px;"><b>Vende repuestos:</b> ${sellsParts ? 'Sí' : 'No'}${partsNote ? ' — ' + partsNote : ''}</div>
-    <div style="margin-top:8px;"><b>Fotos cargadas:</b> ${formPhotos.length}</div>
+    <div style="margin-top:14px; padding-top:14px; border-top:1px dashed var(--line-light); color:var(--ok-green); font-weight:700;">
+      ✓ Guardado en la base de datos real. Prueba gratis activa hasta ${trialEnd.toLocaleDateString('es-CL')}.
+    </div>
   `;
 
   document.getElementById('soyMecanicoForm').classList.add('hidden');
@@ -1332,6 +1583,7 @@ addServiceRow();
 
 /* ====================== INIT ====================== */
 renderGrid();
+refreshSession();
 
 /* ====================== PWA: Service Worker + Install Prompt ====================== */
 if ('serviceWorker' in navigator) {
