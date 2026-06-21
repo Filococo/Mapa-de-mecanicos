@@ -1,4 +1,4 @@
-const CACHE_NAME = 'taller-cercano-v1';
+const CACHE_NAME = 'taller-cercano-v2';
 
 const CORE_ASSETS = [
   './',
@@ -30,13 +30,25 @@ self.addEventListener('activate', (event) => {
 });
 
 // Fetch strategy:
-// - For our own app files: cache-first (instant load, works offline)
-// - For external resources (fonts, leaflet, map tiles): network-first, fallback to cache
+// - index.html (la "shell" principal): network-first, así los cambios de código llegan apenas haya conexión
+// - Otros archivos propios (manifest, iconos): cache-first (cambian poco, prioriza velocidad)
+// - Recursos externos (fonts, leaflet, map tiles): network-first, fallback a caché si no hay red
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
   const isSameOrigin = url.origin === self.location.origin;
+  const isHTMLShell = isSameOrigin && (url.pathname.endsWith('/') || url.pathname.endsWith('index.html'));
 
-  if (isSameOrigin) {
+  if (isHTMLShell) {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+          return response;
+        })
+        .catch(() => caches.match(event.request))
+    );
+  } else if (isSameOrigin) {
     event.respondWith(
       caches.match(event.request).then((cached) => {
         return cached || fetch(event.request).then((response) => {
