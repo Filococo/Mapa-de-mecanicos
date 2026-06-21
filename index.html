@@ -428,6 +428,39 @@
   ::-webkit-scrollbar-thumb{background:var(--steel);}
 
   .hidden{display:none !important;}
+
+  /* ===== Registration form ===== */
+  .form-label{
+    display:flex; flex-direction:column; gap:6px;
+    font-family:'JetBrains Mono'; font-size:11px; letter-spacing:0.5px; text-transform:uppercase;
+    color:var(--steel);
+  }
+  .form-input{
+    font-family:'Archivo'; font-size:14px;
+    border:1px solid var(--line-light);
+    padding:11px 12px;
+    background:#fff;
+    color:var(--carbon);
+    width:100%;
+  }
+  .form-input:focus{ outline:2px solid var(--safety-orange); outline-offset:-1px; }
+  select.form-input{ cursor:pointer; }
+  .service-row-form{
+    display:flex; gap:8px; align-items:center;
+  }
+  .service-row-form .form-input{ flex:1; }
+  .service-row-form .remove-service{
+    background:none; border:1px solid var(--line-light); color:var(--steel);
+    width:38px; height:38px; flex-shrink:0; cursor:pointer; font-size:16px;
+  }
+  .service-row-form .remove-service:hover{ border-color:#a45; color:#a45; }
+  .photo-thumb{
+    width:80px; height:80px; object-fit:cover;
+    border:1px solid var(--line-light);
+  }
+  .step-dots{ display:flex; gap:6px; margin-top:6px; }
+  .step-dot{ width:24px; height:4px; background:var(--line-light); }
+  .step-dot.active{ background:var(--safety-orange); }
 </style>
 </head>
 <body>
@@ -443,9 +476,9 @@
         <span class="t2">RANCAGUA · O'HIGGINS</span>
       </div>
     </div>
-    <div class="top-loc" id="locBtn">
+    <div class="top-loc" id="locBtn" style="cursor:pointer;">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-      <span>Rancagua Centro</span>
+      <span id="locLabel">Rancagua Centro (aprox.)</span>
     </div>
     <button class="top-loc hidden" id="installBtn" style="background:var(--safety-orange); border-color:var(--safety-orange); color:#fff; cursor:pointer;">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
@@ -508,15 +541,129 @@
     <div class="map-list" id="mapList"></div>
   </section>
 
-  <!-- ===================== SOY MECANICO (placeholder) ===================== -->
+  <!-- ===================== SOY MECANICO ===================== -->
   <section id="view-soy-mecanico" class="hidden">
-    <div class="empty">
-      <div class="display">Súmate como mecánico</div>
-      <p style="max-width:420px; margin:0 auto; line-height:1.8;">CREA TU FICHA, RECIBE CALIFICACIONES REALES Y APARECE EN BÚSQUEDAS CERCA DE TI.<br><br>SUSCRIPCIÓN MENSUAL · SIN PERMANENCIA · PRIMER MES GRATIS</p>
-      <button class="cta-block" style="display:inline-block; margin-top:24px; cursor:pointer; border:none;" onclick="alert('Esto abriría el formulario de registro de mecánico — pendiente de construir.')">
-        <span class="btn-primary" style="display:block; padding:14px 32px;">Crear mi ficha →</span>
-      </button>
+
+    <div id="soyMecanicoIntro">
+      <div class="empty">
+        <div class="display">Súmate como mecánico</div>
+        <p style="max-width:420px; margin:0 auto; line-height:1.8;">CREA TU FICHA, RECIBE CALIFICACIONES REALES Y APARECE EN BÚSQUEDAS CERCA DE TI.<br><br>SUSCRIPCIÓN MENSUAL · SIN PERMANENCIA · PRIMER MES GRATIS</p>
+        <button class="cta-block" style="display:inline-block; margin-top:24px; cursor:pointer; border:none;" onclick="document.getElementById('soyMecanicoIntro').classList.add('hidden'); document.getElementById('soyMecanicoForm').classList.remove('hidden'); window.scrollTo({top:0,behavior:'smooth'});">
+          <span class="btn-primary" style="display:block; padding:14px 32px;">Crear mi ficha →</span>
+        </button>
+      </div>
     </div>
+
+    <div id="soyMecanicoForm" class="hidden">
+      <div class="section-head">
+        <div>
+          <h1 class="display">Crea tu ficha</h1>
+          <div class="section-sub">PASO <span id="formStepNum">1</span> DE 4</div>
+        </div>
+      </div>
+
+      <form id="mecanicoForm" onsubmit="return false;">
+
+        <!-- PASO 1: Datos básicos -->
+        <div class="form-step" id="step-1">
+          <div class="panel">
+            <div class="panel-head"><h3>Datos del taller</h3></div>
+            <div class="panel-body" style="display:flex; flex-direction:column; gap:14px;">
+              <label class="form-label">Nombre del taller *
+                <input type="text" class="form-input" id="f-name" placeholder="Ej: Taller Hermanos Pérez" required>
+              </label>
+              <label class="form-label">Rubro principal *
+                <select class="form-input" id="f-spec" required>
+                  <option value="">Selecciona una opción</option>
+                  <option>Mecánica General</option>
+                  <option>Frenos</option>
+                  <option>Suspensión</option>
+                  <option>Eléctrico</option>
+                  <option>Climatización</option>
+                  <option>Diésel</option>
+                </select>
+              </label>
+              <label class="form-label">Años de experiencia
+                <input type="number" class="form-input" id="f-years" placeholder="Ej: 10" min="0">
+              </label>
+              <label class="form-label">Teléfono de contacto *
+                <input type="tel" class="form-input" id="f-phone" placeholder="+56 9 1234 5678" required>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- PASO 2: Ubicación -->
+        <div class="form-step hidden" id="step-2">
+          <div class="panel">
+            <div class="panel-head"><h3>Ubicación del taller</h3></div>
+            <div class="panel-body" style="display:flex; flex-direction:column; gap:14px;">
+              <label class="form-label">Dirección *
+                <input type="text" class="form-input" id="f-address" placeholder="Calle, número, Rancagua" required>
+              </label>
+              <div style="font-family:'JetBrains Mono'; font-size:11px; color:var(--steel);">
+                Toca el botón para usar tu ubicación GPS actual como punto del taller, o ajusta manualmente más adelante.
+              </div>
+              <button type="button" class="submit-review-btn" style="width:fit-content;" id="f-use-gps">📍 Usar mi ubicación actual</button>
+              <div id="f-gps-status" style="font-family:'JetBrains Mono'; font-size:11px; color:var(--ok-green);"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PASO 3: Servicios -->
+        <div class="form-step hidden" id="step-3">
+          <div class="panel">
+            <div class="panel-head"><h3>Servicios y valores referenciales</h3></div>
+            <div class="panel-body">
+              <div id="servicesList" style="display:flex; flex-direction:column; gap:10px;"></div>
+              <button type="button" class="submit-review-btn" style="margin-top:12px;" id="f-add-service">+ Agregar servicio</button>
+            </div>
+          </div>
+          <div class="panel" style="margin-top:18px;">
+            <div class="panel-head"><h3>Venta de repuestos / materiales</h3></div>
+            <div class="panel-body">
+              <label class="form-label" style="display:flex; align-items:center; gap:8px; flex-direction:row;">
+                <input type="checkbox" id="f-sells-parts" style="width:18px; height:18px;">
+                <span>Vendo repuestos o materiales de reemplazo</span>
+              </label>
+              <textarea class="form-input" id="f-parts-note" placeholder="Ej: vendo filtros, aceites y pastillas de freno genéricas y originales" style="margin-top:10px; min-height:70px; resize:vertical;"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- PASO 4: Fotos -->
+        <div class="form-step hidden" id="step-4">
+          <div class="panel">
+            <div class="panel-head"><h3>Fotos del taller</h3></div>
+            <div class="panel-body">
+              <div style="font-family:'JetBrains Mono'; font-size:11px; color:var(--steel); margin-bottom:12px;">
+                Sube fotos de tu taller, tu trabajo o tu equipo. Ayuda a generar confianza con nuevos clientes.
+              </div>
+              <input type="file" id="f-photos" accept="image/*" multiple style="font-family:'JetBrains Mono'; font-size:12px;">
+              <div id="photoPreview" style="display:flex; flex-wrap:wrap; gap:10px; margin-top:14px;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Navegación entre pasos -->
+        <div style="display:flex; gap:10px; margin-top:20px;">
+          <button type="button" class="btn-secondary" style="flex:0 0 auto; padding:13px 24px; background:none; border:1px solid var(--steel); color:var(--carbon); font-family:'JetBrains Mono'; font-size:12px; letter-spacing:1px; text-transform:uppercase; cursor:pointer;" id="f-prev">← Atrás</button>
+          <button type="button" class="btn-primary" style="flex:1; padding:13px; background:var(--safety-orange); color:#fff; border:none; font-family:'JetBrains Mono'; font-size:12px; letter-spacing:1px; text-transform:uppercase; cursor:pointer; font-weight:700;" id="f-next">Siguiente →</button>
+        </div>
+      </form>
+    </div>
+
+    <div id="soyMecanicoSuccess" class="hidden">
+      <div class="empty">
+        <div class="display" style="color:var(--ok-green);">✓ Ficha creada</div>
+        <p style="max-width:440px; margin:0 auto; line-height:1.8;">
+          Tu ficha quedó registrada en este prototipo (no se guarda de forma permanente todavía).<br><br>
+          En la versión real, aquí se activaría tu suscripción mensual y tu taller aparecería en el directorio y el mapa de inmediato.
+        </p>
+        <div id="successSummary" style="max-width:440px; margin:24px auto 0; text-align:left; background:#fff; border:1px solid var(--line-light); padding:18px; font-size:13px; line-height:1.7;"></div>
+      </div>
+    </div>
+
   </section>
 
 </main>
@@ -643,8 +790,27 @@ const mechanics = [
    ]}
 ];
 
-// Ubicación simulada del usuario: Plaza de los Héroes, Rancagua (centro)
-const USER_LOCATION = {lat:-34.1708, lng:-70.7444};
+// Ubicación del usuario: por defecto Plaza de los Héroes, Rancagua (centro), hasta que el GPS responda
+let USER_LOCATION = {lat:-34.1708, lng:-70.7444};
+let usingRealLocation = false;
+
+// Distancia real entre dos coordenadas (fórmula de Haversine), en kilómetros
+function haversineKm(lat1, lng1, lat2, lng2){
+  const R = 6371;
+  const dLat = (lat2-lat1) * Math.PI/180;
+  const dLng = (lng2-lng1) * Math.PI/180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
+  const c = 2*Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R*c;
+}
+
+// Recalcula m.dist para todos los mecánicos según USER_LOCATION actual
+function recalcDistances(){
+  mechanics.forEach(m => {
+    m.dist = Math.round(haversineKm(USER_LOCATION.lat, USER_LOCATION.lng, m.lat, m.lng) * 10) / 10;
+  });
+}
+recalcDistances();
 
 /* ====================== HELPERS ====================== */
 function starsSVG(filled, size=13){
@@ -664,7 +830,9 @@ let currentFilter = 'todos';
 
 function renderGrid(){
   const grid = document.getElementById('grid');
-  const filtered = currentFilter === 'todos' ? mechanics : mechanics.filter(m => m.spec === currentFilter);
+  const filtered = (currentFilter === 'todos' ? mechanics : mechanics.filter(m => m.spec === currentFilter))
+    .slice()
+    .sort((a,b) => a.dist - b.dist);
   document.getElementById('resultCount').textContent = `${filtered.length} TALLERES EN RANCAGUA`;
 
   if(filtered.length === 0){
@@ -896,9 +1064,9 @@ function renderMap(){
 
     // "You are here" marker
     const youIcon = L.divIcon({className:'', html:'<div class="pin-you"></div>', iconSize:[18,18], iconAnchor:[9,9]});
-    L.marker([USER_LOCATION.lat, USER_LOCATION.lng], {icon:youIcon, zIndexOffset:1000})
+    leafletMapInstance._youMarker = L.marker([USER_LOCATION.lat, USER_LOCATION.lng], {icon:youIcon, zIndexOffset:1000})
       .addTo(leafletMapInstance)
-      .bindPopup('<div class="popup-name">Tú estás aquí</div><div class="popup-spec">Plaza de los Héroes, Rancagua</div>');
+      .bindPopup('<div class="popup-name">Tú estás aquí</div><div class="popup-spec" id="youPopupLabel">Plaza de los Héroes, Rancagua</div>');
 
     mapInitialized = true;
   }
@@ -962,9 +1130,205 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   });
 });
 
+function requestRealLocation(showAlerts){
+  const locLabel = document.getElementById('locLabel');
+
+  if (!('geolocation' in navigator)) {
+    if (showAlerts) alert('Tu navegador no soporta geolocalización. Se mantiene la ubicación aproximada de Rancagua Centro.');
+    return;
+  }
+
+  if (locLabel) locLabel.textContent = 'Buscando tu ubicación…';
+
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      USER_LOCATION = { lat: position.coords.latitude, lng: position.coords.longitude };
+      usingRealLocation = true;
+      recalcDistances();
+      if (locLabel) locLabel.textContent = 'Tu ubicación actual';
+
+      // Si el mapa ya fue inicializado, actualiza el marcador "tú estás aquí" y vuelve a centrar
+      if (typeof leafletMapInstance !== 'undefined' && leafletMapInstance) {
+        leafletMapInstance.setView([USER_LOCATION.lat, USER_LOCATION.lng], 13);
+        if (leafletMapInstance._youMarker) {
+          leafletMapInstance._youMarker.setLatLng([USER_LOCATION.lat, USER_LOCATION.lng]);
+          leafletMapInstance._youMarker.setPopupContent('<div class="popup-name">Tú estás aquí</div><div class="popup-spec">Tu ubicación actual (GPS)</div>');
+        }
+      }
+
+      // Refresca las vistas visibles para mostrar distancias actualizadas
+      renderGrid();
+      if (!document.getElementById('view-mapa').classList.contains('hidden')) {
+        renderMap();
+      }
+    },
+    (error) => {
+      if (locLabel) locLabel.textContent = 'Rancagua Centro (aprox.)';
+      if (showAlerts) {
+        let msg = 'No pudimos obtener tu ubicación. Se mantiene Rancagua Centro como referencia.';
+        if (error.code === error.PERMISSION_DENIED) {
+          msg = 'Permiso de ubicación denegado. Puedes activarlo en la configuración del navegador y volver a tocar este botón.';
+        }
+        alert(msg);
+      }
+    },
+    { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 }
+  );
+}
+
 document.getElementById('locBtn').addEventListener('click', ()=>{
-  alert('En la versión real, esto pediría permiso de geolocalización del navegador/celular para calcular distancias reales.');
+  requestRealLocation(true);
 });
+
+// Pide ubicación automáticamente al cargar, sin interrumpir con alertas
+requestRealLocation(false);
+
+/* ====================== FORMULARIO "SOY MECÁNICO" ====================== */
+let currentStep = 1;
+const totalSteps = 4;
+let formServiceCount = 0;
+let formTallerLocation = null; // {lat, lng} si el usuario usó GPS
+let formPhotos = []; // array de dataURLs para preview
+
+function addServiceRow(name = '', price = ''){
+  formServiceCount++;
+  const id = `svc-${formServiceCount}`;
+  const list = document.getElementById('servicesList');
+  const row = document.createElement('div');
+  row.className = 'service-row-form';
+  row.id = id;
+  row.innerHTML = `
+    <input type="text" class="form-input svc-name" placeholder="Ej: Cambio de aceite" value="${name}">
+    <input type="text" class="form-input svc-price" placeholder="Ej: $25.000" value="${price}" style="max-width:140px;">
+    <button type="button" class="remove-service" onclick="document.getElementById('${id}').remove()">✕</button>
+  `;
+  list.appendChild(row);
+}
+
+function showStep(n){
+  for(let i = 1; i <= totalSteps; i++){
+    document.getElementById(`step-${i}`).classList.toggle('hidden', i !== n);
+  }
+  document.getElementById('formStepNum').textContent = n;
+  document.getElementById('f-prev').style.visibility = n === 1 ? 'hidden' : 'visible';
+  document.getElementById('f-next').textContent = n === totalSteps ? 'Crear mi ficha ✓' : 'Siguiente →';
+  currentStep = n;
+}
+
+function validateStep(n){
+  if(n === 1){
+    const name = document.getElementById('f-name').value.trim();
+    const spec = document.getElementById('f-spec').value;
+    const phone = document.getElementById('f-phone').value.trim();
+    if(!name || !spec || !phone){
+      alert('Completa nombre del taller, rubro y teléfono antes de continuar.');
+      return false;
+    }
+  }
+  if(n === 2){
+    const address = document.getElementById('f-address').value.trim();
+    if(!address){
+      alert('Ingresa la dirección de tu taller antes de continuar.');
+      return false;
+    }
+  }
+  return true;
+}
+
+document.getElementById('f-next').addEventListener('click', () => {
+  if(!validateStep(currentStep)) return;
+  if(currentStep < totalSteps){
+    showStep(currentStep + 1);
+    window.scrollTo({top:0, behavior:'smooth'});
+  } else {
+    submitMecanicoForm();
+  }
+});
+
+document.getElementById('f-prev').addEventListener('click', () => {
+  if(currentStep > 1){
+    showStep(currentStep - 1);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+});
+
+document.getElementById('f-add-service').addEventListener('click', () => addServiceRow());
+
+document.getElementById('f-use-gps').addEventListener('click', () => {
+  const status = document.getElementById('f-gps-status');
+  if(!('geolocation' in navigator)){
+    status.textContent = 'Tu navegador no soporta geolocalización.';
+    status.style.color = '#a45';
+    return;
+  }
+  status.textContent = 'Buscando tu ubicación…';
+  status.style.color = 'var(--steel)';
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      formTallerLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      status.textContent = `✓ Ubicación capturada (${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)})`;
+      status.style.color = 'var(--ok-green)';
+    },
+    () => {
+      status.textContent = 'No pudimos obtener tu ubicación. Puedes seguir solo con la dirección escrita.';
+      status.style.color = '#a45';
+    },
+    { enableHighAccuracy: true, timeout: 8000 }
+  );
+});
+
+document.getElementById('f-photos').addEventListener('change', (e) => {
+  const files = Array.from(e.target.files).slice(0, 6);
+  const preview = document.getElementById('photoPreview');
+  preview.innerHTML = '';
+  formPhotos = [];
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      formPhotos.push(ev.target.result);
+      const img = document.createElement('img');
+      img.src = ev.target.result;
+      img.className = 'photo-thumb';
+      preview.appendChild(img);
+    };
+    reader.readAsDataURL(file);
+  });
+});
+
+function submitMecanicoForm(){
+  const name = document.getElementById('f-name').value.trim();
+  const spec = document.getElementById('f-spec').value;
+  const years = document.getElementById('f-years').value || '0';
+  const phone = document.getElementById('f-phone').value.trim();
+  const address = document.getElementById('f-address').value.trim();
+  const sellsParts = document.getElementById('f-sells-parts').checked;
+  const partsNote = document.getElementById('f-parts-note').value.trim();
+
+  const services = [...document.querySelectorAll('.service-row-form')].map(row => {
+    const n = row.querySelector('.svc-name').value.trim();
+    const p = row.querySelector('.svc-price').value.trim();
+    return n ? `${n}: ${p || 'a consultar'}` : null;
+  }).filter(Boolean);
+
+  const summary = document.getElementById('successSummary');
+  summary.innerHTML = `
+    <div style="font-family:'Archivo Black'; font-size:15px; margin-bottom:10px;">${name}</div>
+    <div style="font-family:'JetBrains Mono'; font-size:11px; color:var(--safety-orange); margin-bottom:10px;">${spec.toUpperCase()} · ${years} AÑOS</div>
+    <div><b>Teléfono:</b> ${phone}</div>
+    <div><b>Dirección:</b> ${address}</div>
+    <div><b>Ubicación GPS:</b> ${formTallerLocation ? 'capturada ✓' : 'no capturada'}</div>
+    <div style="margin-top:8px;"><b>Servicios:</b><br>${services.length ? services.join('<br>') : 'No se agregaron servicios'}</div>
+    <div style="margin-top:8px;"><b>Vende repuestos:</b> ${sellsParts ? 'Sí' : 'No'}${partsNote ? ' — ' + partsNote : ''}</div>
+    <div style="margin-top:8px;"><b>Fotos cargadas:</b> ${formPhotos.length}</div>
+  `;
+
+  document.getElementById('soyMecanicoForm').classList.add('hidden');
+  document.getElementById('soyMecanicoSuccess').classList.remove('hidden');
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+// Pre-cargar un servicio vacío al entrar al paso 3 por primera vez
+addServiceRow();
 
 /* ====================== INIT ====================== */
 renderGrid();
