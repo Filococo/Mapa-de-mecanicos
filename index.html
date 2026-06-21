@@ -481,7 +481,7 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
       <span id="locLabel">Ubicación aproximada</span>
     </div>
-    <button class="top-loc hidden" id="installBtn" style="background:var(--safety-orange); border-color:var(--safety-orange); color:var(--carbon); cursor:pointer; font-weight:700;">
+    <button class="top-loc" id="installBtn" style="background:var(--safety-orange); border-color:var(--safety-orange); color:var(--carbon); cursor:pointer; font-weight:700;">
       <svg viewBox="0 0 24 24" fill="none" stroke="var(--carbon)" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
       <span>Instalar app</span>
     </button>
@@ -674,6 +674,17 @@
 </main>
 
 <!-- ===================== MODAL DE AUTENTICACIÓN ===================== -->
+<!-- ===================== MODAL DE INSTALACIÓN ===================== -->
+<div id="installOverlay" class="hidden" style="position:fixed; inset:0; background:rgba(26,26,24,0.75); z-index:2000; display:flex; align-items:center; justify-content:center; padding:20px;">
+  <div style="background:#fff; max-width:380px; width:100%; max-height:90vh; overflow-y:auto;">
+    <div style="background:var(--carbon); color:var(--paper); padding:18px 20px; display:flex; justify-content:space-between; align-items:center;">
+      <span style="font-family:'Archivo Black'; font-size:15px; text-transform:uppercase;">Instalar app</span>
+      <button id="installClose" style="background:none; border:none; color:var(--paper); font-size:22px; cursor:pointer; line-height:1;">✕</button>
+    </div>
+    <div id="installInstructions" style="padding:22px; font-size:14px; line-height:1.7; color:var(--carbon);"></div>
+  </div>
+</div>
+
 <div id="authOverlay" class="hidden" style="position:fixed; inset:0; background:rgba(26,26,24,0.75); z-index:2000; display:flex; align-items:center; justify-content:center; padding:20px;">
   <div style="background:var(--safety-orange); max-width:380px; width:100%; max-height:90vh; overflow-y:auto;">
     <div style="background:var(--carbon); color:var(--paper); padding:18px 20px; display:flex; justify-content:space-between; align-items:center;">
@@ -1591,24 +1602,88 @@ if ('serviceWorker' in navigator) {
 let deferredInstallPrompt = null;
 const installBtn = document.getElementById('installBtn');
 
+function isStandaloneMode(){
+  return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+}
+
+function detectPlatform(){
+  const ua = navigator.userAgent || '';
+  const isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
+  const isAndroid = /Android/.test(ua);
+  return { isIOS, isAndroid };
+}
+
+function showInstallInstructions(){
+  const { isIOS, isAndroid } = detectPlatform();
+  const box = document.getElementById('installInstructions');
+
+  if(isStandaloneMode()){
+    box.innerHTML = `
+      <div style="text-align:center;">
+        <div style="font-family:'Archivo Black'; font-size:18px; color:var(--ok-green); margin-bottom:10px;">✓ Ya está instalada</div>
+        <p>Estás usando Taller Cercano como app instalada en tu dispositivo.</p>
+      </div>`;
+  } else if(isIOS){
+    box.innerHTML = `
+      <p style="margin-bottom:14px;"><b>En iPhone/iPad (Safari):</b></p>
+      <ol style="padding-left:20px; display:flex; flex-direction:column; gap:10px;">
+        <li>Toca el botón <b>Compartir</b> <span style="font-family:monospace;">⬆️</span> en la barra inferior de Safari.</li>
+        <li>Desplázate y elige <b>"Agregar a pantalla de inicio"</b>.</li>
+        <li>Toca <b>"Agregar"</b> arriba a la derecha.</li>
+      </ol>
+      <div style="margin-top:16px; padding:12px; background:#fdf3e7; border-left:3px solid var(--safety-orange); font-size:12.5px;">
+        Nota: esto solo funciona en el navegador Safari, no en Chrome para iOS.
+      </div>`;
+  } else if(isAndroid){
+    box.innerHTML = `
+      <p style="margin-bottom:14px;"><b>En Android (Chrome):</b></p>
+      <ol style="padding-left:20px; display:flex; flex-direction:column; gap:10px;">
+        <li>Toca el menú <b>⋮</b> (tres puntos) arriba a la derecha de Chrome.</li>
+        <li>Elige <b>"Instalar app"</b> o <b>"Agregar a pantalla de inicio"</b>.</li>
+        <li>Confirma tocando <b>"Instalar"</b>.</li>
+      </ol>
+      <div style="margin-top:16px; padding:12px; background:#fdf3e7; border-left:3px solid var(--safety-orange); font-size:12.5px;">
+        Si no ves esa opción, asegúrate de estar usando Chrome y de no estar en modo incógnito.
+      </div>`;
+  } else {
+    box.innerHTML = `
+      <p style="margin-bottom:14px;"><b>En computador (Chrome/Edge):</b></p>
+      <ol style="padding-left:20px; display:flex; flex-direction:column; gap:10px;">
+        <li>Busca el ícono de instalación <span style="font-family:monospace;">⊕</span> en la barra de direcciones, a la derecha.</li>
+        <li>Haz clic y confirma <b>"Instalar"</b>.</li>
+      </ol>`;
+  }
+
+  document.getElementById('installOverlay').classList.remove('hidden');
+}
+
+document.getElementById('installClose').addEventListener('click', () => {
+  document.getElementById('installOverlay').classList.add('hidden');
+});
+
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredInstallPrompt = e;
-  if (installBtn) installBtn.classList.remove('hidden');
 });
 
 if (installBtn) {
   installBtn.addEventListener('click', async () => {
-    if (!deferredInstallPrompt) return;
-    deferredInstallPrompt.prompt();
-    await deferredInstallPrompt.userChoice;
-    deferredInstallPrompt = null;
-    installBtn.classList.add('hidden');
+    if(isStandaloneMode()){
+      showInstallInstructions();
+      return;
+    }
+    if (deferredInstallPrompt) {
+      deferredInstallPrompt.prompt();
+      await deferredInstallPrompt.userChoice;
+      deferredInstallPrompt = null;
+    } else {
+      showInstallInstructions();
+    }
   });
 }
 
 window.addEventListener('appinstalled', () => {
-  if (installBtn) installBtn.classList.add('hidden');
+  deferredInstallPrompt = null;
 });
 </script>
 </body>
