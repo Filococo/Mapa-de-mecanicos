@@ -860,7 +860,7 @@ function renderMap(){
       Reemplazar este bloque L.map(...) + L.tileLayer(...) por:
       const map = new google.maps.Map(document.getElementById('leafletMap'), {...});
       y usar new google.maps.Marker({...}) en vez de L.marker(...).
-      Requiere <script src="https://maps.googleapis.com/maps/api/js?key=TU_API_KEY"></script>
+      Requiere etiqueta script de Google Maps con tu API key: https://maps.googleapis.com/maps/api/js?key=TU_API_KEY
     */
     leafletMapInstance = L.map('leafletMap', {
       zoomControl:true,
