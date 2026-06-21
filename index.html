@@ -1031,7 +1031,7 @@ function openProfile(id){
         <div class="p-name display" style="font-family:'Archivo Black'; text-transform:none;">${m.name}</div>
         <div class="p-spec">${m.spec.toUpperCase()} · ${m.years} AÑOS EN EL RUBRO</div>
         <div class="p-meta-row">
-          <span class="p-meta-item" onclick="openDirections(${m.lat}, ${m.lng}, '${m.name.replace(/'/g, "\\'")}')" style="cursor:pointer; text-decoration:underline; text-decoration-style:dotted;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>${m.address}</span>
+          <span class="p-meta-item" onclick="openDirectionsById('${m.id}')" style="cursor:pointer; text-decoration:underline; text-decoration-style:dotted;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>${m.address}</span>
           <span class="p-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>${m.phone}</span>
           <span class="p-meta-item"><span class="status-dot ${m.status}" style="margin-right:6px;"></span>${m.status==='open'?'Abierto ahora':'Cerrado ahora'}</span>
         </div>
@@ -1081,7 +1081,7 @@ function openProfile(id){
               </div>
               <textarea placeholder="Cuenta cómo fue tu experiencia..." id="reviewText"></textarea>
               <div style="margin-top:10px;">
-                <button class="submit-review-btn" onclick="submitReview('${m.name.replace(/'/g, "\\'")}', '${m.id}')">Publicar reseña</button>
+                <button class="submit-review-btn" onclick="submitReview('${m.id}')">Publicar reseña</button>
               </div>
             </div>
           </div>
@@ -1092,8 +1092,8 @@ function openProfile(id){
       <div style="display:flex; flex-direction:column; gap:18px;">
         <div class="cta-block">
           <div style="font-family:'JetBrains Mono'; font-size:11px; letter-spacing:1px; color:var(--caution-yellow); margin-bottom:14px; text-transform:uppercase;">¿Necesitas este servicio?</div>
-          <button class="btn-primary" onclick="contactWhatsApp('${m.phone || ''}', '${m.name.replace(/'/g, "\\'")}')">Contactar por WhatsApp</button>
-          <button class="btn-secondary" onclick="openDirections(${m.lat}, ${m.lng}, '${m.name.replace(/'/g, "\\'")}')">📍 Cómo llegar</button>
+          <button class="btn-primary" onclick="contactWhatsAppById('${m.id}')">Contactar por WhatsApp</button>
+          <button class="btn-secondary" onclick="openDirectionsById('${m.id}')">📍 Cómo llegar</button>
           <button class="btn-secondary" onclick="viewOnMap('${m.id}')">Ver ubicación en mapa</button>
         </div>
 
@@ -1126,7 +1126,9 @@ function openProfile(id){
   window.scrollTo({top:0, behavior:'smooth'});
 }
 
-async function submitReview(name, mecanicoId){
+async function submitReview(mecanicoId){
+  const m = mechanics.find(x => x.id === mecanicoId);
+  const name = m ? m.name : 'este taller';
   if(!currentSession){
     document.getElementById('authOverlay').classList.remove('hidden');
     authMode = 'login';
@@ -1182,6 +1184,14 @@ function contactWhatsApp(phone, name){
   window.open(`https://wa.me/${cleanPhone}?text=${message}`, '_blank');
 }
 
+// Versión segura para usar en onclick: busca el mecánico por id en vez de
+// pasar teléfono/nombre como strings literales (evita romper el HTML con apóstrofes).
+function contactWhatsAppById(id){
+  const m = mechanics.find(x => x.id === id);
+  if(!m) return;
+  contactWhatsApp(m.phone, m.name);
+}
+
 function openDirections(lat, lng, name){
   if(lat == null || lng == null){
     alert('Este taller no tiene ubicación GPS registrada todavía, así que no podemos trazar la ruta.');
@@ -1198,6 +1208,14 @@ function openDirections(lat, lng, name){
     url = `https://www.google.com/maps/dir/?api=1&destination=${destination}&travelmode=driving`;
   }
   window.open(url, '_blank');
+}
+
+// Versión segura para usar en onclick: busca el mecánico por id en vez de
+// pasar el nombre como string literal (evita romper el HTML con apóstrofes, ej. "O'Higgins").
+function openDirectionsById(id){
+  const m = mechanics.find(x => x.id === id);
+  if(!m) return;
+  openDirections(m.lat, m.lng, m.name);
 }
 
 function viewOnMap(id){
@@ -1288,7 +1306,7 @@ function renderMap(){
       <div class="popup-rating">★ ${m.rating > 0 ? m.rating.toFixed(1) : 'Sin calificar'} (${m.reviews}) · ${m.status==='open'?'Abierto':'Cerrado'}</div>
       <div style="display:flex; gap:6px; margin-top:4px;">
         <span class="popup-btn" onclick="openProfile('${m.id}')">Ver ficha →</span>
-        <span class="popup-btn" style="background:var(--carbon); border:1px solid var(--safety-orange);" onclick="openDirections(${m.lat}, ${m.lng}, '${m.name.replace(/'/g, "\\'")}')">📍 Cómo llegar</span>
+        <span class="popup-btn" style="background:var(--carbon); border:1px solid var(--safety-orange);" onclick="openDirectionsById('${m.id}')">📍 Cómo llegar</span>
       </div>
     `);
     leafletMapInstance._mechMarkers.push(marker);
