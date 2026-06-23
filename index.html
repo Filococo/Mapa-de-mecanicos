@@ -1371,6 +1371,12 @@ async function loadMechanicsFromSupabase(){
 
   if(mecanicosError){
     console.error('Error cargando mecánicos:', mecanicosError.message);
+    const grid = document.getElementById('grid');
+    if(grid) grid.innerHTML = `<div class="empty" style="grid-column:1/-1;">
+      <div class="bebas">Error de conexión</div>
+      <p style="color:#ff6b6b;font-family:monospace;font-size:11px;margin-top:8px;">${mecanicosError.message}</p>
+      <p style="margin-top:8px;">Código: ${mecanicosError.code || 'sin código'}</p>
+    </div>`;
     mechanics = [];
     return;
   }
@@ -1411,6 +1417,13 @@ async function loadMechanicsFromSupabase(){
   });
 
   if(USER_LOCATION) recalcDistances();
+
+  // Log temporal para diagnóstico
+  console.log(`PANNÉ: ${mechanics.length} negocios cargados desde Supabase`);
+  const countEl = document.getElementById('resultCount');
+  if(countEl && mechanics.length === 0 && !mecanicosError){
+    countEl.textContent = 'Sin resultados desde Supabase — revisa la consola';
+  }
 }
 
 
