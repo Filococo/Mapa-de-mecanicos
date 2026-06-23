@@ -2271,11 +2271,19 @@ async function submitMecanicoForm(){
 addServiceRow();
 
 /* ====================== INIT ====================== */
-(async () => {
-  await loadMechanicsFromSupabase();
-  renderGrid();
-  renderMapList();
-})();
+loadMechanicsFromSupabase();
+
+// Polling: cada 300ms verifica si ya llegaron datos y renderiza
+const _initPoll = setInterval(() => {
+  if(mechanics.length > 0) {
+    clearInterval(_initPoll);
+    renderGrid();
+    renderMapList();
+  }
+}, 300);
+
+// Timeout de seguridad: si en 15s no llegó nada, mostrar error
+setTimeout(() => { clearInterval(_initPoll); }, 15000);
 refreshSession();
 
 /* ====================== PWA: Service Worker + Install Prompt ====================== */
