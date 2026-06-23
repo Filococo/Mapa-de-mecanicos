@@ -2,520 +2,1004 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Taller Cercano — Encuentra mecánicos cerca de ti</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>PANNÉ — Encuentra talleres y vulcanizadoras en Chile</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-
-<!-- PWA -->
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#1a1a18">
+<meta name="theme-color" content="#0a0a0a">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Taller Cercano">
-<meta name="mobile-web-app-capable" content="yes">
-
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="PANNÉ">
 <style>
-  :root{
-    --carbon:#1a1a18;
-    --carbon-soft:#26241f;
-    --steel:#43423d;
-    --paper:#f2ede1;
-    --paper-dim:#e7e0cf;
-    --safety-orange:#e0521c;
-    --caution-yellow:#f0b429;
-    --ok-green:#4a7c59;
-    --line:#3a382f;
-    --line-light:#cfc7ad;
-  }
-  *{box-sizing:border-box; margin:0; padding:0;}
-  html{scroll-behavior:smooth;}
-  body{
-    background:var(--paper);
-    color:var(--carbon);
-    font-family:'Archivo',sans-serif;
-    -webkit-font-smoothing:antialiased;
-  }
-  .mono{font-family:'JetBrains Mono',monospace;}
-  .display{font-family:'Archivo Black',sans-serif; text-transform:uppercase;}
+/* ===== PANNÉ Design System ===== */
+:root {
+  --red:      #E8192C;
+  --red-dark: #B01020;
+  --black:    #0a0a0a;
+  --black2:   #141414;
+  --black3:   #1e1e1e;
+  --steel:    #2a2a2a;
+  --mid:      #555;
+  --muted:    #888;
+  --border:   #2e2e2e;
+  --white:    #ffffff;
+  --offwhite: #f5f5f5;
+  --dim:      #c8c8c8;
+  --yellow:   #FFD600;
+  --green:    #22c55e;
+  --radius:   12px;
+  --radius-sm: 8px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;}
+body{
+  background:var(--black);
+  color:var(--white);
+  font-family:'Inter',sans-serif;
+  -webkit-font-smoothing:antialiased;
+  min-height:100vh;
+}
+.bebas{font-family:'Bebas Neue',sans-serif; letter-spacing:1px;}
+.mono{font-family:'JetBrains Mono',monospace;}
 
-  /* ===== Hazard stripe utility ===== */
-  .hazard-strip{
-    height:8px;
-    background:repeating-linear-gradient(135deg, var(--caution-yellow) 0 14px, var(--carbon) 14px 28px);
-  }
+/* ===== TOP BAR ===== */
+.topbar{
+  background:var(--black2);
+  border-bottom:1px solid var(--border);
+  position:sticky;top:0;z-index:100;
+  padding:0 16px;
+}
+.topbar-inner{
+  max-width:1200px;margin:0 auto;
+  display:flex;align-items:center;justify-content:space-between;
+  height:60px;gap:12px;
+}
+.logo{
+  display:flex;align-items:center;gap:10px;text-decoration:none;
+  flex-shrink:0;
+}
+.logo-mark{
+  width:36px;height:36px;
+  background:var(--red);
+  transform:rotate(45deg);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+  border-radius:4px;
+}
+.logo-mark svg{transform:rotate(-45deg);width:18px;height:18px;}
+.logo-name{
+  font-family:'Bebas Neue';font-size:26px;
+  color:var(--white);letter-spacing:2px;line-height:1;
+}
+.logo-sub{
+  font-family:'JetBrains Mono';font-size:8px;
+  color:var(--red);letter-spacing:3px;text-transform:uppercase;
+  margin-top:2px;
+}
+.topbar-right{display:flex;align-items:center;gap:8px;}
+.btn-icon{
+  background:var(--steel);
+  border:1px solid var(--border);
+  color:var(--dim);
+  padding:7px 12px;
+  border-radius:var(--radius-sm);
+  font-family:'JetBrains Mono';font-size:11px;
+  cursor:pointer;display:flex;align-items:center;gap:6px;
+  white-space:nowrap;
+}
+.btn-icon:hover{border-color:var(--red);color:var(--white);}
+.btn-icon svg{width:14px;height:14px;flex-shrink:0;}
+.btn-icon.primary{background:var(--red);border-color:var(--red);color:var(--white);}
+.btn-icon.primary:hover{background:var(--red-dark);}
 
-  /* ===== Top bar ===== */
-  header.app-top{
-    background:var(--carbon);
-    color:var(--paper);
-    position:sticky; top:0; z-index:50;
-    border-bottom:3px solid var(--safety-orange);
-  }
-  .app-top-inner{
-    max-width:1180px; margin:0 auto;
-    display:flex; align-items:center; justify-content:space-between;
-    padding:14px 20px;
-  }
-  .brand{
-    display:flex; align-items:center; gap:10px;
-  }
-  .brand-mark{
-    width:34px; height:34px;
-    background:var(--safety-orange);
-    display:flex; align-items:center; justify-content:center;
-    transform:rotate(45deg);
-    flex-shrink:0;
-  }
-  .brand-mark svg{transform:rotate(-45deg); width:18px; height:18px;}
-  .brand-name{display:flex; flex-direction:column; line-height:1;}
-  .brand-name .t1{font-family:'Archivo Black'; font-size:18px; letter-spacing:0.5px;}
-  .brand-name .t2{font-family:'JetBrains Mono'; font-size:10px; letter-spacing:2px; color:var(--caution-yellow); margin-top:3px;}
-  .top-loc{
-    display:flex; align-items:center; gap:8px;
-    font-family:'JetBrains Mono'; font-size:12px;
-    color:var(--paper-dim);
-    border:1px solid var(--steel);
-    padding:7px 12px;
-    cursor:pointer;
-  }
-  .top-loc:hover{border-color:var(--safety-orange); color:var(--paper);}
-  .top-loc svg{width:14px; height:14px; flex-shrink:0;}
+/* ===== NAV TABS ===== */
+.nav-tabs{
+  background:var(--black2);
+  border-bottom:1px solid var(--border);
+}
+.nav-tabs-inner{
+  max-width:1200px;margin:0 auto;
+  display:flex;padding:0 16px;
+}
+.tab{
+  font-family:'JetBrains Mono';font-size:11px;font-weight:700;
+  text-transform:uppercase;letter-spacing:1px;
+  padding:14px 16px;
+  background:none;border:none;cursor:pointer;
+  color:var(--muted);
+  border-bottom:2px solid transparent;
+  position:relative;top:1px;
+  transition:color .15s,border-color .15s;
+}
+.tab.active{color:var(--white);border-bottom-color:var(--red);}
+.tab:hover:not(.active){color:var(--dim);}
 
-  /* ===== Nav tabs ===== */
-  nav.tabs{
-    max-width:1180px; margin:0 auto;
-    display:flex; gap:0;
-    padding:0 20px;
-    border-bottom:1px solid var(--line);
-    background:var(--paper);
-  }
-  .tab-btn{
-    font-family:'JetBrains Mono'; font-size:12px; letter-spacing:1px; text-transform:uppercase;
-    padding:14px 18px;
-    background:none; border:none; cursor:pointer;
-    color:var(--steel);
-    border-bottom:3px solid transparent;
-    position:relative; top:1px;
-  }
-  .tab-btn.active{color:var(--carbon); border-bottom-color:var(--safety-orange); font-weight:700;}
-  .tab-btn:hover:not(.active){color:var(--carbon);}
+/* ===== MAIN LAYOUT ===== */
+main{max-width:1200px;margin:0 auto;padding:24px 16px 100px;}
 
-  main{max-width:1180px; margin:0 auto; padding:28px 20px 80px;}
+/* ===== HERO SEARCH BAR ===== */
+.search-hero{
+  background:linear-gradient(135deg, var(--black2) 0%, var(--steel) 100%);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:24px;
+  margin-bottom:24px;
+  position:relative;
+  overflow:hidden;
+}
+.search-hero::before{
+  content:'PANNÉ';
+  font-family:'Bebas Neue';
+  font-size:120px;
+  color:rgba(232,25,44,0.06);
+  position:absolute;
+  right:-10px;top:-20px;
+  line-height:1;
+  pointer-events:none;
+  letter-spacing:4px;
+}
+.search-hero h1{
+  font-family:'Bebas Neue';
+  font-size:clamp(28px,5vw,44px);
+  line-height:1.05;
+  margin-bottom:6px;
+  letter-spacing:1px;
+}
+.search-hero h1 span{color:var(--red);}
+.search-hero p{
+  color:var(--muted);font-size:13px;margin-bottom:18px;
+}
+.search-row{display:flex;gap:8px;flex-wrap:wrap;}
+.search-input{
+  flex:1;min-width:200px;
+  background:var(--black);
+  border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+  color:var(--white);
+  font-family:'Inter';font-size:14px;
+  padding:12px 16px;
+}
+.search-input::placeholder{color:var(--muted);}
+.search-input:focus{outline:none;border-color:var(--red);}
+.btn-search{
+  background:var(--red);color:var(--white);border:none;
+  padding:12px 24px;border-radius:var(--radius-sm);
+  font-family:'Inter';font-weight:700;font-size:14px;
+  cursor:pointer;white-space:nowrap;
+}
+.btn-search:hover{background:var(--red-dark);}
 
-  /* ===== Section heading ===== */
-  .section-head{
-    display:flex; align-items:flex-end; justify-content:space-between;
-    margin-bottom:18px;
-    flex-wrap:wrap; gap:10px;
-  }
-  .section-head h1{
-    font-size:30px;
-    letter-spacing:-0.5px;
-  }
-  .section-sub{
-    font-family:'JetBrains Mono'; font-size:12px; color:var(--steel); margin-top:4px;
-  }
-  .count-tag{
-    font-family:'JetBrains Mono'; font-size:11px;
-    background:var(--carbon); color:var(--caution-yellow);
-    padding:5px 10px;
-  }
+/* ===== FILTER CHIPS ===== */
+.filter-row{
+  display:flex;gap:8px;flex-wrap:wrap;
+  margin-bottom:20px;
+}
+.chip{
+  font-family:'JetBrains Mono';font-size:11px;font-weight:700;
+  text-transform:uppercase;letter-spacing:0.5px;
+  padding:8px 14px;
+  border:1px solid var(--border);
+  border-radius:40px;
+  background:var(--black2);
+  color:var(--muted);
+  cursor:pointer;
+  transition:all .15s;
+}
+.chip:hover:not(.active){border-color:var(--red);color:var(--white);}
+.chip.active{
+  background:var(--red);color:var(--white);
+  border-color:var(--red);
+}
 
-  /* ===== Filter bar ===== */
-  .filter-bar{
-    display:flex; gap:8px; flex-wrap:wrap;
-    margin-bottom:22px;
-  }
-  .chip{
-    font-family:'JetBrains Mono'; font-size:11px; letter-spacing:0.5px;
-    padding:8px 14px;
-    border:1px solid var(--line-light);
-    background:var(--paper);
-    cursor:pointer;
-    color:var(--steel);
-    text-transform:uppercase;
-  }
-  .chip.active{
-    background:var(--carbon); color:var(--paper); border-color:var(--carbon);
-  }
-  .chip:hover:not(.active){border-color:var(--carbon); color:var(--carbon);}
+/* ===== STATS ROW ===== */
+.stats-row{
+  display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;
+}
+.stat-tag{
+  font-family:'JetBrains Mono';font-size:11px;
+  background:var(--black2);
+  border:1px solid var(--border);
+  border-radius:6px;
+  padding:6px 12px;
+  color:var(--dim);
+  display:flex;align-items:center;gap:6px;
+}
+.stat-tag .dot{
+  width:7px;height:7px;border-radius:50%;
+  background:var(--red);display:inline-block;
+  animation:pulse 2s infinite;
+}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
 
-  /* ===== Directory grid ===== */
-  .grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fill, minmax(290px,1fr));
-    gap:16px;
-  }
-  .card{
-    background:var(--carbon);
-    color:var(--paper);
-    cursor:pointer;
-    position:relative;
-    overflow:hidden;
-    border:1px solid var(--carbon);
-    transition:transform .15s ease;
-  }
-  .card:hover{transform:translateY(-3px);}
-  .card-top{
-    padding:16px 16px 0;
-    display:flex; gap:12px;
-  }
-  .avatar{
-    width:54px; height:54px;
-    background:var(--steel);
-    flex-shrink:0;
-    display:flex; align-items:center; justify-content:center;
-    font-family:'Archivo Black'; font-size:18px;
-    color:var(--paper);
-    border:2px solid var(--safety-orange);
-  }
-  .card-id{flex:1; min-width:0;}
-  .card-name{font-family:'Archivo Black'; font-size:15px; text-transform:uppercase; line-height:1.15;}
-  .card-spec{font-family:'JetBrains Mono'; font-size:10.5px; color:var(--caution-yellow); margin-top:4px; letter-spacing:0.5px;}
-  .card-dist{font-family:'JetBrains Mono'; font-size:10.5px; color:#9c9a8f; margin-top:3px;}
+/* ===== DIRECTORY GRID ===== */
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
+  gap:16px;
+}
 
-  .rating-row{
-    display:flex; align-items:center; gap:6px;
-    padding:12px 16px 0;
-  }
-  .stars{display:flex; gap:2px;}
-  .star{width:13px; height:13px;}
-  .rating-num{font-family:'JetBrains Mono'; font-size:12px; font-weight:700;}
-  .rating-count{font-family:'JetBrains Mono'; font-size:11px; color:#9c9a8f;}
+/* ===== CARD ===== */
+.card{
+  background:var(--black2);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  overflow:hidden;
+  cursor:pointer;
+  transition:transform .2s,border-color .2s,box-shadow .2s;
+  position:relative;
+}
+.card:hover{
+  transform:translateY(-4px);
+  border-color:var(--red);
+  box-shadow:0 8px 32px rgba(232,25,44,0.15);
+}
+.card-cover{
+  height:100px;
+  background:linear-gradient(135deg, var(--steel) 0%, var(--black3) 100%);
+  position:relative;
+  overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+}
+.card-cover-pattern{
+  position:absolute;inset:0;
+  background:repeating-linear-gradient(
+    45deg,
+    transparent,transparent 10px,
+    rgba(232,25,44,0.04) 10px,rgba(232,25,44,0.04) 11px
+  );
+}
+.card-cover-initial{
+  font-family:'Bebas Neue';
+  font-size:52px;
+  color:rgba(255,255,255,0.07);
+  letter-spacing:2px;
+  position:relative;z-index:1;
+}
+.card-spec-badge{
+  position:absolute;top:10px;left:10px;
+  background:var(--red);
+  color:var(--white);
+  font-family:'JetBrains Mono';font-size:9px;font-weight:700;
+  text-transform:uppercase;letter-spacing:1px;
+  padding:4px 8px;
+  border-radius:4px;
+}
+.card-status{
+  position:absolute;top:10px;right:10px;
+  display:flex;align-items:center;gap:4px;
+  background:rgba(10,10,10,0.75);
+  border:1px solid var(--border);
+  border-radius:20px;
+  padding:4px 8px;
+  font-family:'JetBrains Mono';font-size:9px;
+}
+.status-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.status-dot.open{background:var(--green);}
+.status-dot.closed{background:var(--muted);}
 
-  .tag-row{
-    display:flex; gap:6px; flex-wrap:wrap;
-    padding:12px 16px 0;
-  }
-  .mini-tag{
-    font-family:'JetBrains Mono'; font-size:9.5px;
-    border:1px solid var(--steel);
-    padding:3px 7px;
-    color:#cfc7ad;
-    text-transform:uppercase;
-  }
-  .mini-tag.parts{border-color:var(--ok-green); color:#8fc99e;}
+.card-body{padding:14px;}
+.card-avatar-row{
+  display:flex;align-items:center;gap:12px;
+  margin-bottom:10px;
+}
+.avatar{
+  width:48px;height:48px;border-radius:10px;
+  background:var(--steel);
+  border:2px solid var(--red);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Bebas Neue';font-size:18px;
+  color:var(--white);
+  flex-shrink:0;
+}
+.card-name{
+  font-weight:800;font-size:14px;line-height:1.2;
+  color:var(--white);
+}
+.card-meta{
+  font-family:'JetBrains Mono';font-size:10px;
+  color:var(--muted);margin-top:3px;
+}
+.rating-row{
+  display:flex;align-items:center;gap:6px;
+  margin-bottom:10px;
+}
+.stars-wrap{display:flex;gap:2px;}
+.star-svg{width:12px;height:12px;}
+.rating-num{
+  font-weight:800;font-size:14px;color:var(--white);
+}
+.rating-count{
+  font-family:'JetBrains Mono';font-size:10px;color:var(--muted);
+}
+.card-tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;}
+.tag{
+  font-family:'JetBrains Mono';font-size:9px;font-weight:700;
+  text-transform:uppercase;letter-spacing:0.5px;
+  padding:3px 8px;
+  border-radius:4px;
+  border:1px solid var(--border);
+  color:var(--muted);
+}
+.tag.green{border-color:rgba(34,197,94,0.4);color:var(--green);}
+.card-footer{
+  display:flex;align-items:center;justify-content:space-between;
+  padding-top:10px;
+  border-top:1px solid var(--border);
+}
+.price-txt{font-size:12px;color:var(--muted);}
+.price-txt b{color:var(--white);font-size:13px;}
+.btn-card{
+  background:var(--red);color:var(--white);border:none;
+  padding:7px 14px;border-radius:6px;
+  font-family:'Inter';font-weight:700;font-size:11px;
+  cursor:pointer;
+}
 
-  .card-bottom{
-    margin-top:14px;
-    padding:10px 16px;
-    background:var(--carbon-soft);
-    display:flex; align-items:center; justify-content:space-between;
-    border-top:1px solid var(--line);
-  }
-  .price-tag{font-family:'JetBrains Mono'; font-size:11px; color:var(--paper-dim);}
-  .price-tag b{color:var(--caution-yellow); font-size:13px;}
-  .status-dot{
-    width:8px; height:8px; border-radius:50%;
-    display:inline-block; margin-right:5px;
-  }
-  .status-dot.open{background:var(--ok-green);}
-  .status-dot.closed{background:#a45;}
-  .status-txt{font-family:'JetBrains Mono'; font-size:10px; color:#cfc7ad;}
+/* ===== EMPTY STATE ===== */
+.empty{
+  text-align:center;padding:80px 20px;
+  grid-column:1/-1;
+}
+.empty .bebas{font-size:28px;color:var(--dim);margin-bottom:8px;}
+.empty p{font-size:13px;color:var(--muted);}
 
-  /* ===== Profile view ===== */
-  .back-btn{
-    font-family:'JetBrains Mono'; font-size:12px;
-    display:inline-flex; align-items:center; gap:6px;
-    background:none; border:none; cursor:pointer;
-    color:var(--steel); margin-bottom:18px;
-    text-transform:uppercase; letter-spacing:0.5px;
-  }
-  .back-btn:hover{color:var(--carbon);}
+/* ===== PROFILE VIEW ===== */
+.profile-back{
+  display:inline-flex;align-items:center;gap:8px;
+  background:none;border:none;cursor:pointer;
+  color:var(--muted);font-family:'JetBrains Mono';
+  font-size:11px;text-transform:uppercase;letter-spacing:1px;
+  margin-bottom:20px;
+  transition:color .15s;
+}
+.profile-back:hover{color:var(--white);}
 
-  .profile-head{
-    background:var(--carbon); color:var(--paper);
-    padding:28px; display:flex; gap:22px; flex-wrap:wrap;
-    position:relative;
-  }
-  .profile-head::after{
-    content:''; position:absolute; left:0; right:0; bottom:0; height:5px;
-    background:repeating-linear-gradient(135deg, var(--caution-yellow) 0 10px, var(--carbon) 10px 20px);
-  }
-  .p-avatar{
-    width:96px; height:96px;
-    background:var(--steel);
-    display:flex; align-items:center; justify-content:center;
-    font-family:'Archivo Black'; font-size:34px;
-    border:3px solid var(--safety-orange);
-    flex-shrink:0;
-  }
-  .p-info{flex:1; min-width:220px;}
-  .p-name{font-size:26px; letter-spacing:-0.5px; margin-bottom:6px;}
-  .p-spec{font-family:'JetBrains Mono'; font-size:12px; color:var(--caution-yellow); letter-spacing:0.5px; margin-bottom:10px;}
-  .p-meta-row{display:flex; gap:18px; flex-wrap:wrap; margin-top:10px;}
-  .p-meta-item{font-family:'JetBrains Mono'; font-size:11.5px; color:#cfc7ad; display:flex; align-items:center; gap:6px;}
-  .p-meta-item svg{width:13px; height:13px; flex-shrink:0;}
-  .p-rating-block{
-    text-align:center;
-    border-left:1px solid var(--line);
-    padding-left:22px;
-    flex-shrink:0;
-  }
-  .p-rating-num{font-family:'Archivo Black'; font-size:38px; line-height:1; color:var(--caution-yellow);}
-  .p-rating-stars{display:flex; gap:3px; justify-content:center; margin:6px 0;}
-  .p-rating-count{font-family:'JetBrains Mono'; font-size:10.5px; color:#9c9a8f;}
+.profile-cover{
+  height:160px;
+  background:linear-gradient(135deg, var(--black3) 0%, var(--steel) 50%, var(--black3) 100%);
+  border-radius:var(--radius) var(--radius) 0 0;
+  border:1px solid var(--border);
+  border-bottom:none;
+  position:relative;overflow:hidden;
+}
+.profile-cover-pattern{
+  position:absolute;inset:0;
+  background:repeating-linear-gradient(
+    -45deg,
+    transparent,transparent 20px,
+    rgba(232,25,44,0.03) 20px,rgba(232,25,44,0.03) 21px
+  );
+}
+.profile-cover-name{
+  position:absolute;bottom:20px;left:24px;
+  font-family:'Bebas Neue';
+  font-size:clamp(28px,6vw,54px);
+  color:rgba(255,255,255,0.08);
+  letter-spacing:3px;
+  line-height:1;
+}
 
-  .profile-body{
-    display:grid; grid-template-columns:1.5fr 1fr; gap:18px;
-    margin-top:18px;
-  }
-  @media (max-width:760px){.profile-body{grid-template-columns:1fr;}}
+.profile-head{
+  background:var(--black2);
+  border:1px solid var(--border);
+  border-top:none;
+  border-radius:0 0 var(--radius) var(--radius);
+  padding:0 24px 24px;
+  margin-bottom:20px;
+  position:relative;
+}
+.profile-avatar-wrap{
+  display:flex;align-items:flex-end;gap:16px;
+  margin-top:-32px;
+  margin-bottom:16px;
+}
+.profile-avatar{
+  width:80px;height:80px;
+  background:var(--steel);
+  border:3px solid var(--black2);
+  border-radius:var(--radius);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Bebas Neue';font-size:30px;
+  color:var(--white);
+  flex-shrink:0;
+  position:relative;
+}
+.profile-avatar::after{
+  content:'';
+  position:absolute;inset:0;
+  border-radius:calc(var(--radius) - 2px);
+  border:2px solid var(--red);
+  pointer-events:none;
+}
+.profile-badge{
+  background:var(--red);
+  color:var(--white);
+  font-family:'JetBrains Mono';font-size:10px;font-weight:700;
+  text-transform:uppercase;letter-spacing:1px;
+  padding:5px 10px;border-radius:6px;
+  align-self:flex-start;
+  margin-top:40px;
+}
+.profile-actions{
+  margin-left:auto;
+  display:flex;gap:8px;
+  align-self:flex-end;
+  flex-wrap:wrap;
+}
+.btn-wa{
+  display:flex;align-items:center;gap:6px;
+  background:#25D366;color:#fff;border:none;
+  padding:9px 16px;border-radius:8px;
+  font-family:'Inter';font-weight:700;font-size:12px;
+  cursor:pointer;
+}
+.btn-directions{
+  display:flex;align-items:center;gap:6px;
+  background:var(--steel);color:var(--white);
+  border:1px solid var(--border);
+  padding:9px 16px;border-radius:8px;
+  font-family:'Inter';font-weight:700;font-size:12px;
+  cursor:pointer;
+}
+.btn-directions:hover{border-color:var(--red);}
 
-  .panel{
-    background:#fff;
-    border:1px solid var(--line-light);
-  }
-  .panel-head{
-    padding:14px 18px;
-    border-bottom:1px solid var(--line-light);
-    display:flex; align-items:center; justify-content:between;
-  }
-  .panel-head h3{
-    font-family:'JetBrains Mono'; font-size:12px; letter-spacing:1.5px; text-transform:uppercase;
-    color:var(--steel);
-  }
-  .panel-body{padding:18px;}
+.profile-name-block{margin-bottom:12px;}
+.profile-name{
+  font-weight:900;font-size:clamp(20px,4vw,28px);
+  line-height:1.1;margin-bottom:4px;
+}
+.profile-spec{
+  font-family:'JetBrains Mono';font-size:11px;
+  color:var(--red);font-weight:700;letter-spacing:1px;
+  text-transform:uppercase;
+}
+.profile-meta-row{
+  display:flex;gap:16px;flex-wrap:wrap;margin-top:10px;
+}
+.profile-meta-item{
+  display:flex;align-items:center;gap:6px;
+  font-family:'JetBrains Mono';font-size:11px;color:var(--muted);
+}
+.profile-meta-item svg{width:13px;height:13px;flex-shrink:0;}
+.profile-meta-item a{color:var(--dim);text-decoration:none;}
+.profile-meta-item a:hover{color:var(--white);}
 
-  .service-row{
-    display:flex; justify-content:space-between; align-items:center;
-    padding:11px 0; border-bottom:1px dashed var(--line-light);
-    font-size:14px;
-  }
-  .service-row:last-child{border-bottom:none;}
-  .service-price{font-family:'JetBrains Mono'; font-weight:700; color:var(--safety-orange); font-size:13.5px;}
+.profile-rating-block{
+  display:flex;align-items:center;gap:16px;
+  padding:16px;
+  background:var(--black3);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  margin-top:16px;
+}
+.rating-big{
+  font-family:'Bebas Neue';font-size:52px;
+  color:var(--white);line-height:1;
+}
+.rating-big-label{font-family:'JetBrains Mono';font-size:10px;color:var(--muted);}
+.rating-stars-big{display:flex;gap:3px;margin:6px 0;}
+.rating-bar-wrap{flex:1;}
+.rating-bar-row{
+  display:flex;align-items:center;gap:8px;
+  margin-bottom:4px;
+}
+.rating-bar-label{font-family:'JetBrains Mono';font-size:10px;color:var(--muted);width:10px;}
+.rating-bar-bg{flex:1;height:5px;background:var(--steel);border-radius:3px;}
+.rating-bar-fill{height:100%;background:var(--red);border-radius:3px;}
 
-  .parts-note{
-    background:#eef4ef; border-left:3px solid var(--ok-green);
-    padding:12px 14px; font-size:13px; line-height:1.5; margin-top:4px;
-  }
+/* ===== PROFILE BODY 2-col ===== */
+.profile-body{
+  display:grid;
+  grid-template-columns:1fr 340px;
+  gap:20px;
+}
+@media(max-width:768px){.profile-body{grid-template-columns:1fr;}}
 
-  .review{
-    padding:14px 0; border-bottom:1px solid var(--line-light);
-  }
-  .review:last-child{border-bottom:none;}
-  .review-top{display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;}
-  .review-name{font-weight:700; font-size:13.5px;}
-  .review-date{font-family:'JetBrains Mono'; font-size:10.5px; color:var(--steel);}
-  .review-stars{display:flex; gap:2px; margin-bottom:6px;}
-  .review-text{font-size:13.5px; line-height:1.55; color:#3a382f;}
+/* ===== PANEL (card contenedor) ===== */
+.panel{
+  background:var(--black2);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  overflow:hidden;
+  margin-bottom:16px;
+}
+.panel-head{
+  padding:14px 18px;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.panel-title{
+  font-weight:700;font-size:13px;color:var(--white);
+  display:flex;align-items:center;gap:8px;
+}
+.panel-title svg{width:15px;height:15px;color:var(--red);}
+.panel-body{padding:18px;}
 
-  .cta-block{
-    background:var(--carbon); color:var(--paper);
-    padding:18px;
-  }
-  .cta-block .btn-primary{
-    width:100%; padding:13px;
-    background:var(--safety-orange); color:#fff;
-    border:none; font-family:'JetBrains Mono'; font-size:12px; letter-spacing:1px; text-transform:uppercase;
-    cursor:pointer; font-weight:700;
-    margin-bottom:10px;
-  }
-  .cta-block .btn-primary:hover{background:#c64517;}
-  .cta-block .btn-secondary{
-    width:100%; padding:13px;
-    background:none; border:1px solid var(--steel); color:var(--paper-dim);
-    font-family:'JetBrains Mono'; font-size:12px; letter-spacing:1px; text-transform:uppercase;
-    cursor:pointer;
-  }
-  .cta-block .btn-secondary:hover{border-color:var(--paper);}
+/* ===== SERVICE ROWS ===== */
+.service-row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:11px 0;
+  border-bottom:1px solid var(--border);
+  font-size:14px;
+}
+.service-row:last-child{border-bottom:none;}
+.service-price{
+  font-family:'JetBrains Mono';font-weight:700;
+  color:var(--red);font-size:13px;
+}
 
-  .add-review-box{
-    margin-top:14px; padding-top:14px; border-top:1px solid var(--line-light);
-  }
-  .add-review-box textarea{
-    width:100%; border:1px solid var(--line-light); padding:10px;
-    font-family:'Archivo'; font-size:13px; resize:vertical; min-height:60px;
-  }
-  .star-picker{display:flex; gap:4px; margin:8px 0;}
-  .star-picker svg{width:20px; height:20px; cursor:pointer;}
-  .submit-review-btn{
-    background:var(--carbon); color:var(--paper); border:none;
-    padding:9px 16px; font-family:'JetBrains Mono'; font-size:11px; text-transform:uppercase;
-    cursor:pointer; letter-spacing:0.5px;
-  }
+/* ===== REVIEWS ===== */
+.review{padding:16px 0;border-bottom:1px solid var(--border);}
+.review:last-child{border-bottom:none;}
+.review-head{
+  display:flex;justify-content:space-between;
+  align-items:center;margin-bottom:8px;
+}
+.review-name{font-weight:700;font-size:13px;}
+.review-date{font-family:'JetBrains Mono';font-size:10px;color:var(--muted);}
+.review-stars{display:flex;gap:2px;margin-bottom:8px;}
+.review-text{font-size:13px;line-height:1.6;color:var(--dim);}
 
-  /* ===== Map view (Leaflet) ===== */
-  .map-wrap{
-    background:var(--carbon-soft);
-    border:1px solid var(--line);
-    height:460px;
-    position:relative;
-    overflow:hidden;
-  }
-  #leafletMap{
-    width:100%; height:100%;
-    filter:saturate(0.85) contrast(1.05);
-  }
-  .map-legend{
-    position:absolute; bottom:12px; left:12px; z-index:1000;
-    background:var(--carbon); color:var(--paper-dim);
-    font-family:'JetBrains Mono'; font-size:10px;
-    padding:8px 12px; line-height:1.8;
-    pointer-events:none;
-  }
-  /* custom divIcon markers */
-  .pin-mech{
-    width:30px; height:30px;
-    background:var(--safety-orange);
-    transform:rotate(45deg);
-    border:2px solid var(--carbon);
-    display:flex; align-items:center; justify-content:center;
-    box-shadow:0 2px 4px rgba(0,0,0,0.3);
-  }
-  .pin-mech span{
-    transform:rotate(-45deg);
-    font-family:'Archivo Black'; font-size:10.5px; color:#fff;
-  }
-  .pin-mech.closed{background:var(--steel);}
-  .pin-you{
-    width:18px; height:18px; background:var(--caution-yellow);
-    border:3px solid var(--carbon); border-radius:50%;
-    box-shadow:0 0 0 7px rgba(240,180,41,0.25);
-  }
-  .leaflet-popup-content-wrapper{
-    background:var(--carbon); color:var(--paper);
-    border-radius:0; font-family:'Archivo',sans-serif;
-  }
-  .leaflet-popup-tip{background:var(--carbon);}
-  .leaflet-popup-content{margin:12px 14px; min-width:160px;}
-  .popup-name{font-family:'Archivo Black'; font-size:13px; text-transform:uppercase; margin-bottom:4px;}
-  .popup-spec{font-family:'JetBrains Mono'; font-size:10px; color:var(--caution-yellow); margin-bottom:6px;}
-  .popup-rating{font-family:'JetBrains Mono'; font-size:11px; color:var(--paper-dim); margin-bottom:8px;}
-  .popup-btn{
-    display:inline-block; background:var(--safety-orange); color:#fff;
-    font-family:'JetBrains Mono'; font-size:10px; text-transform:uppercase;
-    padding:6px 10px; cursor:pointer; letter-spacing:0.5px;
-  }
-  .leaflet-control-zoom a{
-    background:var(--carbon) !important; color:var(--paper) !important;
-    border-color:var(--line) !important;
-  }
-  .leaflet-control-zoom a:hover{background:var(--safety-orange) !important;}
-  .map-list{margin-top:18px; display:flex; flex-direction:column; gap:10px;}
-  .map-list-item{
-    display:flex; align-items:center; justify-content:space-between;
-    padding:14px 16px; background:#fff; border:1px solid var(--line-light);
-    cursor:pointer;
-  }
-  .map-list-item:hover{border-color:var(--safety-orange);}
-  .mli-left{display:flex; align-items:center; gap:12px;}
-  .mli-dist{font-family:'JetBrains Mono'; font-size:13px; font-weight:700; color:var(--safety-orange); min-width:48px;}
-  .mli-name{font-weight:700; font-size:14px;}
-  .mli-spec{font-family:'JetBrains Mono'; font-size:10.5px; color:var(--steel); margin-top:2px;}
+.add-review{
+  margin-top:16px;padding-top:16px;
+  border-top:1px solid var(--border);
+}
+.add-review-label{
+  font-family:'JetBrains Mono';font-size:11px;
+  text-transform:uppercase;letter-spacing:1px;
+  color:var(--muted);margin-bottom:10px;
+}
+.star-picker{display:flex;gap:6px;margin-bottom:12px;}
+.star-picker span{cursor:pointer;}
+.star-picker span svg{width:22px;height:22px;}
+textarea.review-input{
+  width:100%;
+  background:var(--black3);
+  border:1px solid var(--border);
+  border-radius:8px;
+  color:var(--white);
+  font-family:'Inter';font-size:13px;
+  padding:12px;
+  resize:vertical;min-height:80px;
+  margin-bottom:10px;
+}
+textarea.review-input:focus{outline:none;border-color:var(--red);}
+.btn-submit-review{
+  background:var(--red);color:var(--white);border:none;
+  padding:10px 20px;border-radius:8px;
+  font-family:'Inter';font-weight:700;font-size:12px;
+  cursor:pointer;
+}
 
-  /* ===== empty state ===== */
-  .empty{
-    text-align:center; padding:60px 20px;
-    color:var(--steel);
-  }
-  .empty .display{font-size:20px; margin-bottom:8px; color:var(--carbon);}
-  .empty p{font-family:'JetBrains Mono'; font-size:12px;}
+/* ===== PARTS NOTE ===== */
+.parts-note{
+  background:rgba(34,197,94,0.08);
+  border-left:3px solid var(--green);
+  border-radius:0 8px 8px 0;
+  padding:12px 14px;
+  font-size:13px;line-height:1.6;color:var(--dim);
+}
 
-  footer{
-    border-top:1px solid var(--line); margin-top:40px;
-    padding:24px 20px; text-align:center;
-    font-family:'JetBrains Mono'; font-size:10.5px; color:var(--steel);
-  }
+/* ===== SPEC BADGES ===== */
+.spec-badges{display:flex;flex-wrap:wrap;gap:8px;}
+.spec-badge{
+  font-family:'JetBrains Mono';font-size:10px;font-weight:700;
+  text-transform:uppercase;letter-spacing:0.5px;
+  padding:6px 12px;
+  border-radius:6px;
+  border:1px solid var(--border);
+  color:var(--dim);
+  background:var(--black3);
+}
 
-  ::-webkit-scrollbar{width:10px;}
-  ::-webkit-scrollbar-track{background:var(--paper-dim);}
-  ::-webkit-scrollbar-thumb{background:var(--steel);}
+/* ===== SIDEBAR CARD ===== */
+.sidebar-cta{
+  background:var(--black2);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:20px;
+  margin-bottom:16px;
+}
+.sidebar-cta-title{
+  font-family:'JetBrains Mono';font-size:10px;
+  text-transform:uppercase;letter-spacing:2px;
+  color:var(--muted);margin-bottom:14px;
+}
+.btn-full{
+  width:100%;padding:13px;border-radius:8px;
+  font-family:'Inter';font-weight:700;font-size:13px;
+  cursor:pointer;margin-bottom:10px;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  border:none;
+}
+.btn-full.red{background:var(--red);color:#fff;}
+.btn-full.red:hover{background:var(--red-dark);}
+.btn-full.outline{background:none;border:1px solid var(--border);color:var(--dim);}
+.btn-full.outline:hover{border-color:var(--red);color:var(--white);}
+.btn-full svg{width:16px;height:16px;}
 
-  .hidden{display:none !important;}
+/* ===== TRIAL BADGE ===== */
+.trial-badge{
+  background:rgba(255,214,0,0.1);
+  border:1px solid rgba(255,214,0,0.3);
+  border-radius:8px;
+  padding:10px 14px;
+  font-family:'JetBrains Mono';font-size:10px;
+  color:var(--yellow);
+  text-align:center;
+  letter-spacing:0.5px;
+  margin-top:6px;
+}
 
-  /* ===== Registration form ===== */
-  .form-label{
-    display:flex; flex-direction:column; gap:6px;
-    font-family:'JetBrains Mono'; font-size:11px; letter-spacing:0.5px; text-transform:uppercase;
-    color:var(--steel);
-  }
-  .form-input{
-    font-family:'Archivo'; font-size:14px;
-    border:1px solid var(--line-light);
-    padding:11px 12px;
-    background:#fff;
-    color:var(--carbon);
-    width:100%;
-  }
-  .form-input:focus{ outline:2px solid var(--safety-orange); outline-offset:-1px; }
-  select.form-input{ cursor:pointer; }
-  .service-row-form{
-    display:flex; gap:8px; align-items:center;
-  }
-  .service-row-form .form-input{ flex:1; }
-  .service-row-form .remove-service{
-    background:none; border:1px solid var(--line-light); color:var(--steel);
-    width:38px; height:38px; flex-shrink:0; cursor:pointer; font-size:16px;
-  }
-  .service-row-form .remove-service:hover{ border-color:#a45; color:#a45; }
-  .photo-thumb{
-    width:80px; height:80px; object-fit:cover;
-    border:1px solid var(--line-light);
-  }
-  .step-dots{ display:flex; gap:6px; margin-top:6px; }
-  .step-dot{ width:24px; height:4px; background:var(--line-light); }
-  .step-dot.active{ background:var(--safety-orange); }
+/* ===== MAP VIEW ===== */
+.map-wrap{
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  height:420px;overflow:hidden;
+  margin-bottom:16px;
+}
+#leafletMap{width:100%;height:100%;filter:invert(1) hue-rotate(200deg) saturate(0.4) brightness(0.85);}
+.map-list{display:flex;flex-direction:column;gap:8px;}
+.map-list-item{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 16px;
+  background:var(--black2);
+  border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+  cursor:pointer;
+  transition:border-color .15s;
+}
+.map-list-item:hover{border-color:var(--red);}
+.mli-left{display:flex;align-items:center;gap:12px;}
+.mli-dist{
+  font-family:'JetBrains Mono';font-weight:700;font-size:13px;
+  color:var(--red);min-width:50px;
+}
+.mli-name{font-weight:700;font-size:13px;}
+.mli-spec{font-family:'JetBrains Mono';font-size:10px;color:var(--muted);margin-top:2px;}
+
+/* ===== MAP CUSTOM MARKERS ===== */
+.pin-mech{
+  width:28px;height:28px;
+  background:var(--red);
+  transform:rotate(45deg);
+  border:2px solid var(--black);
+  border-radius:3px;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 2px 8px rgba(232,25,44,0.4);
+}
+.pin-mech span{
+  transform:rotate(-45deg);
+  font-family:'Bebas Neue';font-size:9px;color:#fff;
+}
+.pin-mech.closed{background:var(--mid);}
+.pin-you{
+  width:16px;height:16px;
+  background:var(--yellow);
+  border:3px solid var(--black);
+  border-radius:50%;
+  box-shadow:0 0 0 6px rgba(255,214,0,0.2);
+}
+.leaflet-popup-content-wrapper{
+  background:var(--black2);color:var(--white);
+  border-radius:var(--radius-sm)!important;
+  border:1px solid var(--border);
+  box-shadow:0 8px 32px rgba(0,0,0,0.4)!important;
+}
+.leaflet-popup-tip{background:var(--black2);}
+.leaflet-popup-content{margin:14px 16px!important;min-width:160px;}
+.popup-name{font-weight:800;font-size:13px;margin-bottom:4px;}
+.popup-spec{font-family:'JetBrains Mono';font-size:10px;color:var(--red);margin-bottom:6px;}
+.popup-rating{font-family:'JetBrains Mono';font-size:11px;color:var(--muted);margin-bottom:8px;}
+.popup-btn{
+  display:inline-block;background:var(--red);color:#fff;
+  font-family:'JetBrains Mono';font-size:10px;font-weight:700;
+  text-transform:uppercase;letter-spacing:0.5px;
+  padding:6px 12px;border-radius:6px;cursor:pointer;
+  margin-right:6px;
+}
+.leaflet-control-zoom a{
+  background:var(--black2)!important;color:var(--white)!important;
+  border-color:var(--border)!important;
+}
+.leaflet-control-zoom a:hover{background:var(--red)!important;}
+
+/* ===== SOY MECANICO ===== */
+.registro-hero{
+  text-align:center;padding:60px 20px;
+  max-width:540px;margin:0 auto;
+}
+.registro-hero .bebas{font-size:48px;margin-bottom:8px;line-height:1;}
+.registro-hero .bebas span{color:var(--red);}
+.registro-hero p{color:var(--muted);font-size:14px;line-height:1.7;margin-bottom:8px;}
+.pricing-cards{display:flex;gap:16px;justify-content:center;margin:24px 0;flex-wrap:wrap;}
+.pricing-card{
+  background:var(--black2);border:1px solid var(--border);
+  border-radius:var(--radius);padding:20px;
+  text-align:center;flex:1;min-width:160px;max-width:200px;
+}
+.pricing-card.featured{
+  border-color:var(--red);
+  background:linear-gradient(135deg,rgba(232,25,44,0.08) 0%,var(--black2) 100%);
+}
+.pricing-price{
+  font-family:'Bebas Neue';font-size:36px;color:var(--white);line-height:1;
+}
+.pricing-label{font-family:'JetBrains Mono';font-size:10px;color:var(--muted);margin-top:4px;}
+.pricing-desc{font-size:12px;color:var(--dim);margin-top:8px;}
+
+/* ===== FORM STYLES ===== */
+.form-wrap{max-width:640px;margin:0 auto;}
+.step-indicator{
+  display:flex;gap:6px;margin-bottom:24px;
+  align-items:center;
+}
+.step-dot{
+  width:28px;height:4px;border-radius:2px;
+  background:var(--border);transition:background .2s;
+}
+.step-dot.active{background:var(--red);}
+.step-dot.done{background:rgba(232,25,44,0.4);}
+.step-label{
+  font-family:'JetBrains Mono';font-size:11px;
+  color:var(--muted);margin-left:6px;
+  text-transform:uppercase;letter-spacing:1px;
+}
+.form-section-title{
+  font-weight:800;font-size:18px;margin-bottom:4px;
+}
+.form-section-sub{
+  font-family:'JetBrains Mono';font-size:11px;
+  color:var(--muted);margin-bottom:20px;
+}
+.form-label{
+  display:flex;flex-direction:column;gap:6px;
+  font-family:'JetBrains Mono';font-size:11px;
+  font-weight:700;text-transform:uppercase;letter-spacing:0.5px;
+  color:var(--muted);
+}
+.form-input{
+  font-family:'Inter';font-size:14px;
+  background:var(--black3);
+  border:1px solid var(--border);
+  border-radius:8px;
+  color:var(--white);
+  padding:12px 14px;
+  width:100%;
+  transition:border-color .15s;
+}
+.form-input:focus{outline:none;border-color:var(--red);}
+select.form-input{cursor:pointer;}
+select.form-input option{background:var(--black2);}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+@media(max-width:500px){.form-grid{grid-template-columns:1fr;}}
+.form-stack{display:flex;flex-direction:column;gap:14px;}
+.service-row-form{display:flex;gap:8px;align-items:center;}
+.service-row-form .form-input{flex:1;}
+.remove-btn{
+  background:none;border:1px solid var(--border);
+  color:var(--muted);width:38px;height:38px;flex-shrink:0;
+  cursor:pointer;border-radius:8px;font-size:16px;
+}
+.remove-btn:hover{border-color:var(--red);color:var(--red);}
+.photo-preview{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
+.photo-thumb{width:80px;height:80px;object-fit:cover;border-radius:8px;border:1px solid var(--border);}
+.gps-status{font-family:'JetBrains Mono';font-size:11px;color:var(--green);margin-top:8px;}
+.form-nav{display:flex;gap:10px;margin-top:24px;}
+.btn-prev{
+  background:none;border:1px solid var(--border);color:var(--dim);
+  padding:13px 20px;border-radius:8px;
+  font-family:'Inter';font-weight:700;font-size:13px;
+  cursor:pointer;
+}
+.btn-prev:hover{border-color:var(--red);color:var(--white);}
+.btn-next{
+  flex:1;background:var(--red);color:#fff;border:none;
+  padding:13px;border-radius:8px;
+  font-family:'Inter';font-weight:700;font-size:13px;
+  cursor:pointer;
+}
+.btn-next:hover{background:var(--red-dark);}
+.success-box{
+  text-align:center;padding:60px 20px;
+  max-width:480px;margin:0 auto;
+}
+.success-icon{
+  width:64px;height:64px;background:rgba(34,197,94,0.15);
+  border:2px solid var(--green);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 20px;font-size:28px;
+}
+.success-box h2{font-size:28px;font-weight:800;margin-bottom:8px;}
+.success-box p{color:var(--muted);font-size:14px;line-height:1.7;}
+.success-summary{
+  background:var(--black2);border:1px solid var(--border);
+  border-radius:var(--radius);padding:18px;
+  text-align:left;margin-top:20px;font-size:13px;line-height:1.9;
+}
+
+/* ===== AUTH MODAL ===== */
+.modal-overlay{
+  position:fixed;inset:0;
+  background:rgba(0,0,0,0.8);
+  backdrop-filter:blur(4px);
+  z-index:200;
+  display:flex;align-items:center;justify-content:center;
+  padding:20px;
+}
+.modal{
+  background:var(--black2);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  max-width:400px;width:100%;
+  max-height:90vh;overflow-y:auto;
+}
+.modal-head{
+  padding:18px 20px;
+  border-bottom:1px solid var(--border);
+  display:flex;justify-content:space-between;align-items:center;
+}
+.modal-title{font-weight:800;font-size:16px;}
+.modal-close{
+  background:none;border:none;color:var(--muted);
+  font-size:22px;cursor:pointer;line-height:1;
+}
+.modal-close:hover{color:var(--white);}
+.modal-body{padding:22px;}
+.role-tabs{
+  display:flex;gap:0;margin-bottom:18px;
+  border-bottom:1px solid var(--border);
+}
+.role-tab{
+  flex:1;padding:10px;
+  background:none;border:none;
+  font-family:'JetBrains Mono';font-size:11px;font-weight:700;
+  text-transform:uppercase;letter-spacing:0.5px;
+  cursor:pointer;color:var(--muted);
+  border-bottom:2px solid transparent;
+  position:relative;top:1px;
+}
+.role-tab.active{color:var(--white);border-bottom-color:var(--red);}
+.modal-toggle{
+  font-family:'JetBrains Mono';font-size:11px;
+  color:var(--muted);text-align:center;margin-bottom:16px;
+}
+.modal-toggle a{color:var(--red);text-decoration:none;font-weight:700;}
+.modal-toggle a:hover{text-decoration:underline;}
+.auth-error{
+  font-family:'JetBrains Mono';font-size:11px;
+  color:#ff6b6b;font-weight:700;min-height:16px;
+  margin-bottom:4px;
+}
+.btn-auth{
+  width:100%;padding:13px;border-radius:8px;border:none;
+  background:var(--red);color:#fff;
+  font-family:'Inter';font-weight:700;font-size:13px;
+  cursor:pointer;margin-top:4px;
+}
+.btn-auth:hover{background:var(--red-dark);}
+.trial-note{
+  font-family:'JetBrains Mono';font-size:10px;
+  color:var(--green);text-align:center;margin-top:10px;
+  font-weight:700;
+}
+
+/* ===== INSTALL MODAL ===== */
+.install-steps{
+  font-size:14px;line-height:1.8;color:var(--dim);
+}
+.install-steps ol{padding-left:20px;}
+.install-steps li{margin-bottom:8px;}
+.install-note{
+  background:rgba(232,25,44,0.08);
+  border-left:3px solid var(--red);
+  border-radius:0 6px 6px 0;
+  padding:10px 14px;
+  font-size:12px;color:var(--muted);
+  margin-top:14px;
+}
+.already-installed{
+  text-align:center;padding:20px;
+  font-size:28px;margin-bottom:8px;
+}
+
+/* ===== FOOTER ===== */
+footer{
+  border-top:1px solid var(--border);
+  padding:20px;text-align:center;
+  font-family:'JetBrains Mono';font-size:9px;
+  color:var(--muted);letter-spacing:1px;
+  text-transform:uppercase;
+  margin-top:40px;
+}
+
+/* ===== LEAFLET OVERRIDE ===== */
+.leaflet-tile-pane{filter:none;}
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar{width:8px;}
+::-webkit-scrollbar-track{background:var(--black2);}
+::-webkit-scrollbar-thumb{background:var(--steel);border-radius:4px;}
+
+.hidden{display:none!important;}
 </style>
 </head>
 <body>
 
-<header class="app-top">
-  <div class="app-top-inner">
-    <div class="brand">
-      <div class="brand-mark">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#1a1a18" stroke-width="2.5"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+<!-- TOP BAR -->
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="logo" href="#">
+      <div class="logo-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5">
+          <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+        </svg>
       </div>
-      <div class="brand-name">
-        <span class="t1">Taller Cercano</span>
-        <span class="t2">CHILE · DIRECTORIO DE TALLERES</span>
+      <div>
+        <div class="logo-name">PANNÉ</div>
+        <div class="logo-sub">Chile · Talleres & Vulcanizadoras</div>
       </div>
+    </a>
+    <div class="topbar-right">
+      <button class="btn-icon" id="locBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        <span id="locLabel">Ubicación</span>
+      </button>
+      <button class="btn-icon primary" id="installBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+        <span>Instalar</span>
+      </button>
+      <button class="btn-icon" id="accountBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span id="accountLabel">Entrar</span>
+      </button>
     </div>
-    <div class="top-loc" id="locBtn" style="cursor:pointer;">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-      <span id="locLabel">Ubicación aproximada</span>
-    </div>
-    <button class="top-loc" id="installBtn" style="background:var(--safety-orange); border-color:var(--safety-orange); color:var(--carbon); cursor:pointer; font-weight:700;">
-      <svg viewBox="0 0 24 24" fill="none" stroke="var(--carbon)" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-      <span>Instalar app</span>
-    </button>
-    <button class="top-loc" id="accountBtn" style="cursor:pointer; background:var(--carbon); border:1px solid var(--steel); color:var(--paper-dim);">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-      <span id="accountLabel">Iniciar sesión</span>
-    </button>
   </div>
-  <nav class="tabs">
-    <button class="tab-btn active" data-tab="directorio">Directorio</button>
-    <button class="tab-btn" data-tab="mapa">Cerca de mí</button>
-    <button class="tab-btn" data-tab="perfil-mecanico" id="tabSoyMecanico">Soy mecánico</button>
-  </nav>
 </header>
+
+<!-- NAV TABS -->
+<nav class="nav-tabs">
+  <div class="nav-tabs-inner">
+    <button class="tab active" data-tab="directorio">Directorio</button>
+    <button class="tab" data-tab="mapa">Mapa</button>
+    <button class="tab" data-tab="perfil-mecanico">Soy taller</button>
+  </div>
+</nav>
 
 <main>
 
-  <!-- ===================== DIRECTORIO ===================== -->
+  <!-- DIRECTORIO -->
   <section id="view-directorio">
-    <div class="section-head">
-      <div>
-        <h1 class="display">Encuentra tu mecánico</h1>
-        <div class="section-sub">NEGOCIOS REALES DE CHILE · CALIFICACIONES DE GOOGLE MAPS</div>
+    <div class="search-hero">
+      <h1 class="bebas">Encuentra tu taller<br><span>de confianza</span></h1>
+      <p>Talleres mecánicos y vulcanizadoras reales de Chile — con calificaciones verificadas de clientes reales.</p>
+      <div class="search-row">
+        <input type="text" class="search-input" id="searchInput" placeholder="Buscar por nombre, especialidad o ciudad…">
+        <button class="btn-search" onclick="applySearch()">Buscar</button>
       </div>
-      <div class="count-tag" id="resultCount">12 TALLERES EN RANCAGUA</div>
     </div>
 
-    <div class="filter-bar" id="filterBar">
+    <div class="stats-row">
+      <div class="stat-tag"><span class="dot"></span><span id="resultCount">Cargando…</span></div>
+      <div class="stat-tag">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        <span id="locStatus">Activando GPS…</span>
+      </div>
+    </div>
+
+    <div class="filter-row" id="filterBar">
       <button class="chip active" data-filter="todos">Todos</button>
-      <button class="chip" data-filter="Mecánica General">Mecánica general</button>
+      <button class="chip" data-filter="Mecánica General">Mecánica</button>
       <button class="chip" data-filter="Frenos">Frenos</button>
       <button class="chip" data-filter="Suspensión">Suspensión</button>
       <button class="chip" data-filter="Eléctrico">Eléctrico</button>
-      <button class="chip" data-filter="Climatización">Climatización</button>
+      <button class="chip" data-filter="Climatización">Clima</button>
       <button class="chip" data-filter="Diésel">Diésel</button>
       <button class="chip" data-filter="Vulcanización">Vulcanización</button>
     </div>
@@ -523,64 +1007,72 @@
     <div class="grid" id="grid"></div>
   </section>
 
-  <!-- ===================== PERFIL ===================== -->
+  <!-- PERFIL -->
   <section id="view-perfil" class="hidden">
-    <button class="back-btn" id="backFromProfile">
+    <button class="profile-back" id="backFromProfile">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
       Volver al directorio
     </button>
     <div id="profileContent"></div>
   </section>
 
-  <!-- ===================== MAPA ===================== -->
+  <!-- MAPA -->
   <section id="view-mapa" class="hidden">
-    <div class="section-head">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
       <div>
-        <h1 class="display">Cerca de ti</h1>
-        <div class="section-sub">ORDENADO POR DISTANCIA DESDE TU UBICACIÓN</div>
+        <h1 class="bebas" style="font-size:32px;">Cerca de ti</h1>
+        <div style="font-family:'JetBrains Mono';font-size:11px;color:var(--muted);margin-top:2px;">ORDENADO POR DISTANCIA REAL</div>
       </div>
     </div>
-    <div class="map-wrap" id="mapWrap">
-      <div id="leafletMap"></div>
-      <div class="map-legend">◆ TALLER &nbsp; · &nbsp; ● TÚ ESTÁS AQUÍ</div>
-    </div>
+    <div class="map-wrap"><div id="leafletMap"></div></div>
     <div class="map-list" id="mapList"></div>
   </section>
 
-  <!-- ===================== SOY MECANICO ===================== -->
+  <!-- SOY TALLER -->
   <section id="view-soy-mecanico" class="hidden">
-
     <div id="soyMecanicoIntro">
-      <div class="empty">
-        <div class="display">Súmate como mecánico</div>
-        <p style="max-width:420px; margin:0 auto; line-height:1.8;">CREA TU FICHA, RECIBE CALIFICACIONES REALES Y APARECE EN BÚSQUEDAS CERCA DE TI.<br><br>SUSCRIPCIÓN MENSUAL · SIN PERMANENCIA · PRIMER MES GRATIS</p>
-        <button class="cta-block" style="display:inline-block; margin-top:24px; cursor:pointer; border:none;" onclick="startMecanicoFlow()">
-          <span class="btn-primary" style="display:block; padding:14px 32px;">Crear mi ficha →</span>
-        </button>
+      <div class="registro-hero">
+        <h1 class="bebas">Suma tu taller<br>a <span>PANNÉ</span></h1>
+        <p>Llega a miles de conductores en toda Chile que buscan un taller de confianza. Crea tu ficha, recibe calificaciones verificadas y aparece en el mapa.</p>
+        <div class="pricing-cards">
+          <div class="pricing-card">
+            <div class="pricing-price">Gratis</div>
+            <div class="pricing-label">Primeros 30 días</div>
+            <div class="pricing-desc">Sin tarjeta de crédito. Prueba sin compromiso.</div>
+          </div>
+          <div class="pricing-card featured">
+            <div class="pricing-price">$9.990</div>
+            <div class="pricing-label">Mensual después</div>
+            <div class="pricing-desc">Sin permanencia. Cancela cuando quieras.</div>
+          </div>
+        </div>
+        <button class="btn-next" style="max-width:280px;margin:0 auto;display:block;" onclick="startMecanicoFlow()">Crear mi ficha gratis →</button>
       </div>
     </div>
 
     <div id="soyMecanicoForm" class="hidden">
-      <div class="section-head">
-        <div>
-          <h1 class="display">Crea tu ficha</h1>
-          <div class="section-sub">PASO <span id="formStepNum">1</span> DE 4</div>
+      <div class="form-wrap">
+        <div style="margin-bottom:24px;">
+          <div class="step-indicator" id="stepIndicator">
+            <div class="step-dot active" id="sd1"></div>
+            <div class="step-dot" id="sd2"></div>
+            <div class="step-dot" id="sd3"></div>
+            <div class="step-dot" id="sd4"></div>
+            <span class="step-label">Paso <span id="formStepNum">1</span> de 4</span>
+          </div>
         </div>
-      </div>
 
-      <form id="mecanicoForm" onsubmit="return false;">
-
-        <!-- PASO 1: Datos básicos -->
         <div class="form-step" id="step-1">
-          <div class="panel">
-            <div class="panel-head"><h3>Datos del taller</h3></div>
-            <div class="panel-body" style="display:flex; flex-direction:column; gap:14px;">
-              <label class="form-label">Nombre del taller *
-                <input type="text" class="form-input" id="f-name" placeholder="Ej: Taller Hermanos Pérez" required>
-              </label>
-              <label class="form-label">Rubro principal *
-                <select class="form-input" id="f-spec" required>
-                  <option value="">Selecciona una opción</option>
+          <div class="form-section-title">Datos del taller</div>
+          <div class="form-section-sub">Información básica de tu negocio</div>
+          <div class="form-stack">
+            <label class="form-label">Nombre del taller *
+              <input type="text" class="form-input" id="f-name" placeholder="Ej: Automotriz Pérez">
+            </label>
+            <div class="form-grid">
+              <label class="form-label">Especialidad principal *
+                <select class="form-input" id="f-spec">
+                  <option value="">Selecciona…</option>
                   <option>Mecánica General</option>
                   <option>Frenos</option>
                   <option>Suspensión</option>
@@ -593,140 +1085,120 @@
               <label class="form-label">Años de experiencia
                 <input type="number" class="form-input" id="f-years" placeholder="Ej: 10" min="0">
               </label>
-              <label class="form-label">Teléfono de contacto *
-                <input type="tel" class="form-input" id="f-phone" placeholder="+56 9 1234 5678" required>
-              </label>
             </div>
+            <label class="form-label">Teléfono de contacto *
+              <input type="tel" class="form-input" id="f-phone" placeholder="+56 9 1234 5678">
+            </label>
           </div>
         </div>
 
-        <!-- PASO 2: Ubicación -->
         <div class="form-step hidden" id="step-2">
-          <div class="panel">
-            <div class="panel-head"><h3>Ubicación del taller</h3></div>
-            <div class="panel-body" style="display:flex; flex-direction:column; gap:14px;">
-              <label class="form-label">Dirección *
-                <input type="text" class="form-input" id="f-address" placeholder="Calle, número, comuna" required>
-              </label>
-              <div style="font-family:'JetBrains Mono'; font-size:11px; color:var(--steel);">
-                Toca el botón para usar tu ubicación GPS actual como punto del taller, o ajusta manualmente más adelante.
-              </div>
-              <button type="button" class="submit-review-btn" style="width:fit-content;" id="f-use-gps">📍 Usar mi ubicación actual</button>
-              <div id="f-gps-status" style="font-family:'JetBrains Mono'; font-size:11px; color:var(--ok-green);"></div>
-            </div>
+          <div class="form-section-title">Ubicación</div>
+          <div class="form-section-sub">¿Dónde está tu taller?</div>
+          <div class="form-stack">
+            <label class="form-label">Dirección *
+              <input type="text" class="form-input" id="f-address" placeholder="Calle, número, comuna">
+            </label>
+            <button type="button" class="btn-next" style="max-width:fit-content;" id="f-use-gps">
+              📍 Usar mi ubicación actual (GPS)
+            </button>
+            <div id="f-gps-status" class="gps-status"></div>
           </div>
         </div>
 
-        <!-- PASO 3: Servicios -->
         <div class="form-step hidden" id="step-3">
-          <div class="panel">
-            <div class="panel-head"><h3>Servicios y valores referenciales</h3></div>
-            <div class="panel-body">
-              <div id="servicesList" style="display:flex; flex-direction:column; gap:10px;"></div>
-              <button type="button" class="submit-review-btn" style="margin-top:12px;" id="f-add-service">+ Agregar servicio</button>
-            </div>
-          </div>
-          <div class="panel" style="margin-top:18px;">
-            <div class="panel-head"><h3>Venta de repuestos / materiales</h3></div>
-            <div class="panel-body">
-              <label class="form-label" style="display:flex; align-items:center; gap:8px; flex-direction:row;">
-                <input type="checkbox" id="f-sells-parts" style="width:18px; height:18px;">
-                <span>Vendo repuestos o materiales de reemplazo</span>
-              </label>
-              <textarea class="form-input" id="f-parts-note" placeholder="Ej: vendo filtros, aceites y pastillas de freno genéricas y originales" style="margin-top:10px; min-height:70px; resize:vertical;"></textarea>
-            </div>
+          <div class="form-section-title">Servicios</div>
+          <div class="form-section-sub">Agrega los servicios que ofreces y sus valores referenciales</div>
+          <div id="servicesList" class="form-stack"></div>
+          <button type="button" onclick="addServiceRow()" style="margin-top:12px;background:none;border:1px dashed var(--border);color:var(--muted);padding:10px 16px;border-radius:8px;cursor:pointer;font-family:'Inter';font-size:13px;width:100%;">
+            + Agregar servicio
+          </button>
+          <div style="margin-top:20px;">
+            <label class="form-label" style="flex-direction:row;align-items:center;gap:10px;">
+              <input type="checkbox" id="f-sells-parts" style="width:18px;height:18px;accent-color:var(--red);">
+              <span>Vendo repuestos o materiales</span>
+            </label>
+            <textarea class="review-input" id="f-parts-note" placeholder="Ej: vendo filtros, aceites y pastillas de freno…" style="margin-top:10px;"></textarea>
           </div>
         </div>
 
-        <!-- PASO 4: Fotos -->
         <div class="form-step hidden" id="step-4">
-          <div class="panel">
-            <div class="panel-head"><h3>Fotos del taller</h3></div>
-            <div class="panel-body">
-              <div style="font-family:'JetBrains Mono'; font-size:11px; color:var(--steel); margin-bottom:12px;">
-                Sube fotos de tu taller, tu trabajo o tu equipo. Ayuda a generar confianza con nuevos clientes.
-              </div>
-              <input type="file" id="f-photos" accept="image/*" multiple style="font-family:'JetBrains Mono'; font-size:12px;">
-              <div id="photoPreview" style="display:flex; flex-wrap:wrap; gap:10px; margin-top:14px;"></div>
-            </div>
-          </div>
+          <div class="form-section-title">Fotos</div>
+          <div class="form-section-sub">Sube fotos de tu taller para generar confianza (máx. 6)</div>
+          <input type="file" id="f-photos" accept="image/*" multiple style="font-family:'JetBrains Mono';font-size:12px;color:var(--dim);">
+          <div id="photoPreview" class="photo-preview"></div>
         </div>
 
-        <!-- Navegación entre pasos -->
-        <div style="display:flex; gap:10px; margin-top:20px;">
-          <button type="button" class="btn-secondary" style="flex:0 0 auto; padding:13px 24px; background:none; border:1px solid var(--steel); color:var(--carbon); font-family:'JetBrains Mono'; font-size:12px; letter-spacing:1px; text-transform:uppercase; cursor:pointer;" id="f-prev">← Atrás</button>
-          <button type="button" class="btn-primary" style="flex:1; padding:13px; background:var(--safety-orange); color:#fff; border:none; font-family:'JetBrains Mono'; font-size:12px; letter-spacing:1px; text-transform:uppercase; cursor:pointer; font-weight:700;" id="f-next">Siguiente →</button>
+        <div class="form-nav">
+          <button type="button" class="btn-prev" id="f-prev" style="visibility:hidden;">← Atrás</button>
+          <button type="button" class="btn-next" id="f-next">Siguiente →</button>
         </div>
-      </form>
-    </div>
-
-    <div id="soyMecanicoSuccess" class="hidden">
-      <div class="empty">
-        <div class="display" style="color:var(--ok-green);">✓ Ficha creada</div>
-        <p style="max-width:440px; margin:0 auto; line-height:1.8;">
-          Tu ficha quedó registrada en este prototipo (no se guarda de forma permanente todavía).<br><br>
-          En la versión real, aquí se activaría tu suscripción mensual y tu taller aparecería en el directorio y el mapa de inmediato.
-        </p>
-        <div id="successSummary" style="max-width:440px; margin:24px auto 0; text-align:left; background:#fff; border:1px solid var(--line-light); padding:18px; font-size:13px; line-height:1.7;"></div>
       </div>
     </div>
 
+    <div id="soyMecanicoSuccess" class="hidden">
+      <div class="success-box">
+        <div class="success-icon">✓</div>
+        <h2>¡Ficha creada!</h2>
+        <p>Tu taller ya está en PANNÉ. Los primeros 30 días son gratis — sin tarjeta, sin permanencia.</p>
+        <div class="success-summary" id="successSummary"></div>
+      </div>
+    </div>
   </section>
 
 </main>
 
-<!-- ===================== MODAL DE AUTENTICACIÓN ===================== -->
-<!-- ===================== MODAL DE INSTALACIÓN ===================== -->
-<div id="installOverlay" class="hidden" style="position:fixed; inset:0; background:rgba(26,26,24,0.75); z-index:2000; display:flex; align-items:center; justify-content:center; padding:20px;">
-  <div style="background:#fff; max-width:380px; width:100%; max-height:90vh; overflow-y:auto;">
-    <div style="background:var(--carbon); color:var(--paper); padding:18px 20px; display:flex; justify-content:space-between; align-items:center;">
-      <span style="font-family:'Archivo Black'; font-size:15px; text-transform:uppercase;">Instalar app</span>
-      <button id="installClose" style="background:none; border:none; color:var(--paper); font-size:22px; cursor:pointer; line-height:1;">✕</button>
+<!-- AUTH MODAL -->
+<div id="authOverlay" class="modal-overlay hidden">
+  <div class="modal">
+    <div class="modal-head">
+      <span class="modal-title" id="authTitle">Iniciar sesión</span>
+      <button class="modal-close" id="authClose">✕</button>
     </div>
-    <div id="installInstructions" style="padding:22px; font-size:14px; line-height:1.7; color:var(--carbon);"></div>
-  </div>
-</div>
-
-<div id="authOverlay" class="hidden" style="position:fixed; inset:0; background:rgba(26,26,24,0.75); z-index:2000; display:flex; align-items:center; justify-content:center; padding:20px;">
-  <div style="background:#fff; max-width:380px; width:100%; max-height:90vh; overflow-y:auto; border:3px solid var(--safety-orange);">
-    <div style="background:var(--carbon); color:var(--paper); padding:18px 20px; display:flex; justify-content:space-between; align-items:center;">
-      <span id="authTitle" style="font-family:'Archivo Black'; font-size:15px; text-transform:uppercase;">Iniciar sesión</span>
-      <button id="authClose" style="background:none; border:none; color:var(--paper); font-size:22px; cursor:pointer; line-height:1;">✕</button>
-    </div>
-    <div style="padding:22px;">
-
-      <div id="authRoleTabs" style="display:flex; gap:0; margin-bottom:18px; border-bottom:2px solid var(--line-light);">
-        <button type="button" class="auth-role-tab active" data-role="cliente" style="flex:1; padding:10px; background:none; border:none; font-family:'JetBrains Mono'; font-size:11px; text-transform:uppercase; cursor:pointer; border-bottom:3px solid var(--safety-orange); color:var(--carbon); font-weight:700;">Soy cliente</button>
-        <button type="button" class="auth-role-tab" data-role="mecanico" style="flex:1; padding:10px; background:none; border:none; font-family:'JetBrains Mono'; font-size:11px; text-transform:uppercase; cursor:pointer; border-bottom:3px solid transparent; color:var(--steel);">Soy mecánico</button>
+    <div class="modal-body">
+      <div class="role-tabs" id="authRoleTabs">
+        <button type="button" class="role-tab active" data-role="cliente">Soy cliente</button>
+        <button type="button" class="role-tab" data-role="mecanico">Soy taller</button>
       </div>
-
-      <div id="authModeToggle" style="font-family:'JetBrains Mono'; font-size:11px; color:var(--steel); margin-bottom:14px; text-align:center;">
+      <div class="modal-toggle">
         <span id="authModeText">¿No tienes cuenta?</span>
-        <a href="#" id="authModeSwitch" style="color:var(--safety-orange); text-decoration:underline; font-weight:700;">Regístrate aquí</a>
+        <a href="#" id="authModeSwitch">Regístrate aquí</a>
       </div>
-
-      <div style="display:flex; flex-direction:column; gap:12px;">
+      <div class="form-stack">
         <label class="form-label">Correo electrónico
           <input type="email" class="form-input" id="auth-email" placeholder="tucorreo@ejemplo.com">
         </label>
         <label class="form-label">Contraseña
           <input type="password" class="form-input" id="auth-password" placeholder="Mínimo 6 caracteres">
         </label>
-        <div id="authError" style="font-family:'JetBrains Mono'; font-size:11px; color:#a45; font-weight:700;"></div>
-        <button type="button" class="btn-primary" id="authSubmit" style="padding:13px; background:var(--safety-orange); color:#fff; border:none; font-family:'JetBrains Mono'; font-size:12px; letter-spacing:1px; text-transform:uppercase; cursor:pointer; font-weight:700;">Iniciar sesión</button>
-        <div id="authTrialNote" class="hidden" style="font-family:'JetBrains Mono'; font-size:10.5px; color:var(--ok-green); font-weight:700; text-align:center;">
-          ✓ 30 días de prueba gratis al registrarte como mecánico
-        </div>
+        <div class="auth-error" id="authError"></div>
+        <button type="button" class="btn-auth" id="authSubmit">Iniciar sesión</button>
+        <div class="trial-note hidden" id="authTrialNote">✓ 30 días de prueba gratis al registrarte como taller</div>
       </div>
     </div>
   </div>
 </div>
 
+<!-- INSTALL MODAL -->
+<div id="installOverlay" class="modal-overlay hidden">
+  <div class="modal">
+    <div class="modal-head">
+      <span class="modal-title">Instalar PANNÉ</span>
+      <button class="modal-close" id="installClose">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="installInstructions" class="install-steps"></div>
+    </div>
+  </div>
+</div>
+
 <footer>
-  PROTOTIPO — TALLER CERCANO · NOMBRES, DIRECCIONES Y CALIFICACIONES BASADOS EN NEGOCIOS REALES DE CHILE (GOOGLE MAPS) · VALORES DE SERVICIOS SON REFERENCIALES DE EJEMPLO, NO CONFIRMADOS POR LOS TALLERES
+  PANNÉ © 2026 — Directorio de talleres y vulcanizadoras en Chile · Datos de Google Maps
 </footer>
 
+
 <script>
+
 /* ====================== SUPABASE ====================== */
 const SUPABASE_URL = 'https://vdkvbwlzjrqcmegkxslp.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_afbIDXILgu4oM1v3GUuzDQ_jWZnds9v';
@@ -966,52 +1438,74 @@ let currentFilter = 'todos';
 
 function renderGrid(){
   const grid = document.getElementById('grid');
-  const filtered = (currentFilter === 'todos' ? mechanics : mechanics.filter(m => m.spec === currentFilter))
-    .slice()
-    .sort((a,b) => (a.dist ?? Infinity) - (b.dist ?? Infinity));
-  document.getElementById('resultCount').textContent = `${filtered.length} TALLERES REGISTRADOS`;
+  const searchVal = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
+
+  let filtered = currentFilter === 'todos' ? mechanics : mechanics.filter(m => m.spec === currentFilter);
+  if(searchVal){
+    filtered = filtered.filter(m =>
+      m.name.toLowerCase().includes(searchVal) ||
+      m.spec.toLowerCase().includes(searchVal) ||
+      (m.address||'').toLowerCase().includes(searchVal)
+    );
+  }
+  filtered = filtered.slice().sort((a,b) => (a.dist??Infinity)-(b.dist??Infinity));
+
+  document.getElementById('resultCount').textContent = `${filtered.length} talleres registrados`;
 
   if(mechanics.length === 0){
-    grid.innerHTML = `<div class="empty" style="grid-column:1/-1;">
-      <div class="display">Aún no hay talleres registrados</div>
-      <p>Sé el primero en sumar tu taller en la pestaña "Soy mecánico".</p>
-    </div>`;
+    grid.innerHTML = `<div class="empty"><div class="bebas">Cargando talleres…</div><p>Conectando con la base de datos.</p></div>`;
     return;
   }
-
   if(filtered.length === 0){
-    grid.innerHTML = `<div class="empty" style="grid-column:1/-1;">
-      <div class="display">Sin resultados</div>
-      <p>No hay talleres en esta categoría todavía. Prueba con otro filtro.</p>
-    </div>`;
+    grid.innerHTML = `<div class="empty"><div class="bebas">Sin resultados</div><p>Prueba con otro filtro o búsqueda.</p></div>`;
     return;
   }
 
-  grid.innerHTML = filtered.map(m => `
+  grid.innerHTML = filtered.map(m => {
+    const initial = m.initials || (m.name||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    const ratingDisplay = m.rating > 0 ? m.rating.toFixed(1) : null;
+    const stars = m.rating > 0 ? renderStars(m.rating, 12) : '';
+    const distTxt = m.dist != null ? m.dist + ' km' : '';
+    return `
     <div class="card" onclick="openProfile('${m.id}')">
-      <div class="card-top">
-        <div class="avatar">${m.initials}</div>
-        <div class="card-id">
-          <div class="card-name">${m.name}</div>
-          <div class="card-spec">${m.spec.toUpperCase()}</div>
-          <div class="card-dist">${m.dist != null ? m.dist + ' km de tu ubicación' : 'Distancia no disponible'}</div>
+      <div class="card-cover">
+        <div class="card-cover-pattern"></div>
+        <div class="card-cover-initial">${initial}</div>
+        <div class="card-spec-badge">${m.spec.toUpperCase()}</div>
+        <div class="card-status">
+          <span class="status-dot ${m.status}"></span>
+          <span>${m.status==='open'?'Abierto':'Cerrado'}</span>
         </div>
       </div>
-      <div class="rating-row">
-        <div class="stars">${renderStars(m.rating)}</div>
-        <span class="rating-num">${m.rating > 0 ? m.rating.toFixed(1) : 'Sin calificar'}</span>
-        <span class="rating-count">(${m.reviews} reseñas)</span>
+      <div class="card-body">
+        <div class="card-avatar-row">
+          <div class="avatar">${initial}</div>
+          <div>
+            <div class="card-name">${m.name}</div>
+            <div class="card-meta">${m.years} años · ${distTxt}</div>
+          </div>
+        </div>
+        ${ratingDisplay ? `
+        <div class="rating-row">
+          <div class="stars-wrap">${stars}</div>
+          <span class="rating-num">${ratingDisplay}</span>
+          <span class="rating-count">(${m.reviews} reseñas)</span>
+        </div>` : `<div class="rating-row"><span class="rating-count" style="color:var(--muted);">Sin calificaciones aún</span></div>`}
+        <div class="card-tags">
+          ${m.parts ? `<span class="tag green">Vende repuestos</span>` : ''}
+          <span class="tag">${m.years} años exp.</span>
+        </div>
+        <div class="card-footer">
+          <span class="price-txt">${m.priceFrom ? `Desde <b>${fmtCLP(m.priceFrom)}</b>` : 'Consultar'}</span>
+          <button class="btn-card" onclick="event.stopPropagation();openProfile('${m.id}')">Ver ficha →</button>
+        </div>
       </div>
-      <div class="tag-row">
-        ${m.parts ? `<span class="mini-tag parts">Vende repuestos</span>` : `<span class="mini-tag">Sin repuestos propios</span>`}
-        <span class="mini-tag">${m.years} años en el rubro</span>
-      </div>
-      <div class="card-bottom">
-        <span class="price-tag">${m.priceFrom ? `Desde <b>${fmtCLP(m.priceFrom)}</b>` : 'Consultar valores'}</span>
-        <span class="status-txt"><span class="status-dot ${m.status}"></span>${m.status === 'open' ? 'Abierto ahora' : 'Cerrado'}</span>
-      </div>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
+}
+
+function applySearch(){
+  renderGrid();
 }
 
 document.getElementById('filterBar').addEventListener('click', (e)=>{
@@ -1029,109 +1523,186 @@ let selectedStars = 0;
 function openProfile(id){
   const m = mechanics.find(x => x.id === id);
   if(!m) return;
-  const content = document.getElementById('profileContent');
   selectedStars = 0;
+  const initial = m.initials || (m.name||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  const ratingDisplay = m.rating > 0 ? m.rating.toFixed(1) : '—';
+  const distTxt = m.dist != null ? m.dist + ' km de tu ubicación' : '';
 
-  content.innerHTML = `
+  const profileHTML = `
+    <div class="profile-cover">
+      <div class="profile-cover-pattern"></div>
+      <div class="profile-cover-name">${m.name.toUpperCase()}</div>
+    </div>
     <div class="profile-head">
-      <div class="p-avatar">${m.initials}</div>
-      <div class="p-info">
-        <div class="p-name display" style="font-family:'Archivo Black'; text-transform:none;">${m.name}</div>
-        <div class="p-spec">${m.spec.toUpperCase()} · ${m.years} AÑOS EN EL RUBRO</div>
-        <div class="p-meta-row">
-          <span class="p-meta-item" onclick="openDirectionsById('${m.id}')" style="cursor:pointer; text-decoration:underline; text-decoration-style:dotted;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>${m.address}</span>
-          <span class="p-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>${m.phone}</span>
-          <span class="p-meta-item"><span class="status-dot ${m.status}" style="margin-right:6px;"></span>${m.status==='open'?'Abierto ahora':'Cerrado ahora'}</span>
+      <div class="profile-avatar-wrap">
+        <div class="profile-avatar">${initial}</div>
+        <div class="profile-badge">${m.spec.toUpperCase()}</div>
+        <div class="profile-actions">
+          <button class="btn-wa" onclick="contactWhatsAppById('${m.id}')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M11.93 0C5.33 0 0 5.33 0 11.93c0 2.1.546 4.066 1.5 5.773L0 24l6.447-1.478A11.863 11.863 0 0 0 11.93 23.86C18.53 23.86 24 18.53 24 11.93 24 5.33 18.53 0 11.93 0zm0 21.78a9.793 9.793 0 0 1-5.043-1.395l-.36-.214-3.829.88.896-3.712-.234-.381a9.792 9.792 0 0 1-1.503-5.245C1.857 6.524 6.524 1.857 11.93 1.857c2.585 0 5.012 1.006 6.84 2.833a9.623 9.623 0 0 1 2.832 6.84c0 5.406-4.667 10.073-9.672 10.25z"/></svg>
+            WhatsApp
+          </button>
+          <button class="btn-directions" onclick="openDirectionsById('${m.id}')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+            Cómo llegar
+          </button>
+          <button class="btn-directions" onclick="viewOnMap('${m.id}')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+            Ver mapa
+          </button>
         </div>
       </div>
-      <div class="p-rating-block">
-        <div class="p-rating-num">${m.rating > 0 ? m.rating.toFixed(1) : '—'}</div>
-        <div class="p-rating-stars">${renderStars(m.rating, 16)}</div>
-        <div class="p-rating-count">${m.reviews} RESEÑAS</div>
+      <div class="profile-name-block">
+        <div class="profile-name">${m.name}</div>
+        <div class="profile-spec">${m.spec} · ${m.years} años de experiencia</div>
+      </div>
+      <div class="profile-meta-row">
+        <span class="profile-meta-item" onclick="openDirectionsById('${m.id}')" style="cursor:pointer;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          <a>${m.address}</a>
+        </span>
+        ${m.phone ? `<span class="profile-meta-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          ${m.phone}
+        </span>` : ''}
+        <span class="profile-meta-item">
+          <span class="status-dot ${m.status}" style="width:8px;height:8px;"></span>
+          ${m.status==='open'?'Abierto ahora':'Cerrado'}
+        </span>
+        ${distTxt ? `<span class="profile-meta-item">📍 ${distTxt}</span>` : ''}
+      </div>
+      <div class="profile-rating-block">
+        <div>
+          <div class="rating-big">${ratingDisplay}</div>
+          <div class="rating-stars-big">${renderStars(m.rating, 18)}</div>
+          <div class="rating-big-label">${m.reviews} RESEÑAS</div>
+        </div>
+        <div class="rating-bar-wrap">
+          ${[5,4,3,2,1].map(n => {
+            const count = m.reviews_list ? m.reviews_list.filter(r=>r.stars===n).length : 0;
+            const pct = m.reviews > 0 ? (count/m.reviews)*100 : 0;
+            return `<div class="rating-bar-row">
+              <span class="rating-bar-label">${n}</span>
+              <div class="rating-bar-bg"><div class="rating-bar-fill" style="width:${pct}%"></div></div>
+            </div>`;
+          }).join('')}
+        </div>
       </div>
     </div>
 
     <div class="profile-body">
-      <div style="display:flex; flex-direction:column; gap:18px;">
-
+      <div>
+        <!-- Servicios -->
         <div class="panel">
-          <div class="panel-head"><h3>Servicios y valores referenciales</h3></div>
-          <div class="panel-body">
-            ${m.services.length ? m.services.map(s => `<div class="service-row"><span>${s[0]}</span><span class="service-price">${s[1]}</span></div>`).join('') : '<div style="font-size:13px; color:var(--steel);">Este taller aún no agregó servicios.</div>'}
-            <div style="font-family:'JetBrains Mono'; font-size:10px; color:var(--steel); margin-top:10px;">
-              * VALORES REFERENCIALES. PUEDEN VARIAR SEGÚN MODELO Y DIAGNÓSTICO.
+          <div class="panel-head">
+            <div class="panel-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+              Servicios y valores
             </div>
           </div>
-        </div>
-
-        <div class="panel">
-          <div class="panel-head"><h3>Venta de repuestos / materiales</h3></div>
           <div class="panel-body">
-            <div class="parts-note">${m.partsNote}</div>
+            ${m.services && m.services.length ? m.services.map(s=>`
+              <div class="service-row">
+                <span>${s[0]}</span>
+                <span class="service-price">${s[1]}</span>
+              </div>`).join('') : '<p style="color:var(--muted);font-size:13px;">Este taller aún no ha agregado servicios.</p>'}
+            <p style="font-family:JetBrains Mono;font-size:10px;color:var(--muted);margin-top:12px;">* Valores referenciales. Pueden variar según modelo y diagnóstico.</p>
           </div>
         </div>
 
+        <!-- Repuestos -->
         <div class="panel">
-          <div class="panel-head"><h3>Reseñas de clientes (${m.reviews})</h3></div>
+          <div class="panel-head">
+            <div class="panel-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+              Repuestos y materiales
+            </div>
+          </div>
           <div class="panel-body">
-            ${m.reviews_list.length ? m.reviews_list.map(r => `
+            <div class="parts-note">${m.partsNote || 'Sin información sobre venta de repuestos.'}</div>
+          </div>
+        </div>
+
+        <!-- Reseñas -->
+        <div class="panel">
+          <div class="panel-head">
+            <div class="panel-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              Reseñas (${m.reviews})
+            </div>
+          </div>
+          <div class="panel-body">
+            ${m.reviews_list && m.reviews_list.length ? m.reviews_list.map(r=>`
               <div class="review">
-                <div class="review-top"><span class="review-name">${r.name}</span><span class="review-date">${r.date}</span></div>
+                <div class="review-head">
+                  <span class="review-name">${r.name}</span>
+                  <span class="review-date">${r.date}</span>
+                </div>
                 <div class="review-stars">${renderStars(r.stars, 13)}</div>
                 <div class="review-text">${r.text}</div>
-              </div>
-            `).join('') : '<div style="font-size:13px; color:var(--steel); margin-bottom:12px;">Aún no hay reseñas. ¡Sé el primero en calificar!</div>'}
-
-            <div class="add-review-box">
-              <div style="font-family:'JetBrains Mono'; font-size:11px; text-transform:uppercase; letter-spacing:0.5px; color:var(--steel); margin-bottom:8px;">Deja tu calificación</div>
+              </div>`).join('') : '<p style="color:var(--muted);font-size:13px;">Sin reseñas aún. ¡Sé el primero en calificar!</p>'}
+            <div class="add-review">
+              <div class="add-review-label">Deja tu calificación</div>
               <div class="star-picker" id="starPicker">
-                ${[1,2,3,4,5].map(i => `<span data-val="${i}">${starsSVG(false,20)}</span>`).join('')}
+                ${[1,2,3,4,5].map(i=>`<span data-val="${i}">${starsSVG(false,22)}</span>`).join('')}
               </div>
-              <textarea placeholder="Cuenta cómo fue tu experiencia..." id="reviewText"></textarea>
-              <div style="margin-top:10px;">
-                <button class="submit-review-btn" onclick="submitReview('${m.id}')">Publicar reseña</button>
-              </div>
+              <textarea class="review-input" id="reviewText" placeholder="Cuenta tu experiencia…"></textarea>
+              <button class="btn-submit-review" onclick="submitReview('${m.id}')">Publicar reseña</button>
             </div>
           </div>
         </div>
-
       </div>
 
-      <div style="display:flex; flex-direction:column; gap:18px;">
-        <div class="cta-block">
-          <div style="font-family:'JetBrains Mono'; font-size:11px; letter-spacing:1px; color:var(--caution-yellow); margin-bottom:14px; text-transform:uppercase;">¿Necesitas este servicio?</div>
-          <button class="btn-primary" onclick="contactWhatsAppById('${m.id}')">Contactar por WhatsApp</button>
-          <button class="btn-secondary" onclick="openDirectionsById('${m.id}')">📍 Cómo llegar</button>
-          <button class="btn-secondary" onclick="viewOnMap('${m.id}')">Ver ubicación en mapa</button>
+      <!-- SIDEBAR -->
+      <div>
+        <div class="sidebar-cta">
+          <div class="sidebar-cta-title">Contactar</div>
+          <button class="btn-full red" onclick="contactWhatsAppById('${m.id}')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/></svg>
+            Contactar por WhatsApp
+          </button>
+          <button class="btn-full outline" onclick="openDirectionsById('${m.id}')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+            Cómo llegar
+          </button>
+          <button class="btn-full outline" onclick="viewOnMap('${m.id}')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/></svg>
+            Ver en el mapa
+          </button>
         </div>
-
         <div class="panel">
-          <div class="panel-head"><h3>Especialidades</h3></div>
-          <div class="panel-body" style="display:flex; flex-wrap:wrap; gap:8px;">
-            ${m.tags.length ? m.tags.map(t => `<span class="mini-tag" style="color:var(--carbon); border-color:var(--line-light);">${t}</span>`).join('') : `<span style="font-size:13px; color:var(--steel);">${m.spec}</span>`}
+          <div class="panel-head"><div class="panel-title">Especialidades</div></div>
+          <div class="panel-body">
+            <div class="spec-badges">
+              <span class="spec-badge">${m.spec}</span>
+              ${m.tags && m.tags.length ? m.tags.map(t=>`<span class="spec-badge">${t}</span>`).join('') : ''}
+              <span class="spec-badge">${m.years} años exp.</span>
+            </div>
           </div>
         </div>
       </div>
     </div>
   `;
 
-  // star picker interaction
-  const picker = document.getElementById('starPicker');
-  picker.addEventListener('click', (e)=>{
-    const span = e.target.closest('span[data-val]');
-    if(!span) return;
-    selectedStars = parseInt(span.dataset.val);
-    [...picker.children].forEach((c, idx)=>{
-      c.innerHTML = starsSVG(idx < selectedStars, 20);
-    });
-  });
+  document.getElementById('profileContent').innerHTML = profileHTML;
 
-  document.getElementById('view-directorio').classList.add('hidden');
-  document.getElementById('view-mapa').classList.add('hidden');
-  document.getElementById('view-soy-mecanico').classList.add('hidden');
+  // Star picker
+  const picker = document.getElementById('starPicker');
+  if(picker){
+    picker.addEventListener('click', e => {
+      const span = e.target.closest('span[data-val]');
+      if(!span) return;
+      selectedStars = parseInt(span.dataset.val);
+      [...picker.children].forEach((c,idx)=>{c.innerHTML=starsSVG(idx<selectedStars,22);});
+    });
+  }
+
+  ['view-directorio','view-mapa','view-soy-mecanico'].forEach(id=>{
+    document.getElementById(id)?.classList.add('hidden');
+  });
   document.getElementById('view-perfil').classList.remove('hidden');
-  document.querySelectorAll('.tab-btn').forEach(t=>t.classList.remove('active'));
-  window.scrollTo({top:0, behavior:'smooth'});
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  window.scrollTo({top:0,behavior:'smooth'});
 }
 
 async function submitReview(mecanicoId){
@@ -1188,7 +1759,7 @@ function contactWhatsApp(phone, name){
     return;
   }
   const cleanPhone = phone.replace(/[^0-9]/g, '');
-  const message = encodeURIComponent(`Hola, vi tu taller "${name}" en Taller Cercano y quisiera consultar por un servicio.`);
+  const message = encodeURIComponent(`Hola, vi tu taller "${name}" en PANNÉ y quisiera consultar por un servicio.`);
   window.open(`https://wa.me/${cleanPhone}?text=${message}`, '_blank');
 }
 
@@ -1233,7 +1804,7 @@ function viewOnMap(id){
     alert('Este taller no tiene una ubicación registrada en el mapa todavía.');
     return;
   }
-  document.querySelectorAll('.tab-btn').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.querySelector('[data-tab="mapa"]').classList.add('active');
   document.getElementById('view-perfil').classList.add('hidden');
   document.getElementById('view-directorio').classList.add('hidden');
@@ -1249,10 +1820,10 @@ function viewOnMap(id){
   window.scrollTo({top:0, behavior:'smooth'});
 }
 
-document.getElementById('backFromProfile').addEventListener('click', ()=>{
+document.getElementById('backFromProfile')?.addEventListener('click', ()=>{
   document.getElementById('view-perfil').classList.add('hidden');
   document.getElementById('view-directorio').classList.remove('hidden');
-  document.querySelectorAll('.tab-btn').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.querySelector('[data-tab="directorio"]').classList.add('active');
   window.scrollTo({top:0, behavior:'smooth'});
 });
@@ -1345,10 +1916,10 @@ function renderMap(){
 }
 
 /* ====================== TABS ====================== */
-document.querySelectorAll('.tab-btn').forEach(btn=>{
+document.querySelectorAll('.tab').forEach(btn=>{
   btn.addEventListener('click', ()=>{
     const tab = btn.dataset.tab;
-    document.querySelectorAll('.tab-btn').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
     btn.classList.add('active');
 
     document.getElementById('view-directorio').classList.add('hidden');
@@ -1390,7 +1961,7 @@ function requestRealLocation(showAlerts){
       USER_LOCATION = { lat: position.coords.latitude, lng: position.coords.longitude };
       usingRealLocation = true;
       recalcDistances();
-      if (locLabel) locLabel.textContent = 'Tu ubicación actual';
+      if (locLabel) locLabel.textContent = 'Tu ubicación actual'; const ls = document.getElementById('locStatus'); if(ls) ls.textContent = 'GPS activo';
 
       // Si el mapa ya fue inicializado, actualiza el marcador "tú estás aquí" y vuelve a centrar
       if (typeof leafletMapInstance !== 'undefined' && leafletMapInstance) {
@@ -1408,7 +1979,7 @@ function requestRealLocation(showAlerts){
       }
     },
     (error) => {
-      if (locLabel) locLabel.textContent = 'Ubicación aproximada';
+      if (locLabel) locLabel.textContent = 'Ubicación'; const lse = document.getElementById('locStatus'); if(lse) lse.textContent = 'Toca para activar GPS';
       if (showAlerts) {
         let msg = 'No pudimos obtener tu ubicación. Se mantiene una ubicación de referencia.';
         if (error.code === error.PERMISSION_DENIED) {
@@ -1669,7 +2240,7 @@ function showInstallInstructions(){
     box.innerHTML = `
       <div style="text-align:center;">
         <div style="font-family:'Archivo Black'; font-size:18px; color:var(--ok-green); margin-bottom:10px;">✓ Ya está instalada</div>
-        <p>Estás usando Taller Cercano como app instalada en tu dispositivo.</p>
+        <p>Estás usando PANNÉ como app instalada en tu dispositivo.</p>
       </div>`;
   } else if(isIOS){
     box.innerHTML = `
@@ -1733,6 +2304,7 @@ if (installBtn) {
 window.addEventListener('appinstalled', () => {
   deferredInstallPrompt = null;
 });
+
 </script>
 </body>
 </html>
