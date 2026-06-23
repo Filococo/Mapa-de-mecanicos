@@ -1844,6 +1844,32 @@ document.getElementById('backFromProfile')?.addEventListener('click', ()=>{
   window.scrollTo({top:0, behavior:'smooth'});
 });
 
+/* ====================== MAP LIST (sin Leaflet) ====================== */
+function renderMapList(){
+  const withCoords = mechanics.filter(m => m.lat != null && m.lng != null);
+  const sorted = withCoords.slice().sort((a,b)=>(a.dist??Infinity)-(b.dist??Infinity));
+  const mapList = document.getElementById('mapList');
+  if(!mapList) return;
+  if(mechanics.length === 0){
+    mapList.innerHTML = '<div class="empty"><div class="display">Cargando talleres...</div></div>';
+  } else if(sorted.length === 0){
+    mapList.innerHTML = '<div class="empty"><div class="display">Sin ubicaciones disponibles</div><p>Los talleres registrados todavía no agregaron su ubicación GPS.</p></div>';
+  } else {
+    mapList.innerHTML = sorted.map(m => `
+      <div class="map-list-item" onclick="openProfile('${m.id}')">
+        <div class="mli-left">
+          <span class="mli-dist">${m.dist != null ? m.dist + 'km' : '—'}</span>
+          <div>
+            <div class="mli-name">${m.name}</div>
+            <div class="mli-spec">${m.spec.toUpperCase()} · ${m.rating > 0 ? '★'.repeat(Math.round(m.rating)) + ' ' + m.rating.toFixed(1) : 'Sin calificar'}</div>
+          </div>
+        </div>
+        <span class="status-txt"><span class="status-dot ${m.status}"></span>${m.status==='open'?'Abierto':'Cerrado'}</span>
+      </div>
+    `).join('');
+  }
+}
+
 /* ====================== MAP RENDER (Leaflet) ====================== */
 let leafletMapInstance = null;
 let mapInitialized = false;
@@ -2234,6 +2260,7 @@ document.querySelector('[data-tab="directorio"]').classList.add('active');
 
 loadMechanicsFromSupabase().then(() => {
   renderGrid();
+  renderMapList();
 });
 refreshSession();
 
