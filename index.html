@@ -2222,13 +2222,17 @@ addServiceRow();
 
 /* ====================== INIT ====================== */
 loadMechanicsFromSupabase().then(() => {
-  renderGrid();
+  // El mapa está visible — renderizamos con tamaño correcto
   renderMap();
-  // Cambiar a directorio como vista principal
-  document.getElementById('view-mapa').classList.add('hidden');
-  document.getElementById('view-directorio').classList.remove('hidden');
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.querySelector('[data-tab="directorio"]').classList.add('active');
+  renderGrid();
+
+  // Pequeño delay para que Leaflet termine de renderizar, luego cambiamos a directorio
+  setTimeout(() => {
+    document.getElementById('view-mapa').classList.add('hidden');
+    document.getElementById('view-directorio').classList.remove('hidden');
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelector('[data-tab="directorio"]').classList.add('active');
+  }, 500);
 });
 refreshSession();
 
