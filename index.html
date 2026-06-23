@@ -2271,19 +2271,29 @@ async function submitMecanicoForm(){
 addServiceRow();
 
 /* ====================== INIT ====================== */
-loadMechanicsFromSupabase();
-
-// Polling: cada 300ms verifica si ya llegaron datos y renderiza
-const _initPoll = setInterval(() => {
-  if(mechanics.length > 0) {
-    clearInterval(_initPoll);
+// Fetch directo sin función intermedia
+sb.from('mecanicos')
+  .select('id, name, address, city, phone, lat, lng, spec, rating, review_count, sells_parts')
+  .limit(500)
+  .then(({ data, error }) => {
+    if(error){ console.error('INIT error:', error.message); return; }
+    if(!data || data.length === 0){ console.warn('INIT: sin datos'); return; }
+    mechanics = data.map(m => ({
+      id: m.id,
+      name: m.name || 'Sin nombre',
+      initials: (m.name||'').split(' ').filter(Boolean).slice(0,2).map(w=>w[0]).join('').toUpperCase()||'?',
+      spec: m.spec || 'Mecánica General',
+      dist: (m.lat && m.lng) ? haversineKm(USER_LOCATION.lat, USER_LOCATION.lng, m.lat, m.lng) : null,
+      lat: m.lat || null, lng: m.lng || null,
+      rating: m.rating || 0, reviews: m.review_count || 0,
+      parts: !!m.sells_parts, priceFrom: null, status: 'open',
+      address: m.address || '', city: m.city || '', phone: m.phone || null,
+      years: 0, tags: [], services: [], partsNote: '', reviews_list: []
+    }));
+    console.log('INIT: ' + mechanics.length + ' negocios');
     renderGrid();
     renderMapList();
-  }
-}, 300);
-
-// Timeout de seguridad: si en 15s no llegó nada, mostrar error
-setTimeout(() => { clearInterval(_initPoll); }, 15000);
+  });
 refreshSession();
 
 /* ====================== PWA: Service Worker + Install Prompt ====================== */
