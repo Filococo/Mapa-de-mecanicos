@@ -1406,6 +1406,8 @@ async function loadMechanicsFromSupabase(){
     }));
 
     if(USER_LOCATION) recalcDistances();
+    renderGrid();
+    renderMapList();
     console.log('PANNÉ: ' + mechanics.length + ' negocios cargados');
 
   } catch(err) {
