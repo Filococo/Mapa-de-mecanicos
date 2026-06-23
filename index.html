@@ -1399,8 +1399,12 @@ async function loadMechanicsFromSupabase(){
     return;
   }
 
-  const { data: serviciosData } = await sb.from('servicios').select('*');
-  const { data: resenasData } = await sb.from('resenas').select('*');
+  const [serviciosResult, resenasResult] = await Promise.all([
+    sb.from('servicios').select('*').limit(500),
+    sb.from('resenas').select('*').limit(500)
+  ]);
+  const serviciosData = serviciosResult.data || [];
+  const resenasData = resenasResult.data || [];
 
   mechanics = (mecanicosData || []).map(m => {
     const misServicios = (serviciosData || []).filter(s => s.mecanico_id === m.id);
@@ -1508,7 +1512,6 @@ function renderGrid(){
   document.getElementById('resultCount').textContent = `${filtered.length} talleres registrados`;
 
   if(mechanics.length === 0){
-    // No hacer return — dejar que el INIT async complete y vuelva a llamar renderGrid
     grid.innerHTML = `<div class="empty"><div class="bebas">Cargando talleres…</div><p>Conectando con la base de datos.</p></div>`;
     return;
   }
