@@ -1364,49 +1364,62 @@ function traduceErrorAuth(msg){
 let mechanics = []; // Se carga de forma asíncrona desde Supabase (tabla mecanicos + servicios)
 
 async function loadMechanicsFromSupabase(){
+  // Si ya tenemos datos, no recargar
+  if(mechanics.length > 0) return;
+
   try {
     const { data: mecanicosData, error } = await sb
       .from('mecanicos')
-      .select('*')
-      .order('name', { ascending: true });
+      .select('id, name, address, city, phone, lat, lng, spec, rating, review_count, sells_parts, trial_ends_at')
+      .limit(500);
 
-    if(error || !mecanicosData || mecanicosData.length === 0){
-      console.error('Error o sin datos:', error?.message);
+    if(error){
+      console.error('Supabase error:', error.message);
+      showGridError('Error de conexión: ' + error.message);
+      return;
+    }
+
+    if(!mecanicosData || mecanicosData.length === 0){
+      console.warn('Sin datos en Supabase');
+      showGridError('No hay talleres registrados aún.');
       return;
     }
 
     mechanics = mecanicosData.map(m => ({
       id: m.id,
-      name: m.name,
+      name: m.name || 'Sin nombre',
       initials: (m.name||'').split(' ').filter(Boolean).slice(0,2).map(w=>w[0]).join('').toUpperCase()||'?',
-      spec: m.spec,
+      spec: m.spec || 'Mecánica General',
       dist: (m.lat && m.lng && USER_LOCATION) ? haversineKm(USER_LOCATION.lat, USER_LOCATION.lng, m.lat, m.lng) : null,
-      lat: m.lat, lng: m.lng,
-      rating: 0, reviews: 0,
+      lat: m.lat || null,
+      lng: m.lng || null,
+      rating: m.rating || 0,
+      reviews: m.review_count || 0,
       parts: !!m.sells_parts,
       priceFrom: null,
-      status: m.status || 'open',
-      address: m.address,
-      phone: m.phone,
-      years: m.years || 0,
-      tags: [], services: [],
-      partsNote: m.parts_note || 'Sin información sobre repuestos.',
+      status: 'open',
+      address: m.address || '',
+      city: m.city || '',
+      phone: m.phone || null,
+      years: 0,
+      tags: [],
+      services: [],
+      partsNote: 'Sin información sobre repuestos.',
       reviews_list: []
     }));
 
     if(USER_LOCATION) recalcDistances();
-    renderGrid();
-    console.log(`PANNÉ: ${mechanics.length} negocios cargados`);
+    console.log('PANNÉ: ' + mechanics.length + ' negocios cargados');
 
   } catch(err) {
-    console.error('Error cargando mecánicos:', err.message);
-    const grid = document.getElementById('grid');
-    if(grid) grid.innerHTML = `<div class="empty" style="grid-column:1/-1;">
-      <div class="bebas" style="color:var(--red);">Error de conexión</div>
-      <p style="margin-top:8px;">${err.message}</p>
-      <button onclick="location.reload()" style="margin-top:16px;background:var(--red);color:#fff;border:none;padding:10px 20px;border-radius:8px;cursor:pointer;font-weight:700;">Reintentar</button>
-    </div>`;
+    console.error('Error inesperado:', err.message);
+    showGridError('Error inesperado: ' + err.message);
   }
+}
+
+function showGridError(msg){
+  const grid = document.getElementById('grid');
+  if(grid) grid.innerHTML = '<div class="empty" style="grid-column:1/-1;"><div class="bebas" style="color:var(--red);">Error</div><p style="margin-top:8px;">' + msg + '</p><button onclick="location.reload()" style="margin-top:16px;background:var(--red);color:#fff;border:none;padding:10px 20px;border-radius:8px;cursor:pointer;font-weight:700;">Reintentar</button></div>';
 }
 
 
