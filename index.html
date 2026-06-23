@@ -986,8 +986,8 @@ footer{
 <!-- NAV TABS -->
 <nav class="nav-tabs">
   <div class="nav-tabs-inner">
-    <button class="tab active" data-tab="directorio">Directorio</button>
-    <button class="tab" data-tab="mapa">Mapa</button>
+    <button class="tab" data-tab="directorio">Directorio</button>
+    <button class="tab active" data-tab="mapa">Mapa</button>
     <button class="tab" data-tab="perfil-mecanico">Soy taller</button>
   </div>
 </nav>
@@ -995,7 +995,7 @@ footer{
 <main>
 
   <!-- DIRECTORIO -->
-  <section id="view-directorio">
+  <section id="view-directorio" class="hidden">
     <div class="search-hero">
       <h1 class="bebas">Encuentra tu taller<br><span>de confianza</span></h1>
       <p>Talleres mecánicos y vulcanizadoras reales de Chile — con calificaciones verificadas de clientes reales.</p>
@@ -1037,7 +1037,7 @@ footer{
   </section>
 
   <!-- MAPA -->
-  <section id="view-mapa" class="hidden">
+  <section id="view-mapa">
     <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
       <div>
         <h1 class="bebas" style="font-size:32px;">Cerca de ti</h1>
@@ -2221,7 +2221,14 @@ async function submitMecanicoForm(){
 addServiceRow();
 
 /* ====================== INIT ====================== */
-loadMechanicsFromSupabase();
+loadMechanicsFromSupabase().then(() => {
+  // Datos cargados — ahora mostrar directorio como vista principal
+  document.getElementById('view-mapa').classList.add('hidden');
+  document.getElementById('view-directorio').classList.remove('hidden');
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelector('[data-tab="directorio"]').classList.add('active');
+  renderGrid();
+});
 refreshSession();
 
 /* ====================== PWA: Service Worker + Install Prompt ====================== */
