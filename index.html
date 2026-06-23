@@ -1481,7 +1481,13 @@ function renderGrid(){
   document.getElementById('resultCount').textContent = `${filtered.length} talleres registrados`;
 
   if(mechanics.length === 0){
-    grid.innerHTML = `<div class="empty"><div class="bebas">Cargando talleres…</div><p>Conectando con la base de datos.</p></div>`;
+    grid.innerHTML = `<div class="empty"><div class="bebas">Cargando talleres…</div><p>Conectando con la base de datos. Si esto no desaparece en 5 segundos, <a href="javascript:location.reload()" style="color:var(--red)">recarga la página</a>.</p></div>`;
+    // Intentar de nuevo en 2 segundos
+    setTimeout(async () => {
+      if(mechanics.length === 0) {
+        await loadMechanicsFromSupabase();
+      }
+    }, 2000);
     return;
   }
   if(filtered.length === 0){
