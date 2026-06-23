@@ -1418,12 +1418,13 @@ async function loadMechanicsFromSupabase(){
 
   if(USER_LOCATION) recalcDistances();
 
-  // Log temporal para diagnóstico
-  console.log(`PANNÉ: ${mechanics.length} negocios cargados desde Supabase`);
-  const countEl = document.getElementById('resultCount');
-  if(countEl && mechanics.length === 0 && !mecanicosError){
-    countEl.textContent = 'Sin resultados desde Supabase — revisa la consola';
+  // Renderizar directorio automáticamente si está visible
+  const dirView = document.getElementById('view-directorio');
+  if(dirView && !dirView.classList.contains('hidden')){
+    renderGrid();
   }
+
+  console.log(`PANNÉ: ${mechanics.length} negocios cargados desde Supabase`);
 }
 
 
@@ -1486,6 +1487,7 @@ function renderGrid(){
   document.getElementById('resultCount').textContent = `${filtered.length} talleres registrados`;
 
   if(mechanics.length === 0){
+    // No hacer return — dejar que el INIT async complete y vuelva a llamar renderGrid
     grid.innerHTML = `<div class="empty"><div class="bebas">Cargando talleres…</div><p>Conectando con la base de datos.</p></div>`;
     return;
   }
@@ -2239,8 +2241,9 @@ addServiceRow();
 
 /* ====================== INIT ====================== */
 (async () => {
+  const grid = document.getElementById('grid');
+  if(grid) grid.innerHTML = `<div class="empty" style="grid-column:1/-1;"><div class="bebas" style="font-size:22px;color:var(--muted);">Cargando…</div></div>`;
   await loadMechanicsFromSupabase();
-  renderGrid();
 })();
 refreshSession();
 
