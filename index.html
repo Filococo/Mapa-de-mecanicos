@@ -2222,11 +2222,12 @@ addServiceRow();
 
 /* ====================== INIT ====================== */
 loadMechanicsFromSupabase().then(() => {
-  // El mapa está visible — renderizamos con tamaño correcto
+  // Debug: mostrar cuántos cargaron
+  document.getElementById('resultCount').textContent = mechanics.length + ' talleres cargados (debug)';
+
   renderMap();
   renderGrid();
 
-  // Pequeño delay para que Leaflet termine de renderizar, luego cambiamos a directorio
   setTimeout(() => {
     document.getElementById('view-mapa').classList.add('hidden');
     document.getElementById('view-directorio').classList.remove('hidden');
