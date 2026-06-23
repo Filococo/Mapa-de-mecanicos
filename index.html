@@ -2262,13 +2262,21 @@ document.querySelector('[data-tab="directorio"]').classList.add('active');
 loadMechanicsFromSupabase().then(() => {
   renderGrid();
   renderMapList();
-  // Pre-inicializar el mapa en background para que al cambiar de tab esté listo
+  // Pre-inicializar Leaflet en background
   setTimeout(() => {
-    document.getElementById('view-mapa').classList.remove('hidden');
+    const mapaEl = document.getElementById('view-mapa');
+    mapaEl.style.visibility = 'hidden';
+    mapaEl.style.position = 'absolute';
+    mapaEl.classList.remove('hidden');
     renderMap();
-    setTimeout(() => { if(leafletMapInstance) leafletMapInstance.invalidateSize(); }, 100);
-    document.getElementById('view-mapa').classList.add('hidden');
-  }, 800);
+    setTimeout(() => {
+      if(leafletMapInstance) leafletMapInstance.invalidateSize();
+      renderMapList(); // ahora sí con datos y mapa listo
+      mapaEl.classList.add('hidden');
+      mapaEl.style.visibility = '';
+      mapaEl.style.position = '';
+    }, 200);
+  }, 300);
 });
 refreshSession();
 
