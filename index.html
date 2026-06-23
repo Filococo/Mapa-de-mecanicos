@@ -1436,13 +1436,16 @@ async function loadMechanicsFromSupabase(){
 
   if(USER_LOCATION) recalcDistances();
 
-  // Renderizar directorio automáticamente si está visible
-  const dirView = document.getElementById('view-directorio');
-  if(dirView && !dirView.classList.contains('hidden')){
-    renderGrid();
+  // Siempre renderizar el grid cuando lleguen los datos
+  renderGrid();
+
+  // Si el mapa está visible, también actualizarlo
+  const mapaView = document.getElementById('view-mapa');
+  if(mapaView && !mapaView.classList.contains('hidden')){
+    renderMap();
   }
 
-  console.log(`PANNÉ: ${mechanics.length} negocios cargados desde Supabase`);
+  console.log(`PANNÉ: ${mechanics.length} negocios cargados`);
 }
 
 
