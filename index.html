@@ -1017,7 +1017,7 @@ footer{
       <h1 class="bebas">Encuentra tu taller<br><span>de confianza</span></h1>
       <p>Talleres mecánicos y vulcanizadoras reales de Chile — con calificaciones verificadas de clientes reales.</p>
       <div class="search-row">
-        <input type="text" class="search-input" id="searchInput" placeholder="Buscar por nombre, especialidad o ciudad…">
+        <input type="text" class="search-input" id="searchInput" placeholder="Buscar por nombre, especialidad o ciudad…" autocomplete="off">
         <button class="btn-search" onclick="applySearch()">Buscar</button>
       </div>
     </div>
@@ -2159,8 +2159,8 @@ document.querySelectorAll('.tab').forEach(btn=>{
       document.getElementById('view-soy-mecanico').classList.remove('hidden');
       if(currentSession){
         // Verificar si tiene ficha en la BD, independiente del rol almacenado
-        sb.from('mecanicos').select('id').eq('id', currentSession.user.id).maybeSingle().then(({ data }) => {
-          if(data){
+        sb.from('mecanicos').select('id').eq('id', currentSession.user.id).limit(1).then(({ data, error }) => {
+          if(!error && data && data.length > 0){
             currentUserRole = 'mecanico';
             mostrarPanelMecanico();
           } else {
