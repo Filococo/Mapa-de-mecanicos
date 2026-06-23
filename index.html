@@ -1364,97 +1364,49 @@ function traduceErrorAuth(msg){
 let mechanics = []; // Se carga de forma asíncrona desde Supabase (tabla mecanicos + servicios)
 
 async function loadMechanicsFromSupabase(){
-  const timeout = new Promise((_, reject) =>
-    setTimeout(() => reject(new Error('Tiempo de espera agotado — verifica tu conexión a internet')), 8000)
-  );
-
-  let mecanicosData, mecanicosError;
   try {
-    const result = await Promise.race([
-      sb.from('mecanicos').select('*').order('created_at', { ascending: false }),
-      timeout
-    ]);
-    mecanicosData = result.data;
-    mecanicosError = result.error;
+    const { data: mecanicosData, error } = await sb
+      .from('mecanicos')
+      .select('*')
+      .order('name', { ascending: true });
+
+    if(error || !mecanicosData || mecanicosData.length === 0){
+      console.error('Error o sin datos:', error?.message);
+      return;
+    }
+
+    mechanics = mecanicosData.map(m => ({
+      id: m.id,
+      name: m.name,
+      initials: (m.name||'').split(' ').filter(Boolean).slice(0,2).map(w=>w[0]).join('').toUpperCase()||'?',
+      spec: m.spec,
+      dist: (m.lat && m.lng && USER_LOCATION) ? haversineKm(USER_LOCATION.lat, USER_LOCATION.lng, m.lat, m.lng) : null,
+      lat: m.lat, lng: m.lng,
+      rating: 0, reviews: 0,
+      parts: !!m.sells_parts,
+      priceFrom: null,
+      status: m.status || 'open',
+      address: m.address,
+      phone: m.phone,
+      years: m.years || 0,
+      tags: [], services: [],
+      partsNote: m.parts_note || 'Sin información sobre repuestos.',
+      reviews_list: []
+    }));
+
+    if(USER_LOCATION) recalcDistances();
+    renderGrid();
+    console.log(`PANNÉ: ${mechanics.length} negocios cargados`);
+
   } catch(err) {
+    console.error('Error cargando mecánicos:', err.message);
     const grid = document.getElementById('grid');
     if(grid) grid.innerHTML = `<div class="empty" style="grid-column:1/-1;">
-      <div class="bebas" style="color:var(--red);">Sin conexión</div>
+      <div class="bebas" style="color:var(--red);">Error de conexión</div>
       <p style="margin-top:8px;">${err.message}</p>
-      <button onclick="location.reload()" style="margin-top:16px;background:var(--red);color:#fff;border:none;padding:10px 20px;border-radius:8px;cursor:pointer;font-family:Inter;font-weight:700;">Reintentar</button>
+      <button onclick="location.reload()" style="margin-top:16px;background:var(--red);color:#fff;border:none;padding:10px 20px;border-radius:8px;cursor:pointer;font-weight:700;">Reintentar</button>
     </div>`;
-    mechanics = [];
-    return;
   }
-
-  if(mecanicosError){
-    console.error('Error cargando mecánicos:', mecanicosError.message);
-    const grid = document.getElementById('grid');
-    if(grid) grid.innerHTML = `<div class="empty" style="grid-column:1/-1;">
-      <div class="bebas">Error de conexión</div>
-      <p style="color:#ff6b6b;font-family:monospace;font-size:11px;margin-top:8px;">${mecanicosError.message}</p>
-      <p style="margin-top:8px;">Código: ${mecanicosError.code || 'sin código'}</p>
-    </div>`;
-    mechanics = [];
-    return;
-  }
-
-  // Llenar mechanics solo con datos de mecanicos — renderizar YA
-  mechanics = (mecanicosData || []).map(m => ({
-    id: m.id,
-    name: m.name,
-    initials: (m.name || '').split(' ').filter(Boolean).slice(0,2).map(w => w[0]).join('').toUpperCase() || '?',
-    spec: m.spec,
-    dist: (m.lat && m.lng && USER_LOCATION) ? haversineKm(USER_LOCATION.lat, USER_LOCATION.lng, m.lat, m.lng) : null,
-    lat: m.lat, lng: m.lng,
-    rating: 0, reviews: 0,
-    parts: !!m.sells_parts,
-    priceFrom: null,
-    status: m.status || 'open',
-    address: m.address, phone: m.phone, years: m.years || 0,
-    tags: [], services: [],
-    partsNote: m.parts_note || 'Sin información sobre repuestos.',
-    reviews_list: [],
-    trial_ends_at: m.trial_ends_at,
-    subscription_active: m.subscription_active
-  }));
-
-  if(USER_LOCATION) recalcDistances();
-  renderGrid(); // ← renderizar AHORA con datos básicos
-
-  // Cargar servicios y reseñas en segundo plano sin bloquear
-  try {
-    const [serviciosResult, resenasResult] = await Promise.all([
-      sb.from('servicios').select('*').limit(500),
-      sb.from('resenas').select('*').limit(500)
-    ]);
-    const serviciosData = serviciosResult.data || [];
-    const resenasData = resenasResult.data || [];
-
-    // Enriquecer mechanics con servicios y reseñas
-    mechanics = mechanics.map(m => {
-      const misServicios = serviciosData.filter(s => s.mecanico_id === m.id);
-      const misResenas = resenasData.filter(r => r.mecanico_id === m.id);
-      const avgRating = misResenas.length
-        ? misResenas.reduce((sum, r) => sum + r.stars, 0) / misResenas.length : 0;
-      return {
-        ...m,
-        rating: avgRating,
-        reviews: misResenas.length,
-        priceFrom: misServicios.length ? misServicios[0].price : null,
-        services: misServicios.map(s => [s.name, s.price]),
-        reviews_list: misResenas.map(r => ({
-          name: r.cliente_nombre, stars: r.stars,
-          date: new Date(r.created_at).toLocaleDateString('es-CL'), text: r.texto
-        }))
-      };
-    });
-    renderGrid(); // actualizar con ratings
-  } catch(e) {
-    console.warn('No se pudieron cargar servicios/reseñas:', e.message);
-  }
-
-  console.log(`PANNÉ: ${mechanics.length} negocios cargados`);
 }
 
 
@@ -2269,23 +2221,7 @@ async function submitMecanicoForm(){
 addServiceRow();
 
 /* ====================== INIT ====================== */
-(async () => {
-  const grid = document.getElementById('grid');
-  if(grid) grid.innerHTML = `<div class="empty" style="grid-column:1/-1;"><div class="bebas" style="font-size:22px;color:var(--muted);">Cargando…</div></div>`;
-
-  // Polling: re-renderiza el directorio cada 300ms hasta que haya datos
-  const pollInterval = setInterval(() => {
-    if(mechanics.length > 0){
-      clearInterval(pollInterval);
-      renderGrid();
-    }
-  }, 300);
-
-  // Detener polling después de 15 segundos por si falla
-  setTimeout(() => clearInterval(pollInterval), 15000);
-
-  await loadMechanicsFromSupabase();
-})();
+loadMechanicsFromSupabase();
 refreshSession();
 
 /* ====================== PWA: Service Worker + Install Prompt ====================== */
