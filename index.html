@@ -2267,6 +2267,18 @@ addServiceRow();
 (async () => {
   const grid = document.getElementById('grid');
   if(grid) grid.innerHTML = `<div class="empty" style="grid-column:1/-1;"><div class="bebas" style="font-size:22px;color:var(--muted);">Cargando…</div></div>`;
+
+  // Polling: re-renderiza el directorio cada 300ms hasta que haya datos
+  const pollInterval = setInterval(() => {
+    if(mechanics.length > 0){
+      clearInterval(pollInterval);
+      renderGrid();
+    }
+  }, 300);
+
+  // Detener polling después de 15 segundos por si falla
+  setTimeout(() => clearInterval(pollInterval), 15000);
+
   await loadMechanicsFromSupabase();
 })();
 refreshSession();
