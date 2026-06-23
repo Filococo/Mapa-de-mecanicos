@@ -1399,54 +1399,59 @@ async function loadMechanicsFromSupabase(){
     return;
   }
 
-  const [serviciosResult, resenasResult] = await Promise.all([
-    sb.from('servicios').select('*').limit(500),
-    sb.from('resenas').select('*').limit(500)
-  ]);
-  const serviciosData = serviciosResult.data || [];
-  const resenasData = resenasResult.data || [];
-
-  mechanics = (mecanicosData || []).map(m => {
-    const misServicios = (serviciosData || []).filter(s => s.mecanico_id === m.id);
-    const misResenas = (resenasData || []).filter(r => r.mecanico_id === m.id);
-    const avgRating = misResenas.length
-      ? misResenas.reduce((sum, r) => sum + r.stars, 0) / misResenas.length
-      : 0;
-
-    return {
-      id: m.id,
-      name: m.name,
-      initials: (m.name || '').split(' ').filter(Boolean).slice(0,2).map(w => w[0]).join('').toUpperCase() || '?',
-      spec: m.spec,
-      dist: (m.lat && m.lng) ? haversineKm(USER_LOCATION.lat, USER_LOCATION.lng, m.lat, m.lng) : null,
-      lat: m.lat,
-      lng: m.lng,
-      rating: avgRating,
-      reviews: misResenas.length,
-      parts: !!m.sells_parts,
-      priceFrom: misServicios.length ? misServicios[0].price : null,
-      status: m.status || 'open',
-      address: m.address,
-      phone: m.phone,
-      years: m.years || 0,
-      tags: [],
-      services: misServicios.map(s => [s.name, s.price]),
-      partsNote: m.parts_note || 'Este taller no especificó información sobre venta de repuestos.',
-      reviews_list: misResenas.map(r => ({ name: r.cliente_nombre, stars: r.stars, date: new Date(r.created_at).toLocaleDateString('es-CL'), text: r.texto })),
-      trial_ends_at: m.trial_ends_at,
-      subscription_active: m.subscription_active
-    };
-  });
+  // Llenar mechanics solo con datos de mecanicos — renderizar YA
+  mechanics = (mecanicosData || []).map(m => ({
+    id: m.id,
+    name: m.name,
+    initials: (m.name || '').split(' ').filter(Boolean).slice(0,2).map(w => w[0]).join('').toUpperCase() || '?',
+    spec: m.spec,
+    dist: (m.lat && m.lng && USER_LOCATION) ? haversineKm(USER_LOCATION.lat, USER_LOCATION.lng, m.lat, m.lng) : null,
+    lat: m.lat, lng: m.lng,
+    rating: 0, reviews: 0,
+    parts: !!m.sells_parts,
+    priceFrom: null,
+    status: m.status || 'open',
+    address: m.address, phone: m.phone, years: m.years || 0,
+    tags: [], services: [],
+    partsNote: m.parts_note || 'Sin información sobre repuestos.',
+    reviews_list: [],
+    trial_ends_at: m.trial_ends_at,
+    subscription_active: m.subscription_active
+  }));
 
   if(USER_LOCATION) recalcDistances();
+  renderGrid(); // ← renderizar AHORA con datos básicos
 
-  // Siempre renderizar el grid cuando lleguen los datos
-  renderGrid();
+  // Cargar servicios y reseñas en segundo plano sin bloquear
+  try {
+    const [serviciosResult, resenasResult] = await Promise.all([
+      sb.from('servicios').select('*').limit(500),
+      sb.from('resenas').select('*').limit(500)
+    ]);
+    const serviciosData = serviciosResult.data || [];
+    const resenasData = resenasResult.data || [];
 
-  // Si el mapa está visible, también actualizarlo
-  const mapaView = document.getElementById('view-mapa');
-  if(mapaView && !mapaView.classList.contains('hidden')){
-    renderMap();
+    // Enriquecer mechanics con servicios y reseñas
+    mechanics = mechanics.map(m => {
+      const misServicios = serviciosData.filter(s => s.mecanico_id === m.id);
+      const misResenas = resenasData.filter(r => r.mecanico_id === m.id);
+      const avgRating = misResenas.length
+        ? misResenas.reduce((sum, r) => sum + r.stars, 0) / misResenas.length : 0;
+      return {
+        ...m,
+        rating: avgRating,
+        reviews: misResenas.length,
+        priceFrom: misServicios.length ? misServicios[0].price : null,
+        services: misServicios.map(s => [s.name, s.price]),
+        reviews_list: misResenas.map(r => ({
+          name: r.cliente_nombre, stars: r.stars,
+          date: new Date(r.created_at).toLocaleDateString('es-CL'), text: r.texto
+        }))
+      };
+    });
+    renderGrid(); // actualizar con ratings
+  } catch(e) {
+    console.warn('No se pudieron cargar servicios/reseñas:', e.message);
   }
 
   console.log(`PANNÉ: ${mechanics.length} negocios cargados`);
