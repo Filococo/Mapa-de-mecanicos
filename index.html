@@ -986,8 +986,8 @@ footer{
 <!-- NAV TABS -->
 <nav class="nav-tabs">
   <div class="nav-tabs-inner">
-    <button class="tab" data-tab="directorio">Directorio</button>
-    <button class="tab active" data-tab="mapa">Mapa</button>
+    <button class="tab active" data-tab="directorio">Directorio</button>
+    <button class="tab" data-tab="mapa">Mapa</button>
     <button class="tab" data-tab="perfil-mecanico">Soy taller</button>
   </div>
 </nav>
@@ -995,7 +995,7 @@ footer{
 <main>
 
   <!-- DIRECTORIO -->
-  <section id="view-directorio" class="hidden">
+  <section id="view-directorio">
     <div class="search-hero">
       <h1 class="bebas">Encuentra tu taller<br><span>de confianza</span></h1>
       <p>Talleres mecánicos y vulcanizadoras reales de Chile — con calificaciones verificadas de clientes reales.</p>
@@ -1037,7 +1037,7 @@ footer{
   </section>
 
   <!-- MAPA -->
-  <section id="view-mapa">
+  <section id="view-mapa" class="hidden">
     <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
       <div>
         <h1 class="bebas" style="font-size:32px;">Cerca de ti</h1>
@@ -2253,30 +2253,9 @@ async function submitMecanicoForm(){
 addServiceRow();
 
 /* ====================== INIT ====================== */
-// Partir siempre en directorio
-document.getElementById('view-mapa').classList.add('hidden');
-document.getElementById('view-directorio').classList.remove('hidden');
-document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-document.querySelector('[data-tab="directorio"]').classList.add('active');
-
 loadMechanicsFromSupabase().then(() => {
   renderGrid();
   renderMapList();
-  // Pre-inicializar Leaflet en background
-  setTimeout(() => {
-    const mapaEl = document.getElementById('view-mapa');
-    mapaEl.style.visibility = 'hidden';
-    mapaEl.style.position = 'absolute';
-    mapaEl.classList.remove('hidden');
-    renderMap();
-    setTimeout(() => {
-      if(leafletMapInstance) leafletMapInstance.invalidateSize();
-      renderMapList(); // ahora sí con datos y mapa listo
-      mapaEl.classList.add('hidden');
-      mapaEl.style.visibility = '';
-      mapaEl.style.position = '';
-    }, 200);
-  }, 300);
 });
 refreshSession();
 
