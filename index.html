@@ -1164,6 +1164,95 @@ footer{
         <div class="success-summary" id="successSummary"></div>
       </div>
     </div>
+
+    <!-- PANEL DEL MECÁNICO (solo visible cuando está logueado como mecánico) -->
+    <div id="panelMecanico" class="hidden">
+      <div class="panel-wrap">
+
+        <!-- Header del panel -->
+        <div class="panel-header">
+          <div>
+            <h2 class="bebas" style="font-size:2rem;margin:0;">Mi Taller</h2>
+            <p style="color:var(--muted);margin:4px 0 0;font-size:13px;" id="panelEmail"></p>
+          </div>
+          <div class="panel-trial" id="panelTrial"></div>
+        </div>
+
+        <!-- Stats rápidas -->
+        <div class="panel-stats">
+          <div class="panel-stat">
+            <div class="panel-stat-num" id="statVisitas">—</div>
+            <div class="panel-stat-label">Visitas al perfil</div>
+          </div>
+          <div class="panel-stat">
+            <div class="panel-stat-num" id="statResenas">—</div>
+            <div class="panel-stat-label">Reseñas</div>
+          </div>
+          <div class="panel-stat">
+            <div class="panel-stat-num" id="statRating">—</div>
+            <div class="panel-stat-label">Rating promedio</div>
+          </div>
+        </div>
+
+        <!-- Tabs del panel -->
+        <div class="panel-tabs">
+          <button class="panel-tab active" data-panel="ficha">Mi ficha</button>
+          <button class="panel-tab" data-panel="resenas">Reseñas</button>
+          <button class="panel-tab" data-panel="suscripcion">Suscripción</button>
+        </div>
+
+        <!-- Tab: Mi ficha -->
+        <div class="panel-section" id="panel-ficha">
+          <div class="form-section-title" style="margin-bottom:16px;">Editar mi ficha</div>
+          <div class="form-stack">
+            <label class="form-label">Nombre del taller
+              <input type="text" class="form-input" id="edit-name" placeholder="Nombre de tu taller">
+            </label>
+            <div class="form-grid">
+              <label class="form-label">Especialidad
+                <select class="form-input" id="edit-spec">
+                  <option>Mecánica General</option>
+                  <option>Frenos</option>
+                  <option>Suspensión</option>
+                  <option>Eléctrico</option>
+                  <option>Climatización</option>
+                  <option>Diésel</option>
+                  <option>Vulcanización</option>
+                </select>
+              </label>
+              <label class="form-label">Teléfono
+                <input type="tel" class="form-input" id="edit-phone" placeholder="+56 9 1234 5678">
+              </label>
+            </div>
+            <label class="form-label">Dirección
+              <input type="text" class="form-input" id="edit-address" placeholder="Dirección del taller">
+            </label>
+            <label class="form-label">Ciudad
+              <input type="text" class="form-input" id="edit-city" placeholder="Ciudad">
+            </label>
+            <label class="form-label" style="flex-direction:row;align-items:center;gap:10px;">
+              <input type="checkbox" id="edit-sells-parts" style="width:18px;height:18px;accent-color:var(--red);">
+              <span>Vendo repuestos o materiales</span>
+            </label>
+            <button class="btn-next" style="max-width:200px;" onclick="guardarFicha()">Guardar cambios</button>
+            <div id="editStatus" style="font-size:13px;margin-top:8px;"></div>
+          </div>
+        </div>
+
+        <!-- Tab: Reseñas -->
+        <div class="panel-section hidden" id="panel-resenas">
+          <div class="form-section-title" style="margin-bottom:16px;">Reseñas recibidas</div>
+          <div id="panelResenasList"><p style="color:var(--muted);">Cargando reseñas…</p></div>
+        </div>
+
+        <!-- Tab: Suscripción -->
+        <div class="panel-section hidden" id="panel-suscripcion">
+          <div class="form-section-title" style="margin-bottom:16px;">Estado de suscripción</div>
+          <div id="panelSuscripcionInfo"></div>
+        </div>
+
+      </div>
+    </div>
   </section>
 
 </main>
@@ -1340,6 +1429,7 @@ document.getElementById('authSubmit').addEventListener('click', async () => {
     if(authSelectedRole === 'mecanico'){
       alert('Cuenta creada. Ahora puedes completar tu ficha de mecánico — tienes 30 días de prueba gratis.');
       document.querySelector('[data-tab="perfil-mecanico"]').click();
+      setTimeout(mostrarPanelMecanico, 100);
     }
   } else {
     const { data, error } = await sb.auth.signInWithPassword({ email, password });
@@ -1862,6 +1952,25 @@ document.getElementById('backFromProfile')?.addEventListener('click', ()=>{
   window.scrollTo({top:0, behavior:'smooth'});
 });
 
+/* ====================== PANEL MECÁNICO ====================== */
+.panel-wrap{max-width:700px;margin:0 auto;padding:24px 16px 60px;}
+.panel-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;gap:12px;}
+.panel-trial{background:var(--red);color:#fff;padding:8px 14px;border-radius:8px;font-size:12px;font-weight:700;text-align:center;line-height:1.4;}
+.panel-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px;}
+.panel-stat{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;}
+.panel-stat-num{font-family:'Bebas Neue',sans-serif;font-size:2rem;color:var(--red);line-height:1;}
+.panel-stat-label{font-size:11px;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:.5px;}
+.panel-tabs{display:flex;gap:4px;margin-bottom:20px;border-bottom:1px solid var(--border);padding-bottom:0;}
+.panel-tab{background:none;border:none;padding:10px 16px;font-family:'Inter';font-size:13px;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .2s;}
+.panel-tab.active{color:#fff;border-bottom-color:var(--red);font-weight:600;}
+.panel-section{animation:fadeIn .2s ease;}
+.suscripcion-card{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px;}
+.suscripcion-card.activa{border-color:var(--ok-green);}
+.suscripcion-card.vencida{border-color:var(--red);}
+.resena-panel-item{background:var(--card-bg);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px;}
+.resena-panel-meta{font-size:11px;color:var(--muted);margin-bottom:6px;}
+.resena-panel-text{font-size:13px;color:var(--dim);line-height:1.5;}
+
 /* ====================== MAP LIST (sin Leaflet) ====================== */
 function renderMapList(){
   const withCoords = mechanics.filter(m => m.lat != null && m.lng != null);
@@ -2003,9 +2112,12 @@ document.querySelectorAll('.tab').forEach(btn=>{
     }
     if(tab === 'perfil-mecanico'){
       document.getElementById('view-soy-mecanico').classList.remove('hidden');
-      if(!currentSession){
+      if(currentSession && currentUserRole === 'mecanico'){
+        mostrarPanelMecanico();
+      } else if(!currentSession){
         document.getElementById('soyMecanicoIntro').classList.remove('hidden');
         document.getElementById('soyMecanicoForm').classList.add('hidden');
+        document.getElementById('panelMecanico').classList.add('hidden');
       }
     }
     window.scrollTo({top:0, behavior:'smooth'});
@@ -2269,6 +2381,127 @@ async function submitMecanicoForm(){
 
 // Pre-cargar un servicio vacío al entrar al paso 3 por primera vez
 addServiceRow();
+
+/* ====================== PANEL MECÁNICO JS ====================== */
+
+async function mostrarPanelMecanico() {
+  // Ocultar todo lo demás en la sección
+  document.getElementById('soyMecanicoIntro').classList.add('hidden');
+  document.getElementById('soyMecanicoForm').classList.add('hidden');
+  document.getElementById('soyMecanicoSuccess').classList.add('hidden');
+  document.getElementById('panelMecanico').classList.remove('hidden');
+
+  // Email del usuario
+  const email = currentSession?.user?.email || '';
+  document.getElementById('panelEmail').textContent = email;
+
+  // Cargar datos del mecánico desde Supabase
+  const uid = currentSession?.user?.id;
+  if(!uid) return;
+
+  const { data: mec } = await sb.from('mecanicos').select('*').eq('id', uid).single();
+
+  if(mec) {
+    // Llenar formulario de edición
+    document.getElementById('edit-name').value = mec.name || '';
+    document.getElementById('edit-spec').value = mec.spec || 'Mecánica General';
+    document.getElementById('edit-phone').value = mec.phone || '';
+    document.getElementById('edit-address').value = mec.address || '';
+    document.getElementById('edit-city').value = mec.city || '';
+    document.getElementById('edit-sells-parts').checked = !!mec.sells_parts;
+
+    // Trial / suscripción
+    const trialEl = document.getElementById('panelTrial');
+    const suscEl = document.getElementById('panelSuscripcionInfo');
+    if(mec.trial_ends_at) {
+      const trialEnd = new Date(mec.trial_ends_at);
+      const hoy = new Date();
+      const diasRestantes = Math.ceil((trialEnd - hoy) / (1000 * 60 * 60 * 24));
+      if(diasRestantes > 0) {
+        trialEl.innerHTML = `${diasRestantes} días gratis`;
+        suscEl.innerHTML = `<div class="suscripcion-card activa">
+          <div style="font-weight:700;color:var(--ok-green);margin-bottom:6px;">✓ Período de prueba activo</div>
+          <div style="font-size:13px;color:var(--dim);">Te quedan <b>${diasRestantes} días</b> gratis. Tu prueba vence el ${trialEnd.toLocaleDateString('es-CL')}.</div>
+          <div style="margin-top:12px;font-size:12px;color:var(--muted);">Después del período de prueba, la suscripción es de <b>$9.990/mes</b>.</div>
+        </div>`;
+      } else {
+        trialEl.innerHTML = 'Prueba vencida';
+        trialEl.style.background = '#666';
+        suscEl.innerHTML = `<div class="suscripcion-card vencida">
+          <div style="font-weight:700;color:var(--red);margin-bottom:6px;">⚠ Período de prueba vencido</div>
+          <div style="font-size:13px;color:var(--dim);">Tu perfil está pausado. Activa tu suscripción por <b>$9.990/mes</b> para seguir apareciendo en el directorio.</div>
+          <button class="btn-next" style="margin-top:16px;max-width:220px;" onclick="alert('Pago con Mercado Pago — próximamente')">Activar suscripción →</button>
+        </div>`;
+      }
+    }
+
+    // Stats — reseñas y rating
+    const { data: resenas } = await sb.from('resenas').select('*').eq('mecanico_id', uid);
+    const totalResenas = resenas?.length || 0;
+    const avgRating = totalResenas > 0
+      ? (resenas.reduce((s, r) => s + r.rating, 0) / totalResenas).toFixed(1)
+      : '—';
+
+    document.getElementById('statVisitas').textContent = '—';
+    document.getElementById('statResenas').textContent = totalResenas;
+    document.getElementById('statRating').textContent = avgRating > 0 ? '★ ' + avgRating : '—';
+
+    // Lista de reseñas
+    const resenasEl = document.getElementById('panelResenasList');
+    if(totalResenas === 0) {
+      resenasEl.innerHTML = '<p style="color:var(--muted);font-size:13px;">Aún no tienes reseñas. Cuando tus clientes te califiquen, aparecerán aquí.</p>';
+    } else {
+      resenasEl.innerHTML = resenas.map(r => `
+        <div class="resena-panel-item">
+          <div class="resena-panel-meta">${'★'.repeat(r.rating)} · ${new Date(r.created_at).toLocaleDateString('es-CL')}</div>
+          <div class="resena-panel-text">${r.comment || 'Sin comentario'}</div>
+        </div>
+      `).join('');
+    }
+  } else {
+    // Usuario logueado pero no tiene ficha de mecánico
+    document.getElementById('panelMecanico').classList.add('hidden');
+    document.getElementById('soyMecanicoIntro').classList.remove('hidden');
+  }
+}
+
+// Tabs del panel
+document.querySelectorAll('.panel-tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.panel-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.panel-section').forEach(s => s.classList.add('hidden'));
+    document.getElementById('panel-' + btn.dataset.panel).classList.remove('hidden');
+  });
+});
+
+async function guardarFicha() {
+  const uid = currentSession?.user?.id;
+  if(!uid) return;
+  const statusEl = document.getElementById('editStatus');
+  statusEl.textContent = 'Guardando…';
+  statusEl.style.color = 'var(--muted)';
+
+  const { error } = await sb.from('mecanicos').update({
+    name: document.getElementById('edit-name').value.trim(),
+    spec: document.getElementById('edit-spec').value,
+    phone: document.getElementById('edit-phone').value.trim(),
+    address: document.getElementById('edit-address').value.trim(),
+    city: document.getElementById('edit-city').value.trim(),
+    sells_parts: document.getElementById('edit-sells-parts').checked,
+  }).eq('id', uid);
+
+  if(error) {
+    statusEl.textContent = 'Error al guardar: ' + error.message;
+    statusEl.style.color = 'var(--red)';
+  } else {
+    statusEl.textContent = '✓ Cambios guardados correctamente';
+    statusEl.style.color = 'var(--ok-green)';
+    // Refrescar directorio
+    mechanics = [];
+    setTimeout(() => statusEl.textContent = '', 3000);
+  }
+}
 
 /* ====================== INIT ====================== */
 // Fetch directo sin función intermedia
