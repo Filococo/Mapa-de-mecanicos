@@ -1364,9 +1364,6 @@ function traduceErrorAuth(msg){
 let mechanics = []; // Se carga de forma asíncrona desde Supabase (tabla mecanicos + servicios)
 
 async function loadMechanicsFromSupabase(){
-  // Si ya tenemos datos, no recargar
-  if(mechanics.length > 0) return;
-
   try {
     const { data: mecanicosData, error } = await sb
       .from('mecanicos')
@@ -1972,7 +1969,7 @@ function renderMap(){
 
 /* ====================== TABS ====================== */
 document.querySelectorAll('.tab').forEach(btn=>{
-  btn.addEventListener('click', ()=>{
+  btn.addEventListener('click', async ()=>{
     const tab = btn.dataset.tab;
     document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
     btn.classList.add('active');
@@ -1984,7 +1981,7 @@ document.querySelectorAll('.tab').forEach(btn=>{
 
     if(tab === 'directorio'){
       document.getElementById('view-directorio').classList.remove('hidden');
-      loadMechanicsFromSupabase().then(renderGrid);
+      if(mechanics.length > 0){ renderGrid(); } else { await loadMechanicsFromSupabase(); renderGrid(); }
     }
     if(tab === 'mapa'){
       document.getElementById('view-mapa').classList.remove('hidden');
@@ -2266,10 +2263,11 @@ async function submitMecanicoForm(){
 addServiceRow();
 
 /* ====================== INIT ====================== */
-loadMechanicsFromSupabase().then(() => {
+(async () => {
+  await loadMechanicsFromSupabase();
   renderGrid();
   renderMapList();
-});
+})();
 refreshSession();
 
 /* ====================== PWA: Service Worker + Install Prompt ====================== */
