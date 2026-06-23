@@ -1220,39 +1220,86 @@ footer{
 
         <!-- Tab: Mi ficha -->
         <div class="panel-section" id="panel-ficha">
-          <div class="form-section-title" style="margin-bottom:16px;">Editar mi ficha</div>
+          <div class="form-section-title" style="margin-bottom:4px;">Editar mi ficha</div>
+          <p style="color:var(--muted);font-size:12px;margin-bottom:16px;">Los cambios se reflejan en el directorio inmediatamente.</p>
+
           <div class="form-stack">
-            <label class="form-label">Nombre del taller
-              <input type="text" class="form-input" id="edit-name" placeholder="Nombre de tu taller">
+            <!-- Nombre y especialidad -->
+            <label class="form-label">Nombre del taller *
+              <input type="text" class="form-input" id="edit-name" placeholder="Ej: Automotriz Pérez">
             </label>
             <div class="form-grid">
-              <label class="form-label">Especialidad
+              <label class="form-label">Especialidad principal *
                 <select class="form-input" id="edit-spec">
                   <option>Mecánica General</option>
                   <option>Frenos</option>
                   <option>Suspensión</option>
-                  <option>Eléctrico</option>
+                  <option>Eléctrico Automotriz</option>
                   <option>Climatización</option>
                   <option>Diésel</option>
                   <option>Vulcanización</option>
                 </select>
               </label>
+              <label class="form-label">Ciudad *
+                <input type="text" class="form-input" id="edit-city" placeholder="Tu ciudad">
+              </label>
+            </div>
+            <label class="form-label">Dirección completa *
+              <input type="text" class="form-input" id="edit-address" placeholder="Calle, número, comuna">
+            </label>
+
+            <!-- Contacto -->
+            <div class="form-section-title" style="font-size:13px;margin-top:8px;margin-bottom:8px;">Contacto</div>
+            <div class="form-grid">
               <label class="form-label">Teléfono
                 <input type="tel" class="form-input" id="edit-phone" placeholder="+56 9 1234 5678">
               </label>
+              <label class="form-label">WhatsApp (opcional)
+                <input type="tel" class="form-input" id="edit-whatsapp" placeholder="+56 9 1234 5678">
+              </label>
             </div>
-            <label class="form-label">Dirección
-              <input type="text" class="form-input" id="edit-address" placeholder="Dirección del taller">
+
+            <!-- Horario -->
+            <div class="form-section-title" style="font-size:13px;margin-top:8px;margin-bottom:8px;">Horario de atención</div>
+            <div class="form-grid">
+              <label class="form-label">Apertura
+                <input type="time" class="form-input" id="edit-open-time" value="09:00">
+              </label>
+              <label class="form-label">Cierre
+                <input type="time" class="form-input" id="edit-close-time" value="18:00">
+              </label>
+            </div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;" id="edit-days-wrap">
+              <label style="display:flex;align-items:center;gap:4px;font-size:12px;color:var(--dim);"><input type="checkbox" class="edit-day" value="Lun" checked> Lun</label>
+              <label style="display:flex;align-items:center;gap:4px;font-size:12px;color:var(--dim);"><input type="checkbox" class="edit-day" value="Mar" checked> Mar</label>
+              <label style="display:flex;align-items:center;gap:4px;font-size:12px;color:var(--dim);"><input type="checkbox" class="edit-day" value="Mié" checked> Mié</label>
+              <label style="display:flex;align-items:center;gap:4px;font-size:12px;color:var(--dim);"><input type="checkbox" class="edit-day" value="Jue" checked> Jue</label>
+              <label style="display:flex;align-items:center;gap:4px;font-size:12px;color:var(--dim);"><input type="checkbox" class="edit-day" value="Vie" checked> Vie</label>
+              <label style="display:flex;align-items:center;gap:4px;font-size:12px;color:var(--dim);"><input type="checkbox" class="edit-day" value="Sáb"> Sáb</label>
+              <label style="display:flex;align-items:center;gap:4px;font-size:12px;color:var(--dim);"><input type="checkbox" class="edit-day" value="Dom"> Dom</label>
+            </div>
+
+            <!-- Descripción -->
+            <label class="form-label" style="margin-top:8px;">Descripción breve (opcional)
+              <textarea class="form-input" id="edit-description" rows="3" placeholder="Ej: Taller con 15 años de experiencia, especialistas en diésel y camionetas. Atención en el día." style="resize:vertical;"></textarea>
             </label>
-            <label class="form-label">Ciudad
-              <input type="text" class="form-input" id="edit-city" placeholder="Ciudad">
-            </label>
+
+            <!-- Repuestos -->
             <label class="form-label" style="flex-direction:row;align-items:center;gap:10px;">
               <input type="checkbox" id="edit-sells-parts" style="width:18px;height:18px;accent-color:var(--red);">
               <span>Vendo repuestos o materiales</span>
             </label>
-            <button class="btn-next" style="max-width:200px;" onclick="guardarFicha()">Guardar cambios</button>
+
+            <button class="btn-next" style="max-width:200px;" onclick="guardarFicha()">💾 Guardar cambios</button>
             <div id="editStatus" style="font-size:13px;margin-top:8px;"></div>
+          </div>
+
+          <!-- Vista previa -->
+          <div style="margin-top:24px;border-top:1px solid var(--border);padding-top:20px;">
+            <div class="form-section-title" style="font-size:13px;margin-bottom:12px;">👁 Vista previa de tu ficha</div>
+            <div id="editPreview" style="background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:16px;font-size:13px;color:var(--dim);">
+              Guarda los cambios para ver la vista previa.
+            </div>
           </div>
         </div>
 
@@ -2407,6 +2454,18 @@ async function mostrarPanelMecanico() {
     document.getElementById('edit-address').value = mec.address || '';
     document.getElementById('edit-city').value = mec.city || '';
     document.getElementById('edit-sells-parts').checked = !!mec.sells_parts;
+    if(mec.whatsapp) document.getElementById('edit-whatsapp').value = mec.whatsapp;
+    if(mec.description) document.getElementById('edit-description').value = mec.description;
+    // Horario
+    if(mec.schedule) {
+      const parts = mec.schedule.split(' ');
+      if(parts.length >= 3) {
+        const dias = parts[0].split('-');
+        document.querySelectorAll('.edit-day').forEach(cb => { cb.checked = dias.includes(cb.value); });
+        if(parts[1]) document.getElementById('edit-open-time').value = parts[1];
+        if(parts[3]) document.getElementById('edit-close-time').value = parts[3];
+      }
+    }
 
     // Trial / suscripción
     const trialEl = document.getElementById('panelTrial');
@@ -2480,14 +2539,29 @@ async function guardarFicha() {
   statusEl.textContent = 'Guardando…';
   statusEl.style.color = 'var(--muted)';
 
-  const { error } = await sb.from('mecanicos').update({
+  // Recopilar días seleccionados
+  const dias = [...document.querySelectorAll('.edit-day:checked')].map(c => c.value);
+  const horario = dias.length > 0
+    ? dias.join('-') + ' ' + (document.getElementById('edit-open-time')?.value||'09:00') + ' a ' + (document.getElementById('edit-close-time')?.value||'18:00')
+    : '';
+
+  const datosActualizados = {
     name: document.getElementById('edit-name').value.trim(),
     spec: document.getElementById('edit-spec').value,
     phone: document.getElementById('edit-phone').value.trim(),
     address: document.getElementById('edit-address').value.trim(),
     city: document.getElementById('edit-city').value.trim(),
     sells_parts: document.getElementById('edit-sells-parts').checked,
-  }).eq('id', uid);
+  };
+
+  // Campos opcionales (si existen en la tabla)
+  const whatsapp = document.getElementById('edit-whatsapp')?.value.trim();
+  const description = document.getElementById('edit-description')?.value.trim();
+  if(whatsapp) datosActualizados.whatsapp = whatsapp;
+  if(description) datosActualizados.description = description;
+  if(horario) datosActualizados.schedule = horario;
+
+  const { error } = await sb.from('mecanicos').update(datosActualizados).eq('id', uid);
 
   if(error) {
     statusEl.textContent = 'Error al guardar: ' + error.message;
@@ -2495,6 +2569,23 @@ async function guardarFicha() {
   } else {
     statusEl.textContent = '✓ Cambios guardados correctamente';
     statusEl.style.color = 'var(--ok-green)';
+    // Mostrar vista previa
+    const nombre = datosActualizados.name || 'Tu taller';
+    const initials = nombre.split(' ').filter(Boolean).slice(0,2).map(w=>w[0]).join('').toUpperCase();
+    document.getElementById('editPreview').innerHTML = `
+      <div style="display:flex;gap:12px;align-items:flex-start;">
+        <div style="width:48px;height:48px;background:var(--red);border-radius:12px;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:#fff;flex-shrink:0;">${initials}</div>
+        <div style="flex:1;">
+          <div style="font-weight:700;color:#fff;font-size:15px;">${nombre}</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px;">${datosActualizados.spec} · ${datosActualizados.city}</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px;">📍 ${datosActualizados.address}</div>
+          ${datosActualizados.phone ? `<div style="font-size:12px;color:var(--muted);margin-top:2px;">📞 ${datosActualizados.phone}</div>` : ''}
+          ${description ? `<div style="font-size:12px;color:var(--dim);margin-top:8px;line-height:1.5;">${description}</div>` : ''}
+          ${horario ? `<div style="font-size:11px;color:var(--ok-green);margin-top:6px;">🕐 ${horario}</div>` : ''}
+          ${datosActualizados.sells_parts ? `<span style="background:rgba(74,124,89,.2);color:var(--ok-green);font-size:11px;padding:2px 8px;border-radius:20px;margin-top:6px;display:inline-block;">Vende repuestos</span>` : ''}
+        </div>
+      </div>
+    `;
     // Refrescar directorio
     mechanics = [];
     setTimeout(() => statusEl.textContent = '', 3000);
