@@ -2384,17 +2384,18 @@ async function submitMecanicoForm(){
     photos: formPhotos.length ? formPhotos.slice(0,1) : [] // guardamos solo 1 foto en base64 para no exceder límites; en producción esto iría a Storage
   };
 
-  // Verificar si ya tiene ficha
-  const { data: fichaExistente } = await sb.from('mecanicos').select('id').eq('id', currentSession.user.id).maybeSingle();
-
-  let fichaError;
-  if(fichaExistente) {
-    const { error } = await sb.from('mecanicos').update(mecanicoPayload).eq('id', currentSession.user.id);
-    fichaError = error;
-  } else {
-    const { error } = await sb.from('mecanicos').insert(mecanicoPayload);
-    fichaError = error;
-  }
+  // Siempre hacer UPDATE — la ficha ya existe (creada al registrarse o por admin)
+  // Solo los campos editables, sin tocar id ni trial_ends_at
+  const { error: fichaError } = await sb.from('mecanicos').update({
+    name: mecanicoPayload.name,
+    spec: mecanicoPayload.spec,
+    phone: mecanicoPayload.phone,
+    address: mecanicoPayload.address,
+    lat: mecanicoPayload.lat,
+    lng: mecanicoPayload.lng,
+    sells_parts: mecanicoPayload.sells_parts,
+    parts_note: mecanicoPayload.parts_note,
+  }).eq('id', currentSession.user.id);
 
   if(fichaError){
     submitBtn.disabled = false;
