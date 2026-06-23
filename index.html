@@ -1247,6 +1247,12 @@ footer{
             <label class="form-label">Dirección completa *
               <input type="text" class="form-input" id="edit-address" placeholder="Calle, número, comuna">
             </label>
+            <div>
+              <button type="button" class="btn-next" style="max-width:fit-content;font-size:13px;padding:10px 16px;" onclick="capturarUbicacionPanel()">
+                📍 Capturar mi ubicación GPS
+              </button>
+              <div id="edit-gps-status" style="font-size:12px;color:var(--muted);margin-top:6px;"></div>
+            </div>
 
             <!-- Contacto -->
             <div class="form-section-title" style="font-size:13px;margin-top:8px;margin-bottom:8px;">Contacto</div>
@@ -2449,6 +2455,31 @@ async function submitMecanicoForm(){
 addServiceRow();
 
 /* ====================== PANEL MECÁNICO JS ====================== */
+let editPanelLat = null;
+let editPanelLng = null;
+
+function capturarUbicacionPanel(){
+  const statusEl = document.getElementById('edit-gps-status');
+  statusEl.textContent = 'Buscando tu ubicación…';
+  statusEl.style.color = 'var(--muted)';
+  if(!navigator.geolocation){
+    statusEl.textContent = 'Tu navegador no soporta GPS.';
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      editPanelLat = pos.coords.latitude;
+      editPanelLng = pos.coords.longitude;
+      statusEl.textContent = '✓ Ubicación capturada: ' + editPanelLat.toFixed(5) + ', ' + editPanelLng.toFixed(5);
+      statusEl.style.color = 'var(--ok-green)';
+    },
+    err => {
+      statusEl.textContent = 'No se pudo obtener la ubicación. Activa el GPS e intenta de nuevo.';
+      statusEl.style.color = 'var(--red)';
+    },
+    { enableHighAccuracy: true, timeout: 10000 }
+  );
+}
 
 async function mostrarPanelMecanico() {
   // Ocultar todo lo demás en la sección
@@ -2574,6 +2605,11 @@ async function guardarFicha() {
     city: document.getElementById('edit-city').value.trim(),
     sells_parts: document.getElementById('edit-sells-parts').checked,
   };
+  // Agregar coordenadas GPS si fueron capturadas
+  if(editPanelLat && editPanelLng){
+    datosActualizados.lat = editPanelLat;
+    datosActualizados.lng = editPanelLng;
+  }
 
   // Campos opcionales (si existen en la tabla)
   const whatsapp = document.getElementById('edit-whatsapp')?.value.trim();
