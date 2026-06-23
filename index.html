@@ -1364,10 +1364,28 @@ function traduceErrorAuth(msg){
 let mechanics = []; // Se carga de forma asíncrona desde Supabase (tabla mecanicos + servicios)
 
 async function loadMechanicsFromSupabase(){
-  const { data: mecanicosData, error: mecanicosError } = await sb
-    .from('mecanicos')
-    .select('*')
-    .order('created_at', { ascending: false });
+  const timeout = new Promise((_, reject) =>
+    setTimeout(() => reject(new Error('Tiempo de espera agotado — verifica tu conexión a internet')), 8000)
+  );
+
+  let mecanicosData, mecanicosError;
+  try {
+    const result = await Promise.race([
+      sb.from('mecanicos').select('*').order('created_at', { ascending: false }),
+      timeout
+    ]);
+    mecanicosData = result.data;
+    mecanicosError = result.error;
+  } catch(err) {
+    const grid = document.getElementById('grid');
+    if(grid) grid.innerHTML = `<div class="empty" style="grid-column:1/-1;">
+      <div class="bebas" style="color:var(--red);">Sin conexión</div>
+      <p style="margin-top:8px;">${err.message}</p>
+      <button onclick="location.reload()" style="margin-top:16px;background:var(--red);color:#fff;border:none;padding:10px 20px;border-radius:8px;cursor:pointer;font-family:Inter;font-weight:700;">Reintentar</button>
+    </div>`;
+    mechanics = [];
+    return;
+  }
 
   if(mecanicosError){
     console.error('Error cargando mecánicos:', mecanicosError.message);
