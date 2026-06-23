@@ -2245,9 +2245,10 @@ addServiceRow();
 refreshSession();
 
 /* ====================== PWA: Service Worker + Install Prompt ====================== */
+// Desregistrar cualquier service worker anterior para evitar caché agresivo
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js').catch(err => console.log('SW registration failed:', err));
+  navigator.serviceWorker.getRegistrations().then(registrations => {
+    registrations.forEach(reg => reg.unregister());
   });
 }
 
