@@ -686,33 +686,33 @@
 </div>
 
 <div id="authOverlay" class="hidden" style="position:fixed; inset:0; background:rgba(26,26,24,0.75); z-index:2000; display:flex; align-items:center; justify-content:center; padding:20px;">
-  <div style="background:var(--safety-orange); max-width:380px; width:100%; max-height:90vh; overflow-y:auto;">
+  <div style="background:#fff; max-width:380px; width:100%; max-height:90vh; overflow-y:auto; border:3px solid var(--safety-orange);">
     <div style="background:var(--carbon); color:var(--paper); padding:18px 20px; display:flex; justify-content:space-between; align-items:center;">
       <span id="authTitle" style="font-family:'Archivo Black'; font-size:15px; text-transform:uppercase;">Iniciar sesión</span>
       <button id="authClose" style="background:none; border:none; color:var(--paper); font-size:22px; cursor:pointer; line-height:1;">✕</button>
     </div>
     <div style="padding:22px;">
 
-      <div id="authRoleTabs" style="display:flex; gap:0; margin-bottom:18px; border-bottom:2px solid var(--carbon);">
-        <button type="button" class="auth-role-tab active" data-role="cliente" style="flex:1; padding:10px; background:none; border:none; font-family:'JetBrains Mono'; font-size:11px; text-transform:uppercase; cursor:pointer; border-bottom:3px solid var(--carbon); color:var(--carbon); font-weight:700;">Soy cliente</button>
-        <button type="button" class="auth-role-tab" data-role="mecanico" style="flex:1; padding:10px; background:none; border:none; font-family:'JetBrains Mono'; font-size:11px; text-transform:uppercase; cursor:pointer; border-bottom:3px solid transparent; color:#3a2410;">Soy mecánico</button>
+      <div id="authRoleTabs" style="display:flex; gap:0; margin-bottom:18px; border-bottom:2px solid var(--line-light);">
+        <button type="button" class="auth-role-tab active" data-role="cliente" style="flex:1; padding:10px; background:none; border:none; font-family:'JetBrains Mono'; font-size:11px; text-transform:uppercase; cursor:pointer; border-bottom:3px solid var(--safety-orange); color:var(--carbon); font-weight:700;">Soy cliente</button>
+        <button type="button" class="auth-role-tab" data-role="mecanico" style="flex:1; padding:10px; background:none; border:none; font-family:'JetBrains Mono'; font-size:11px; text-transform:uppercase; cursor:pointer; border-bottom:3px solid transparent; color:var(--steel);">Soy mecánico</button>
       </div>
 
-      <div id="authModeToggle" style="font-family:'JetBrains Mono'; font-size:11px; color:var(--carbon); margin-bottom:14px; text-align:center;">
+      <div id="authModeToggle" style="font-family:'JetBrains Mono'; font-size:11px; color:var(--steel); margin-bottom:14px; text-align:center;">
         <span id="authModeText">¿No tienes cuenta?</span>
-        <a href="#" id="authModeSwitch" style="color:var(--carbon); text-decoration:underline; font-weight:700;">Regístrate aquí</a>
+        <a href="#" id="authModeSwitch" style="color:var(--safety-orange); text-decoration:underline; font-weight:700;">Regístrate aquí</a>
       </div>
 
       <div style="display:flex; flex-direction:column; gap:12px;">
-        <label class="form-label" style="color:var(--carbon);">Correo electrónico
+        <label class="form-label">Correo electrónico
           <input type="email" class="form-input" id="auth-email" placeholder="tucorreo@ejemplo.com">
         </label>
-        <label class="form-label" style="color:var(--carbon);">Contraseña
+        <label class="form-label">Contraseña
           <input type="password" class="form-input" id="auth-password" placeholder="Mínimo 6 caracteres">
         </label>
-        <div id="authError" style="font-family:'JetBrains Mono'; font-size:11px; color:#3a0a00; font-weight:700;"></div>
-        <button type="button" class="btn-primary" id="authSubmit" style="padding:13px; background:var(--carbon); color:var(--paper); border:none; font-family:'JetBrains Mono'; font-size:12px; letter-spacing:1px; text-transform:uppercase; cursor:pointer; font-weight:700;">Iniciar sesión</button>
-        <div id="authTrialNote" class="hidden" style="font-family:'JetBrains Mono'; font-size:10.5px; color:var(--carbon); font-weight:700; text-align:center;">
+        <div id="authError" style="font-family:'JetBrains Mono'; font-size:11px; color:#a45; font-weight:700;"></div>
+        <button type="button" class="btn-primary" id="authSubmit" style="padding:13px; background:var(--safety-orange); color:#fff; border:none; font-family:'JetBrains Mono'; font-size:12px; letter-spacing:1px; text-transform:uppercase; cursor:pointer; font-weight:700;">Iniciar sesión</button>
+        <div id="authTrialNote" class="hidden" style="font-family:'JetBrains Mono'; font-size:10.5px; color:var(--ok-green); font-weight:700; text-align:center;">
           ✓ 30 días de prueba gratis al registrarte como mecánico
         </div>
       </div>
@@ -770,8 +770,8 @@ function openAuthModal(preselectRole){
   document.querySelectorAll('.auth-role-tab').forEach(t => {
     const active = t.dataset.role === authSelectedRole;
     t.classList.toggle('active', active);
-    t.style.borderBottomColor = active ? 'var(--carbon)' : 'transparent';
-    t.style.color = active ? 'var(--carbon)' : '#3a2410';
+    t.style.borderBottomColor = active ? 'var(--safety-orange)' : 'transparent';
+    t.style.color = active ? 'var(--carbon)' : 'var(--steel)';
     t.style.fontWeight = active ? '700' : '400';
   });
   document.getElementById('authTrialNote').classList.toggle('hidden', authSelectedRole !== 'mecanico' || authMode !== 'signup');
