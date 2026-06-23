@@ -2222,12 +2222,13 @@ addServiceRow();
 
 /* ====================== INIT ====================== */
 loadMechanicsFromSupabase().then(() => {
-  // Datos cargados — ahora mostrar directorio como vista principal
+  renderGrid();
+  renderMap();
+  // Cambiar a directorio como vista principal
   document.getElementById('view-mapa').classList.add('hidden');
   document.getElementById('view-directorio').classList.remove('hidden');
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.querySelector('[data-tab="directorio"]').classList.add('active');
-  renderGrid();
 });
 refreshSession();
 
