@@ -2157,9 +2157,19 @@ document.querySelectorAll('.tab').forEach(btn=>{
     }
     if(tab === 'perfil-mecanico'){
       document.getElementById('view-soy-mecanico').classList.remove('hidden');
-      if(currentSession && currentUserRole === 'mecanico'){
-        mostrarPanelMecanico();
-      } else if(!currentSession){
+      if(currentSession){
+        // Verificar si tiene ficha en la BD, independiente del rol almacenado
+        sb.from('mecanicos').select('id').eq('id', currentSession.user.id).maybeSingle().then(({ data }) => {
+          if(data){
+            currentUserRole = 'mecanico';
+            mostrarPanelMecanico();
+          } else {
+            document.getElementById('soyMecanicoIntro').classList.remove('hidden');
+            document.getElementById('soyMecanicoForm').classList.add('hidden');
+            document.getElementById('panelMecanico').classList.add('hidden');
+          }
+        });
+      } else {
         document.getElementById('soyMecanicoIntro').classList.remove('hidden');
         document.getElementById('soyMecanicoForm').classList.add('hidden');
         document.getElementById('panelMecanico').classList.add('hidden');
