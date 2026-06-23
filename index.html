@@ -1949,7 +1949,12 @@ document.querySelectorAll('.tab').forEach(btn=>{
     }
     if(tab === 'mapa'){
       document.getElementById('view-mapa').classList.remove('hidden');
-      loadMechanicsFromSupabase().then(renderMap);
+      if(mechanics.length > 0){
+        renderMap();
+        setTimeout(()=>{ if(leafletMapInstance) leafletMapInstance.invalidateSize(); }, 150);
+      } else {
+        loadMechanicsFromSupabase().then(()=>{ renderMap(); setTimeout(()=>{ if(leafletMapInstance) leafletMapInstance.invalidateSize(); }, 150); });
+      }
     }
     if(tab === 'perfil-mecanico'){
       document.getElementById('view-soy-mecanico').classList.remove('hidden');
@@ -2221,19 +2226,14 @@ async function submitMecanicoForm(){
 addServiceRow();
 
 /* ====================== INIT ====================== */
+// Partir siempre en directorio
+document.getElementById('view-mapa').classList.add('hidden');
+document.getElementById('view-directorio').classList.remove('hidden');
+document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+document.querySelector('[data-tab="directorio"]').classList.add('active');
+
 loadMechanicsFromSupabase().then(() => {
-  // Debug: mostrar cuántos cargaron
-  document.getElementById('resultCount').textContent = mechanics.length + ' talleres cargados (debug)';
-
-  renderMap();
   renderGrid();
-
-  setTimeout(() => {
-    document.getElementById('view-mapa').classList.add('hidden');
-    document.getElementById('view-directorio').classList.remove('hidden');
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    document.querySelector('[data-tab="directorio"]').classList.add('active');
-  }, 500);
 });
 refreshSession();
 
