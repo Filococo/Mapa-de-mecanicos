@@ -823,7 +823,13 @@ document.getElementById('authSubmit').addEventListener('click', async () => {
   }
 
   if(authMode === 'signup'){
-    const { data, error } = await sb.auth.signUp({ email, password });
+    const { data, error } = await sb.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: 'https://filococo.github.io/Mapa-de-mecanicos/'
+      }
+    });
     if(error){
       errorBox.textContent = traduceErrorAuth(error.message);
       return;
