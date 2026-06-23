@@ -1976,10 +1976,11 @@ document.querySelectorAll('.tab').forEach(btn=>{
     if(tab === 'mapa'){
       document.getElementById('view-mapa').classList.remove('hidden');
       if(mechanics.length > 0){
+        renderMapList();
         renderMap();
         setTimeout(()=>{ if(leafletMapInstance) leafletMapInstance.invalidateSize(); }, 150);
       } else {
-        loadMechanicsFromSupabase().then(()=>{ renderMap(); setTimeout(()=>{ if(leafletMapInstance) leafletMapInstance.invalidateSize(); }, 150); });
+        loadMechanicsFromSupabase().then(()=>{ renderMapList(); renderMap(); setTimeout(()=>{ if(leafletMapInstance) leafletMapInstance.invalidateSize(); }, 150); });
       }
     }
     if(tab === 'perfil-mecanico'){
@@ -2261,6 +2262,13 @@ document.querySelector('[data-tab="directorio"]').classList.add('active');
 loadMechanicsFromSupabase().then(() => {
   renderGrid();
   renderMapList();
+  // Pre-inicializar el mapa en background para que al cambiar de tab esté listo
+  setTimeout(() => {
+    document.getElementById('view-mapa').classList.remove('hidden');
+    renderMap();
+    setTimeout(() => { if(leafletMapInstance) leafletMapInstance.invalidateSize(); }, 100);
+    document.getElementById('view-mapa').classList.add('hidden');
+  }, 800);
 });
 refreshSession();
 
