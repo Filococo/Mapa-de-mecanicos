@@ -53,12 +53,12 @@ body{
   background:var(--black2);
   border-bottom:1px solid var(--border);
   position:sticky;top:0;z-index:100;
-  padding:0 16px;
 }
 .topbar-inner{
   max-width:1200px;margin:0 auto;
   display:flex;align-items:center;justify-content:space-between;
   height:60px;gap:12px;
+  padding:0 16px;
 }
 .logo{
   display:flex;align-items:center;gap:10px;text-decoration:none;
@@ -121,7 +121,7 @@ body{
 .tab:hover:not(.active){color:var(--dim);}
 
 /* ===== MAIN LAYOUT ===== */
-main{max-width:1200px;margin:0 auto;padding:24px 16px 100px;}
+main{max-width:1200px;margin:0 auto;padding:20px 16px 100px;width:100%;}
 
 /* ===== HERO SEARCH BAR ===== */
 .search-hero{
@@ -136,7 +136,7 @@ main{max-width:1200px;margin:0 auto;padding:24px 16px 100px;}
 .search-hero::before{
   content:'PANNÉ';
   font-family:'Bebas Neue';
-  font-size:120px;
+  font-size:clamp(60px, 20vw, 120px);
   color:rgba(232,25,44,0.06);
   position:absolute;
   right:-10px;top:-20px;
@@ -220,7 +220,7 @@ main{max-width:1200px;margin:0 auto;padding:24px 16px 100px;}
 /* ===== DIRECTORY GRID ===== */
 .grid{
   display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
+  grid-template-columns:repeat(auto-fill,minmax(min(300px,100%),1fr));
   gap:16px;
 }
 
@@ -928,6 +928,26 @@ footer{
 ::-webkit-scrollbar-thumb{background:var(--steel);border-radius:4px;}
 
 .hidden{display:none!important;}
+
+/* ===== RESPONSIVE MÓVIL ===== */
+@media(max-width:480px){
+  .logo-sub{display:none;}
+  .topbar-inner{gap:6px;}
+  .btn-icon span{display:none;}
+  .btn-icon{padding:8px 10px;}
+  .topbar-right{gap:6px;}
+  .search-hero{padding:18px;}
+  .search-row{flex-direction:column;}
+  .btn-search{width:100%;}
+  .filter-row{gap:6px;}
+  .chip{padding:7px 10px;font-size:10px;}
+  .profile-actions{gap:6px;}
+  .btn-wa,.btn-directions{padding:8px 10px;font-size:11px;}
+  .rating-bar-wrap{display:none;}
+  .profile-head{padding:0 16px 18px;}
+  .profile-body{gap:14px;}
+  .modal{margin:10px;}
+}
 </style>
 </head>
 <body>

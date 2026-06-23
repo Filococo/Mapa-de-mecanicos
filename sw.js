@@ -1,4 +1,4 @@
-const CACHE_NAME = 'taller-cercano-v2';
+const CACHE_NAME = 'panne-v1';
 
 const CORE_ASSETS = [
   './',
