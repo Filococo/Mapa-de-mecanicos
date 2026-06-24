@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>PANNÉ — Encuentra talleres y vulcanizadoras en Chile</title>
+<title>PANNE — Encuentra talleres y vulcanizadoras en Chile</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
@@ -15,9 +15,9 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
-<meta name="apple-mobile-web-app-title" content="PANNÉ">
+<meta name="apple-mobile-web-app-title" content="PANNE">
 <style>
-/* ===== PANNÉ Design System ===== */
+/* ===== PANNE Design System ===== */
 :root {
   --red:      #E8192C;
   --red-dark: #B01020;
@@ -134,7 +134,7 @@ main{max-width:1200px;margin:0 auto;padding:20px 16px 100px;width:100%;}
   overflow:hidden;
 }
 .search-hero::before{
-  content:'PANNÉ';
+  content:'PANNE';
   font-family:'Bebas Neue';
   font-size:clamp(60px, 20vw, 120px);
   color:rgba(232,25,44,0.06);
@@ -1002,7 +1002,7 @@ footer{
         </svg>
       </div>
       <div>
-        <div class="logo-name">PANNÉ</div>
+        <div class="logo-name">PANNE</div>
         <div class="logo-sub">Chile · Talleres & Vulcanizadoras</div>
       </div>
     </a>
@@ -1092,7 +1092,7 @@ footer{
   <section id="view-soy-mecanico" class="hidden">
     <div id="soyMecanicoIntro">
       <div class="registro-hero">
-        <h1 class="bebas">Suma tu taller<br>a <span>PANNÉ</span></h1>
+        <h1 class="bebas">Suma tu taller<br>a <span>PANNE</span></h1>
         <p>Llega a miles de conductores en toda Chile que buscan un taller de confianza. Crea tu ficha, recibe calificaciones verificadas y aparece en el mapa.</p>
         <div class="pricing-cards">
           <div class="pricing-card">
@@ -1215,7 +1215,7 @@ footer{
       <div class="success-box">
         <div class="success-icon">✓</div>
         <h2>¡Ficha creada!</h2>
-        <p>Tu taller ya está en PANNÉ. Los primeros 30 días son gratis — sin tarjeta, sin permanencia.</p>
+        <p>Tu taller ya está en PANNE. Los primeros 30 días son gratis — sin tarjeta, sin permanencia.</p>
         <div class="success-summary" id="successSummary"></div>
       </div>
     </div>
@@ -1435,7 +1435,7 @@ footer{
 <div id="installOverlay" class="modal-overlay hidden">
   <div class="modal">
     <div class="modal-head">
-      <span class="modal-title">Instalar PANNÉ</span>
+      <span class="modal-title">Instalar PANNE</span>
       <button class="modal-close" id="installClose">✕</button>
     </div>
     <div class="modal-body">
@@ -1445,7 +1445,7 @@ footer{
 </div>
 
 <footer>
-  PANNÉ © 2026 — Directorio de talleres y vulcanizadoras en Chile · Datos de Google Maps
+  PANNE © 2026 — Directorio de talleres y vulcanizadoras en Chile · Datos de Google Maps
 </footer>
 
 
@@ -1644,7 +1644,7 @@ async function loadMechanicsFromSupabase(){
     if(USER_LOCATION) recalcDistances();
     renderGrid();
     renderMapList();
-    console.log('PANNÉ: ' + mechanics.length + ' negocios cargados');
+    console.log('PANNE: ' + mechanics.length + ' negocios cargados');
 
   } catch(err) {
     console.error('Error inesperado:', err.message);
@@ -2045,7 +2045,7 @@ function contactWhatsApp(phone, name){
     return;
   }
   const cleanPhone = phone.replace(/[^0-9]/g, '');
-  const message = encodeURIComponent(`Hola, vi tu taller "${name}" en PANNÉ y quisiera consultar por un servicio.`);
+  const message = encodeURIComponent(`Hola, vi tu taller "${name}" en PANNE y quisiera consultar por un servicio.`);
   window.open(`https://wa.me/${cleanPhone}?text=${message}`, '_blank');
 }
 
@@ -3056,7 +3056,7 @@ function showInstallInstructions(){
     box.innerHTML = `
       <div style="text-align:center;">
         <div style="font-family:'Archivo Black'; font-size:18px; color:var(--ok-green); margin-bottom:10px;">✓ Ya está instalada</div>
-        <p>Estás usando PANNÉ como app instalada en tu dispositivo.</p>
+        <p>Estás usando PANNE como app instalada en tu dispositivo.</p>
       </div>`;
   } else if(isIOS){
     box.innerHTML = `
