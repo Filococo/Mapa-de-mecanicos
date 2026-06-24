@@ -2600,21 +2600,39 @@ async function mostrarPanelMecanico() {
       const trialEnd = new Date(mec.trial_ends_at);
       const hoy = new Date();
       const diasRestantes = Math.ceil((trialEnd - hoy) / (1000 * 60 * 60 * 24));
+      const pct = Math.max(0, Math.min(100, (diasRestantes / 30) * 100));
+
       if(diasRestantes > 0) {
-        trialEl.innerHTML = `${diasRestantes} días gratis`;
-        suscEl.innerHTML = `<div class="suscripcion-card activa">
-          <div style="font-weight:700;color:var(--ok-green);margin-bottom:6px;">✓ Período de prueba activo</div>
-          <div style="font-size:13px;color:var(--dim);">Te quedan <b>${diasRestantes} días</b> gratis. Tu prueba vence el ${trialEnd.toLocaleDateString('es-CL')}.</div>
-          <div style="margin-top:12px;font-size:12px;color:var(--muted);">Después del período de prueba, la suscripción es de <b>$9.990/mes</b>.</div>
-        </div>`;
+        // Color según urgencia
+        const color = diasRestantes > 10 ? 'var(--ok-green)' : diasRestantes > 5 ? '#f59e0b' : 'var(--red)';
+        const emoji = diasRestantes > 10 ? '✓' : diasRestantes > 5 ? '⚡' : '⚠';
+
+        trialEl.innerHTML = `${diasRestantes} día${diasRestantes !== 1 ? 's' : ''} gratis`;
+        trialEl.style.background = diasRestantes > 10 ? 'var(--red)' : diasRestantes > 5 ? '#f59e0b' : '#b91c1c';
+
+        suscEl.innerHTML = `
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+              <div style="font-weight:700;color:${color};font-size:15px;">${emoji} Prueba gratuita activa</div>
+              <div style="font-family:'Bebas Neue';font-size:28px;color:${color};line-height:1;">${diasRestantes}<span style="font-size:13px;font-family:'Inter';color:var(--muted);margin-left:4px;">días</span></div>
+            </div>
+            <div style="background:var(--black3);border-radius:4px;height:6px;margin-bottom:12px;overflow:hidden;">
+              <div style="height:100%;width:${pct}%;background:${color};border-radius:4px;transition:width .5s;"></div>
+            </div>
+            <div style="font-size:12px;color:var(--muted);margin-bottom:16px;">Tu prueba vence el <b style="color:var(--dim);">${trialEnd.toLocaleDateString('es-CL', {day:'numeric',month:'long',year:'numeric'})}</b>. Al vencer, tu perfil se pausará hasta que actives un plan.</div>
+            <div style="font-size:12px;color:var(--muted);">¿Listo para seguir? Elige tu plan:</div>
+            ${renderPlanes(false)}
+          </div>`;
       } else {
         trialEl.innerHTML = 'Prueba vencida';
-        trialEl.style.background = '#666';
-        suscEl.innerHTML = `<div class="suscripcion-card vencida">
-          <div style="font-weight:700;color:var(--red);margin-bottom:6px;">⚠ Período de prueba vencido</div>
-          <div style="font-size:13px;color:var(--dim);">Tu perfil está pausado. Activa tu suscripción por <b>$9.990/mes</b> para seguir apareciendo en el directorio.</div>
-          <button class="btn-next" style="margin-top:16px;max-width:220px;" onclick="alert('Pago con Mercado Pago — próximamente')">Activar suscripción →</button>
-        </div>`;
+        trialEl.style.background = '#555';
+
+        suscEl.innerHTML = `
+          <div style="background:var(--card);border:1px solid rgba(232,25,44,.3);border-radius:12px;padding:20px;">
+            <div style="font-weight:700;color:var(--red);font-size:15px;margin-bottom:8px;">⚠ Período de prueba vencido</div>
+            <div style="font-size:13px;color:var(--muted);margin-bottom:20px;">Tu perfil está pausado y no aparece en el directorio. Activa un plan para volver a figurar.</div>
+            ${renderPlanes(true)}
+          </div>`;
       }
     }
 
@@ -2663,6 +2681,41 @@ document.querySelectorAll('.panel-tab').forEach(btn => {
 });
 
 /* ====================== FOTOS DEL PANEL ====================== */
+function renderPlanes(destacar) {
+  const planes = [
+    { id:'mensual', label:'Mensual', precio:'$9.990', periodo:'/mes', ahorro:'', desc:'Sin compromiso. Cancela cuando quieras.' },
+    { id:'semestral', label:'Semestral', precio:'$49.990', periodo:'/6 meses', ahorro:'Ahorras $9.950', desc:'Equivale a $8.332/mes.' },
+    { id:'anual', label:'Anual', precio:'$89.990', periodo:'/año', ahorro:'Ahorras $29.890', desc:'Equivale a $7.499/mes. El mejor valor.' },
+  ];
+  return `
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px;">
+      ${planes.map((p,i) => `
+        <div style="border:${i===2?'2px solid var(--red)':'1px solid var(--border)'};border-radius:10px;padding:14px;text-align:center;position:relative;background:${i===2?'rgba(232,25,44,.06)':'var(--black3)'};">
+          ${i===2 ? '<div style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;white-space:nowrap;">MEJOR VALOR</div>' : ''}
+          <div style="font-family:\'Bebas Neue\';font-size:13px;color:var(--muted);letter-spacing:1px;margin-bottom:6px;">${p.label}</div>
+          <div style="font-family:\'Bebas Neue\';font-size:24px;color:#fff;line-height:1;">${p.precio}</div>
+          <div style="font-size:10px;color:var(--muted);margin-bottom:6px;">${p.periodo}</div>
+          ${p.ahorro ? `<div style="font-size:10px;color:var(--ok-green);margin-bottom:8px;">${p.ahorro}</div>` : '<div style="margin-bottom:18px;"></div>'}
+          <button onclick="iniciarPago('${p.id}')" style="width:100%;background:${i===2?'var(--red)':'var(--card)'};color:#fff;border:${i===2?'none':'1px solid var(--border)'};border-radius:8px;padding:8px 0;font-size:12px;font-weight:600;cursor:pointer;">
+            Contratar
+          </button>
+        </div>
+      `).join('')}
+    </div>
+    <p style="font-size:11px;color:var(--muted);margin-top:12px;text-align:center;">Pago seguro con Mercado Pago · Sin permanencia en plan mensual</p>
+  `;
+}
+
+function iniciarPago(plan) {
+  // Por ahora muestra info — se conecta con Mercado Pago en el siguiente paso
+  const info = {
+    mensual: '$9.990/mes',
+    semestral: '$49.990 por 6 meses',
+    anual: '$89.990 por 1 año'
+  };
+  alert(`Plan ${plan}: ${info[plan]}\n\nConexión con Mercado Pago próximamente.`);
+}
+
 async function cargarFotosPerfil(uid) {
   const panel = document.getElementById('profilePhotosPanel');
   const grid = document.getElementById('profilePhotosGrid');
