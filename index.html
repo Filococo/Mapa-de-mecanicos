@@ -1422,7 +1422,7 @@ function updateAccountUI(){
   }
 }
 
-document.getElementById('accountBtn').addEventListener('click', async () => {
+document.getElementById('accountBtn')?.addEventListener('click', async () => {
   if(currentSession){
     if(confirm('¿Cerrar sesión?')){
       await sb.auth.signOut();
@@ -1448,7 +1448,7 @@ function openAuthModal(preselectRole){
   document.getElementById('authError').textContent = '';
 }
 
-document.getElementById('authClose').addEventListener('click', () => {
+document.getElementById('authClose')?.addEventListener('click', () => {
   document.getElementById('authOverlay').classList.add('hidden');
 });
 
@@ -1456,7 +1456,7 @@ document.querySelectorAll('.auth-role-tab').forEach(tab => {
   tab.addEventListener('click', () => openAuthModal(tab.dataset.role));
 });
 
-document.getElementById('authModeSwitch').addEventListener('click', (e) => {
+document.getElementById('authModeSwitch')?.addEventListener('click', (e) => {
   e.preventDefault();
   authMode = authMode === 'login' ? 'signup' : 'login';
   const title = document.getElementById('authTitle');
@@ -1477,7 +1477,7 @@ document.getElementById('authModeSwitch').addEventListener('click', (e) => {
   document.getElementById('authTrialNote').classList.toggle('hidden', authSelectedRole !== 'mecanico' || authMode !== 'signup');
 });
 
-document.getElementById('authSubmit').addEventListener('click', async () => {
+document.getElementById('authSubmit')?.addEventListener('click', async () => {
   const email = document.getElementById('auth-email').value.trim();
   const password = document.getElementById('auth-password').value;
   const errorBox = document.getElementById('authError');
@@ -1540,6 +1540,8 @@ function traduceErrorAuth(msg){
 /* ====================== DATA ====================== */
 let mechanics = []; // Se carga de forma asíncrona desde Supabase (tabla mecanicos + servicios)
 let panelPhotos = []; // URLs de fotos ya subidas en el panel del mecánico
+let editPanelLat = null;
+let editPanelLng = null;
 
 async function loadMechanicsFromSupabase(){
   try {
@@ -1720,7 +1722,7 @@ function applySearch(){
   renderGrid();
 }
 
-document.getElementById('filterBar').addEventListener('click', (e)=>{
+document.getElementById('filterBar')?.addEventListener('click', (e)=>{
   const btn = e.target.closest('.chip');
   if(!btn) return;
   document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
@@ -2249,7 +2251,7 @@ function requestRealLocation(showAlerts){
   );
 }
 
-document.getElementById('locBtn').addEventListener('click', ()=>{
+document.getElementById('locBtn')?.addEventListener('click', ()=>{
   requestRealLocation(true);
 });
 
@@ -2308,7 +2310,7 @@ function validateStep(n){
   return true;
 }
 
-document.getElementById('f-next').addEventListener('click', () => {
+document.getElementById('f-next')?.addEventListener('click', () => {
   if(!validateStep(currentStep)) return;
   if(currentStep < totalSteps){
     showStep(currentStep + 1);
@@ -2318,16 +2320,16 @@ document.getElementById('f-next').addEventListener('click', () => {
   }
 });
 
-document.getElementById('f-prev').addEventListener('click', () => {
+document.getElementById('f-prev')?.addEventListener('click', () => {
   if(currentStep > 1){
     showStep(currentStep - 1);
     window.scrollTo({top:0, behavior:'smooth'});
   }
 });
 
-document.getElementById('f-add-service').addEventListener('click', () => addServiceRow());
+document.getElementById('f-add-service')?.addEventListener('click', () => addServiceRow());
 
-document.getElementById('f-use-gps').addEventListener('click', () => {
+document.getElementById('f-use-gps')?.addEventListener('click', () => {
   const status = document.getElementById('f-gps-status');
   if(!('geolocation' in navigator)){
     status.textContent = 'Tu navegador no soporta geolocalización.';
@@ -2473,9 +2475,6 @@ async function submitMecanicoForm(){
 addServiceRow();
 
 /* ====================== PANEL MECÁNICO JS ====================== */
-let editPanelLat = null;
-let editPanelLng = null;
-
 function capturarUbicacionPanel(){
   const statusEl = document.getElementById('edit-gps-status');
   statusEl.textContent = 'Buscando tu ubicación…';
@@ -2845,7 +2844,7 @@ function showInstallInstructions(){
   document.getElementById('installOverlay').classList.remove('hidden');
 }
 
-document.getElementById('installClose').addEventListener('click', () => {
+document.getElementById('installClose')?.addEventListener('click', () => {
   document.getElementById('installOverlay').classList.add('hidden');
 });
 
