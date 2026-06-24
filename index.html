@@ -1058,10 +1058,23 @@ footer{
       <button class="chip" data-filter="Mecánica General">Mecánica</button>
       <button class="chip" data-filter="Frenos">Frenos</button>
       <button class="chip" data-filter="Suspensión">Suspensión</button>
-      <button class="chip" data-filter="Eléctrico">Eléctrico</button>
-      <button class="chip" data-filter="Climatización">Clima</button>
+      <button class="chip" data-filter="Eléctrico Automotriz">Eléctrico</button>
       <button class="chip" data-filter="Diésel">Diésel</button>
       <button class="chip" data-filter="Vulcanización">Vulcanización</button>
+    </div>
+
+    <!-- Filtro por ciudad y rating -->
+    <div style="margin-bottom:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+      <select id="cityFilter" style="background:var(--card);border:1px solid var(--border);color:var(--dim);padding:8px 12px;border-radius:8px;font-size:13px;font-family:'Inter';cursor:pointer;flex:1;min-width:180px;max-width:260px;" onchange="renderGrid()">
+        <option value="">🏙 Todas las ciudades</option>
+      </select>
+      <select id="ratingFilter" style="background:var(--card);border:1px solid var(--border);color:var(--dim);padding:8px 12px;border-radius:8px;font-size:13px;font-family:'Inter';cursor:pointer;" onchange="renderGrid()">
+        <option value="">⭐ Cualquier rating</option>
+        <option value="4.5">4.5+ estrellas</option>
+        <option value="4">4+ estrellas</option>
+        <option value="3">3+ estrellas</option>
+      </select>
+      <button id="clearFiltersBtn" onclick="clearAllFilters()" style="display:none;background:none;border:1px solid var(--border);color:var(--muted);padding:8px 12px;border-radius:8px;font-size:12px;cursor:pointer;">✕ Limpiar</button>
     </div>
 
     <div class="grid" id="grid"></div>
@@ -1252,7 +1265,7 @@ footer{
         <!-- Tabs del panel -->
         <div class="panel-tabs">
           <button class="panel-tab active" data-panel="ficha">Mi ficha</button>
-          <button class="panel-tab" data-panel="resenas">Reseñas</button>
+          <button class="panel-tab" data-panel="resenas">Reseñas <span id="notifBadge" style="display:none;background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:20px;margin-left:4px;font-family:'Inter';">0</span></button>
           <button class="panel-tab" data-panel="suscripcion">Suscripción</button>
         </div>
 
@@ -1642,6 +1655,7 @@ async function loadMechanicsFromSupabase(){
     }));
 
     if(USER_LOCATION) recalcDistances();
+    populateCityFilter();
     renderGrid();
     renderMapList();
     console.log('PANNE: ' + mechanics.length + ' negocios cargados');
@@ -1700,19 +1714,51 @@ function fmtCLP(n){ return typeof n === 'number' ? '$' + n.toLocaleString('es-CL
 /* ====================== DIRECTORY RENDER ====================== */
 let currentFilter = 'todos';
 
+function populateCityFilter(){
+  const sel = document.getElementById('cityFilter');
+  if(!sel || sel.options.length > 1) return;
+  const cities = [...new Set(mechanics.map(m => m.city).filter(Boolean))].sort((a,b) => a.localeCompare(b, 'es'));
+  cities.forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c;
+    opt.textContent = c;
+    sel.appendChild(opt);
+  });
+}
+
+function clearAllFilters(){
+  document.getElementById('cityFilter').value = '';
+  document.getElementById('ratingFilter').value = '';
+  document.getElementById('searchInput').value = '';
+  currentFilter = 'todos';
+  document.querySelectorAll('.chip').forEach(c => c.classList.toggle('active', c.dataset.filter === 'todos'));
+  renderGrid();
+}
+
 function renderGrid(){
   const grid = document.getElementById('grid');
   const searchVal = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
+  const cityVal = document.getElementById('cityFilter')?.value || '';
+  const ratingVal = parseFloat(document.getElementById('ratingFilter')?.value || '0');
 
   let filtered = currentFilter === 'todos' ? mechanics : mechanics.filter(m => m.spec === currentFilter);
   if(searchVal){
     filtered = filtered.filter(m =>
       m.name.toLowerCase().includes(searchVal) ||
       m.spec.toLowerCase().includes(searchVal) ||
-      (m.address||'').toLowerCase().includes(searchVal)
+      (m.address||'').toLowerCase().includes(searchVal) ||
+      (m.city||'').toLowerCase().includes(searchVal)
     );
   }
+  if(cityVal) filtered = filtered.filter(m => m.city === cityVal);
+  if(ratingVal > 0) filtered = filtered.filter(m => m.rating >= ratingVal);
+
   filtered = filtered.slice().sort((a,b) => (a.dist??Infinity)-(b.dist??Infinity));
+
+  // Mostrar/ocultar botón limpiar
+  const hasFilters = searchVal || cityVal || ratingVal > 0 || currentFilter !== 'todos';
+  const clearBtn = document.getElementById('clearFiltersBtn');
+  if(clearBtn) clearBtn.style.display = hasFilters ? 'block' : 'none';
 
   document.getElementById('resultCount').textContent = `${filtered.length} talleres registrados`;
 
@@ -2678,6 +2724,8 @@ async function mostrarPanelMecanico() {
     // Cargar fotos del taller
     cargarFotosPanel(uid);
     cargarPortadaYAvatar(uid);
+    // Verificar reseñas nuevas
+    verificarReseñasNuevas(uid);
   } else {
     // Usuario logueado pero no tiene ficha de mecánico
     document.getElementById('panelMecanico').classList.add('hidden');
@@ -2692,6 +2740,9 @@ document.querySelectorAll('.panel-tab').forEach(btn => {
     btn.classList.add('active');
     document.querySelectorAll('.panel-section').forEach(s => s.classList.add('hidden'));
     document.getElementById('panel-' + btn.dataset.panel).classList.remove('hidden');
+    if(btn.dataset.panel === 'resenas' && currentSession?.user?.id) {
+      marcarReseñasVistas(currentSession.user.id);
+    }
   });
 });
 
@@ -2729,6 +2780,34 @@ function iniciarPago(plan) {
     anual: '$89.990 por 1 año'
   };
   alert(`Plan ${plan}: ${info[plan]}\n\nConexión con Mercado Pago próximamente.`);
+}
+
+/* ====================== NOTIFICACIONES DE RESEÑAS ====================== */
+async function verificarReseñasNuevas(uid) {
+  // Obtener la última vez que el mecánico vio sus reseñas
+  const lastSeen = localStorage.getItem('resenas_last_seen_' + uid);
+  
+  // Contar reseñas después de esa fecha
+  let query = sb.from('reviews').select('id', { count: 'exact' }).eq('mecanico_id', uid);
+  if(lastSeen) query = query.gt('created_at', lastSeen);
+  
+  const { count } = await query;
+  
+  const badge = document.getElementById('notifBadge');
+  if(!badge) return;
+  
+  if(count > 0) {
+    badge.textContent = count > 9 ? '9+' : count;
+    badge.style.display = 'inline';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+function marcarReseñasVistas(uid) {
+  localStorage.setItem('resenas_last_seen_' + uid, new Date().toISOString());
+  const badge = document.getElementById('notifBadge');
+  if(badge) badge.style.display = 'none';
 }
 
 async function cargarFotosPerfil(uid) {
