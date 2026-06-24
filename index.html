@@ -1309,7 +1309,7 @@ footer{
             <div class="form-section-title" style="font-size:13px;margin-top:8px;margin-bottom:4px;">📷 Fotos del taller</div>
             <p style="color:var(--muted);font-size:12px;margin-bottom:10px;">Sube hasta 6 fotos. Las imágenes generan más confianza en los clientes.</p>
             <div id="panelPhotosGrid" class="panel-photos-grid"></div>
-            <input type="file" id="panelPhotoInput" accept="image/*" multiple style="display:none;">
+            <input type="file" id="panelPhotoInput" accept="image/*" multiple style="display:none;" onchange="subirFotosPanel(event)">
             <div class="upload-progress" id="uploadProgress"><div class="upload-progress-bar" id="uploadProgressBar"></div></div>
             <div id="photoUploadStatus" style="font-size:12px;color:var(--muted);margin-top:6px;"></div>
 
@@ -2654,45 +2654,40 @@ async function eliminarFotoPanel(uid, fileName) {
   }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  const input = document.getElementById('panelPhotoInput');
-  if(input) {
-    input.addEventListener('change', async (e) => {
-      const uid = currentSession?.user?.id;
-      if(!uid) return;
-      const files = [...e.target.files].slice(0, 6 - panelPhotos.length);
-      if(!files.length) return;
+async function subirFotosPanel(e) {
+  const uid = currentSession?.user?.id;
+  if(!uid) return;
+  const files = [...e.target.files].slice(0, 6 - panelPhotos.length);
+  if(!files.length) return;
 
-      const status = document.getElementById('photoUploadStatus');
-      const progress = document.getElementById('uploadProgress');
-      const bar = document.getElementById('uploadProgressBar');
-      progress.style.display = 'block';
-      status.textContent = `Subiendo ${files.length} foto${files.length>1?'s':''}…`;
-      status.style.color = 'var(--muted)';
+  const status = document.getElementById('photoUploadStatus');
+  const progress = document.getElementById('uploadProgress');
+  const bar = document.getElementById('uploadProgressBar');
+  progress.style.display = 'block';
+  status.textContent = `Subiendo ${files.length} foto${files.length>1?'s':''}…`;
+  status.style.color = 'var(--muted)';
 
-      let subidas = 0;
-      for(const file of files) {
-        const ext = file.name.split('.').pop().toLowerCase() || 'jpg';
-        const fname = Date.now() + '_' + Math.random().toString(36).slice(2,7) + '.' + ext;
-        const path = uid + '/' + fname;
-        const { error } = await sb.storage.from('taller-fotos').upload(path, file, { upsert: false });
-        if(!error) {
-          const url = sb.storage.from('taller-fotos').getPublicUrl(path).data.publicUrl;
-          panelPhotos.push({ name: fname, url });
-        }
-        subidas++;
-        bar.style.width = Math.round((subidas/files.length)*100) + '%';
-      }
-      renderFotosGrid(uid);
-      progress.style.display = 'none';
-      bar.style.width = '0%';
-      status.textContent = `✓ ${subidas} foto${subidas>1?'s':''} subida${subidas>1?'s':''}`;
-      status.style.color = 'var(--ok-green)';
-      setTimeout(() => { status.textContent = ''; }, 3000);
-      input.value = '';
-    });
+  let subidas = 0;
+  for(const file of files) {
+    const ext = file.name.split('.').pop().toLowerCase() || 'jpg';
+    const fname = Date.now() + '_' + Math.random().toString(36).slice(2,7) + '.' + ext;
+    const path = uid + '/' + fname;
+    const { error } = await sb.storage.from('taller-fotos').upload(path, file, { upsert: false });
+    if(!error) {
+      const url = sb.storage.from('taller-fotos').getPublicUrl(path).data.publicUrl;
+      panelPhotos.push({ name: fname, url });
+    }
+    subidas++;
+    bar.style.width = Math.round((subidas/files.length)*100) + '%';
   }
-});
+  renderFotosGrid(uid);
+  progress.style.display = 'none';
+  bar.style.width = '0%';
+  status.textContent = `✓ ${subidas} foto${subidas>1?'s':''} subida${subidas>1?'s':''}`;
+  status.style.color = 'var(--ok-green)';
+  setTimeout(() => { status.textContent = ''; }, 3000);
+  e.target.value = '';
+}
 
 async function guardarFicha() {
   const uid = currentSession?.user?.id;
