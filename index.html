@@ -1716,9 +1716,11 @@ let currentFilter = 'todos';
 
 function populateCityFilter(){
   const sel = document.getElementById('cityFilter');
-  if(!sel) return;
-  // Solo llenar si aún tiene solo la opción por defecto
-  if(sel.options.length > 1) return;
+  if(!sel || mechanics.length === 0) return;
+  const currentVal = sel.value;
+  // Limpiar opciones anteriores (dejar solo la primera)
+  while(sel.options.length > 1) sel.remove(1);
+  // Llenar con ciudades únicas ordenadas
   const cities = [...new Set(mechanics.map(m => m.city).filter(Boolean))].sort((a,b) => a.localeCompare(b, 'es'));
   cities.forEach(c => {
     const opt = document.createElement('option');
@@ -1726,6 +1728,8 @@ function populateCityFilter(){
     opt.textContent = c;
     sel.appendChild(opt);
   });
+  // Restaurar selección anterior si sigue siendo válida
+  if(currentVal) sel.value = currentVal;
 }
 
 function clearAllFilters(){
