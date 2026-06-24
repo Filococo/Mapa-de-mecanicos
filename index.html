@@ -368,6 +368,20 @@ main{max-width:1200px;margin:0 auto;padding:20px 16px 100px;width:100%;}
   border-bottom:none;
   position:relative;overflow:hidden;
 }
+.profile-cover-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.7;}
+.profile-cover-edit{
+  position:absolute;top:10px;right:10px;
+  background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:8px;
+  padding:6px 10px;font-size:11px;cursor:pointer;display:none;gap:4px;align-items:center;
+}
+.profile-cover:hover .profile-cover-edit{display:flex;}
+.profile-avatar-edit-btn{
+  position:absolute;bottom:-4px;right:-4px;
+  background:var(--red);color:#fff;border:none;border-radius:50%;
+  width:22px;height:22px;font-size:13px;cursor:pointer;
+  display:none;align-items:center;justify-content:center;
+}
+.profile-avatar:hover .profile-avatar-edit-btn{display:flex;}
 .profile-cover-pattern{
   position:absolute;inset:0;
   background:repeating-linear-gradient(
@@ -1305,6 +1319,33 @@ footer{
               <span>Vendo repuestos o materiales</span>
             </label>
 
+            <!-- Foto de portada y avatar -->
+            <div class="form-section-title" style="font-size:13px;margin-top:8px;margin-bottom:8px;">🖼 Imagen de portada y foto de perfil</div>
+            
+            <!-- Portada -->
+            <div style="position:relative;height:100px;border-radius:10px;overflow:hidden;background:linear-gradient(135deg,var(--black3),var(--steel));border:1px solid var(--border);margin-bottom:8px;">
+              <img id="coverPreview" src="" style="width:100%;height:100%;object-fit:cover;display:none;">
+              <button type="button" onclick="document.getElementById('coverInput').click()" style="position:absolute;inset:0;width:100%;background:rgba(0,0,0,.4);color:#fff;border:none;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;gap:6px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                Cambiar portada
+              </button>
+            </div>
+            <input type="file" id="coverInput" accept="image/*" style="display:none;" onchange="subirFotoPortada(event)">
+
+            <!-- Avatar -->
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+              <div id="avatarPreview" style="width:60px;height:60px;border-radius:10px;background:var(--steel);border:2px solid var(--border);overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue';font-size:22px;color:#fff;">
+                <span id="avatarInitial"></span>
+                <img id="avatarImg" src="" style="width:100%;height:100%;object-fit:cover;display:none;">
+              </div>
+              <button type="button" onclick="document.getElementById('avatarInput').click()" style="background:var(--card);border:1px solid var(--border);color:var(--dim);padding:8px 14px;border-radius:8px;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:6px;">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                Cambiar foto de perfil
+              </button>
+            </div>
+            <input type="file" id="avatarInput" accept="image/*" style="display:none;" onchange="subirFotoAvatar(event)">
+            <div id="coverAvatarStatus" style="font-size:12px;color:var(--muted);margin-bottom:8px;"></div>
+
             <!-- Fotos del taller -->
             <div class="form-section-title" style="font-size:13px;margin-top:8px;margin-bottom:4px;">📷 Fotos del taller</div>
             <p style="color:var(--muted);font-size:12px;margin-bottom:10px;">Sube hasta 6 fotos. Las imágenes generan más confianza en los clientes.</p>
@@ -1743,13 +1784,13 @@ function openProfile(id){
   const distTxt = m.dist != null ? m.dist + ' km de tu ubicación' : '';
 
   const profileHTML = `
-    <div class="profile-cover">
+    <div class="profile-cover" id="profileCover">
       <div class="profile-cover-pattern"></div>
       <div class="profile-cover-name">${m.name.toUpperCase()}</div>
     </div>
     <div class="profile-head">
       <div class="profile-avatar-wrap">
-        <div class="profile-avatar">${initial}</div>
+        <div class="profile-avatar" id="profileAvatar">${initial}</div>
         <div class="profile-badge">${m.spec.toUpperCase()}</div>
         <div class="profile-actions">
           <button class="btn-wa" onclick="contactWhatsAppById('${m.id}')">
@@ -2603,6 +2644,7 @@ async function mostrarPanelMecanico() {
 
     // Cargar fotos del taller
     cargarFotosPanel(uid);
+    cargarPortadaYAvatar(uid);
   } else {
     // Usuario logueado pero no tiene ficha de mecánico
     document.getElementById('panelMecanico').classList.add('hidden');
@@ -2624,21 +2666,68 @@ document.querySelectorAll('.panel-tab').forEach(btn => {
 async function cargarFotosPerfil(uid) {
   const panel = document.getElementById('profilePhotosPanel');
   const grid = document.getElementById('profilePhotosGrid');
-  if(!panel || !grid) return;
 
   const { data, error } = await sb.storage.from('taller-fotos').list(uid + '/');
   if(error || !data || data.length === 0) return;
 
-  const fotos = data.filter(f => f.name && f.name !== '.emptyFolderPlaceholder');
-  if(fotos.length === 0) return;
+  // Portada
+  const cover = data.find(f => f.name && f.name.startsWith('cover.'));
+  if(cover) {
+    const url = sb.storage.from('taller-fotos').getPublicUrl(uid + '/' + cover.name).data.publicUrl;
+    const coverEl = document.getElementById('profileCover');
+    if(coverEl) {
+      const img = document.createElement('img');
+      img.src = url;
+      img.className = 'profile-cover-img';
+      coverEl.insertBefore(img, coverEl.firstChild);
+    }
+  }
 
-  panel.style.display = '';
-  grid.innerHTML = fotos.map(f => {
-    const url = sb.storage.from('taller-fotos').getPublicUrl(uid + '/' + f.name).data.publicUrl;
-    return `<div style="aspect-ratio:1;border-radius:8px;overflow:hidden;background:var(--card);">
-      <img src="${url}" loading="lazy" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentElement.style.display='none'">
-    </div>`;
-  }).join('');
+  // Avatar
+  const avatar = data.find(f => f.name && f.name.startsWith('avatar.'));
+  if(avatar) {
+    const url = sb.storage.from('taller-fotos').getPublicUrl(uid + '/' + avatar.name).data.publicUrl;
+    const avatarEl = document.getElementById('profileAvatar');
+    if(avatarEl) {
+      avatarEl.innerHTML = `<img src="${url}" style="width:100%;height:100%;object-fit:cover;border-radius:calc(var(--radius)-2px);">`;
+    }
+  }
+
+  // Galería (excluir cover y avatar)
+  const fotos = data.filter(f => f.name && !f.name.startsWith('cover.') && !f.name.startsWith('avatar.') && f.name !== '.emptyFolderPlaceholder');
+  if(fotos.length > 0 && panel && grid) {
+    panel.style.display = '';
+    grid.innerHTML = fotos.map(f => {
+      const url = sb.storage.from('taller-fotos').getPublicUrl(uid + '/' + f.name).data.publicUrl;
+      return `<div style="aspect-ratio:1;border-radius:8px;overflow:hidden;background:var(--card);">
+        <img src="${url}" loading="lazy" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentElement.style.display='none'">
+      </div>`;
+    }).join('');
+  }
+}
+
+async function cargarPortadaYAvatar(uid) {
+  const { data } = await sb.storage.from('taller-fotos').list(uid + '/');
+  if(!data) return;
+  const nombre = document.getElementById('edit-name')?.value || '';
+  const initial = nombre.split(' ').filter(Boolean).slice(0,2).map(w=>w[0]).join('').toUpperCase() || '?';
+  const avatarInitialEl = document.getElementById('avatarInitial');
+  if(avatarInitialEl) avatarInitialEl.textContent = initial;
+
+  const cover = data.find(f => f.name && f.name.startsWith('cover.'));
+  if(cover) {
+    const url = sb.storage.from('taller-fotos').getPublicUrl(uid + '/' + cover.name).data.publicUrl + '?t=' + Date.now();
+    const preview = document.getElementById('coverPreview');
+    if(preview) { preview.src = url; preview.style.display = 'block'; }
+  }
+  const avatar = data.find(f => f.name && f.name.startsWith('avatar.'));
+  if(avatar) {
+    const url = sb.storage.from('taller-fotos').getPublicUrl(uid + '/' + avatar.name).data.publicUrl + '?t=' + Date.now();
+    const img = document.getElementById('avatarImg');
+    const initial2 = document.getElementById('avatarInitial');
+    if(img) { img.src = url; img.style.display = 'block'; }
+    if(initial2) initial2.style.display = 'none';
+  }
 }
 
 async function cargarFotosPanel(uid) {
@@ -2686,6 +2775,61 @@ async function eliminarFotoPanel(uid, fileName) {
     panelPhotos = panelPhotos.filter(f => f.name !== fileName);
     renderFotosGrid(uid);
   }
+}
+
+async function subirFotoPortada(e) {
+  const uid = currentSession?.user?.id;
+  if(!uid) return;
+  const file = e.target.files[0];
+  if(!file) return;
+  const status = document.getElementById('coverAvatarStatus');
+  status.textContent = 'Subiendo portada…';
+  const ext = file.name.split('.').pop().toLowerCase() || 'jpg';
+  const path = uid + '/cover.' + ext;
+  // Eliminar portada anterior si existe
+  await sb.storage.from('taller-fotos').remove([uid + '/cover.jpg', uid + '/cover.png', uid + '/cover.jpeg', uid + '/cover.webp']);
+  const { error } = await sb.storage.from('taller-fotos').upload(path, file, { upsert: true });
+  if(!error) {
+    const url = sb.storage.from('taller-fotos').getPublicUrl(path).data.publicUrl + '?t=' + Date.now();
+    const preview = document.getElementById('coverPreview');
+    preview.src = url;
+    preview.style.display = 'block';
+    status.textContent = '✓ Portada actualizada';
+    status.style.color = 'var(--ok-green)';
+    setTimeout(() => { status.textContent = ''; }, 3000);
+  } else {
+    status.textContent = 'Error: ' + error.message;
+    status.style.color = 'var(--red)';
+  }
+  e.target.value = '';
+}
+
+async function subirFotoAvatar(e) {
+  const uid = currentSession?.user?.id;
+  if(!uid) return;
+  const file = e.target.files[0];
+  if(!file) return;
+  const status = document.getElementById('coverAvatarStatus');
+  status.textContent = 'Subiendo foto de perfil…';
+  const ext = file.name.split('.').pop().toLowerCase() || 'jpg';
+  const path = uid + '/avatar.' + ext;
+  await sb.storage.from('taller-fotos').remove([uid + '/avatar.jpg', uid + '/avatar.png', uid + '/avatar.jpeg', uid + '/avatar.webp']);
+  const { error } = await sb.storage.from('taller-fotos').upload(path, file, { upsert: true });
+  if(!error) {
+    const url = sb.storage.from('taller-fotos').getPublicUrl(path).data.publicUrl + '?t=' + Date.now();
+    const img = document.getElementById('avatarImg');
+    const initial = document.getElementById('avatarInitial');
+    img.src = url;
+    img.style.display = 'block';
+    if(initial) initial.style.display = 'none';
+    status.textContent = '✓ Foto de perfil actualizada';
+    status.style.color = 'var(--ok-green)';
+    setTimeout(() => { status.textContent = ''; }, 3000);
+  } else {
+    status.textContent = 'Error: ' + error.message;
+    status.style.color = 'var(--red)';
+  }
+  e.target.value = '';
 }
 
 async function subirFotosPanel(e) {
