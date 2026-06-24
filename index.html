@@ -1539,6 +1539,7 @@ function traduceErrorAuth(msg){
 
 /* ====================== DATA ====================== */
 let mechanics = []; // Se carga de forma asíncrona desde Supabase (tabla mecanicos + servicios)
+let panelPhotos = []; // URLs de fotos ya subidas en el panel del mecánico
 
 async function loadMechanicsFromSupabase(){
   try {
@@ -2605,8 +2606,6 @@ document.querySelectorAll('.panel-tab').forEach(btn => {
 });
 
 /* ====================== FOTOS DEL PANEL ====================== */
-let panelPhotos = []; // URLs de fotos ya subidas
-
 async function cargarFotosPanel(uid) {
   const grid = document.getElementById('panelPhotosGrid');
   if(!grid) return;
