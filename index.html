@@ -1064,16 +1064,30 @@ footer{
     </div>
 
     <!-- Filtro por ciudad y rating -->
-    <div style="margin-bottom:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-      <select id="cityFilter" style="background:var(--card);border:1px solid var(--border);color:var(--dim);padding:8px 12px;border-radius:8px;font-size:13px;font-family:'Inter';cursor:pointer;flex:1;min-width:180px;max-width:260px;" onchange="renderGrid()">
-        <option value="">🏙 Todas las ciudades</option>
-      </select>
-      <select id="ratingFilter" style="background:var(--card);border:1px solid var(--border);color:var(--dim);padding:8px 12px;border-radius:8px;font-size:13px;font-family:'Inter';cursor:pointer;" onchange="renderGrid()">
+    <div style="margin-bottom:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;position:relative;">
+
+      <!-- Dropdown ciudad personalizado -->
+      <div id="cityDropdownWrap" style="position:relative;flex:1;min-width:180px;max-width:260px;">
+        <button type="button" id="cityDropdownBtn" onclick="toggleCityDropdown()" style="width:100%;background:var(--card);border:1px solid var(--border);color:var(--dim);padding:8px 12px;border-radius:8px;font-size:13px;font-family:'Inter';cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:8px;">
+          <span id="cityDropdownLabel">🏙 Todas las ciudades</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div id="cityDropdownList" style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--card);border:1px solid var(--border);border-radius:8px;z-index:999;max-height:240px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,.4);">
+          <input type="text" id="citySearch" placeholder="Buscar ciudad…" oninput="filterCityList()" style="width:100%;box-sizing:border-box;background:var(--black3);border:none;border-bottom:1px solid var(--border);color:var(--white);padding:10px 12px;font-size:12px;font-family:'Inter';outline:none;">
+          <div id="cityOptionsList"></div>
+        </div>
+      </div>
+      <!-- input oculto para valor de ciudad -->
+      <input type="hidden" id="cityFilter" value="">
+
+      <!-- Rating select (se mantiene nativo, se estiliza con color oscuro) -->
+      <select id="ratingFilter" style="background:var(--card);border:1px solid var(--border);color:var(--dim);padding:8px 12px;border-radius:8px;font-size:13px;font-family:'Inter';cursor:pointer;-webkit-appearance:none;appearance:none;padding-right:28px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;" onchange="renderGrid()">
         <option value="">⭐ Cualquier rating</option>
         <option value="4.5">4.5+ estrellas</option>
         <option value="4">4+ estrellas</option>
         <option value="3">3+ estrellas</option>
       </select>
+
       <button id="clearFiltersBtn" onclick="clearAllFilters()" style="display:none;background:none;border:1px solid var(--border);color:var(--muted);padding:8px 12px;border-radius:8px;font-size:12px;cursor:pointer;">✕ Limpiar</button>
     </div>
 
@@ -1714,26 +1728,59 @@ function fmtCLP(n){ return typeof n === 'number' ? '$' + n.toLocaleString('es-CL
 /* ====================== DIRECTORY RENDER ====================== */
 let currentFilter = 'todos';
 
+/* ===== DROPDOWN CIUDAD PERSONALIZADO ===== */
+let allCities = [];
+
+function toggleCityDropdown(){
+  const list = document.getElementById('cityDropdownList');
+  const isOpen = list.style.display !== 'none';
+  if(isOpen){ closeCityDropdown(); return; }
+  list.style.display = 'block';
+  document.getElementById('citySearch').value = '';
+  filterCityList();
+  document.getElementById('citySearch').focus();
+  // Cerrar al clickar fuera
+  setTimeout(() => document.addEventListener('click', outsideCityClick), 0);
+}
+
+function outsideCityClick(e){
+  if(!document.getElementById('cityDropdownWrap')?.contains(e.target)){
+    closeCityDropdown();
+  }
+}
+
+function closeCityDropdown(){
+  document.getElementById('cityDropdownList').style.display = 'none';
+  document.removeEventListener('click', outsideCityClick);
+}
+
+function selectCity(value, label){
+  document.getElementById('cityFilter').value = value;
+  document.getElementById('cityDropdownLabel').textContent = value ? '📍 ' + label : '🏙 Todas las ciudades';
+  closeCityDropdown();
+  renderGrid();
+}
+
+function filterCityList(){
+  const q = (document.getElementById('citySearch')?.value || '').toLowerCase();
+  const container = document.getElementById('cityOptionsList');
+  if(!container) return;
+  const filtered = allCities.filter(c => c.toLowerCase().includes(q));
+  container.innerHTML = [
+    `<div onclick="selectCity('','Todas las ciudades')" style="padding:9px 14px;cursor:pointer;font-size:13px;color:var(--muted);border-bottom:1px solid var(--border);">🏙 Todas las ciudades</div>`,
+    ...filtered.map(c => `<div onclick="selectCity('${c.replace(/'/g,"\'")}','${c.replace(/'/g,"\'")}') " style="padding:9px 14px;cursor:pointer;font-size:13px;color:var(--white);transition:background .15s;" onmouseover="this.style.background='var(--black3)'" onmouseout="this.style.background=''">${c}</div>`)
+  ].join('');
+}
+
 function populateCityFilter(){
-  const sel = document.getElementById('cityFilter');
-  if(!sel || mechanics.length === 0) return;
-  const currentVal = sel.value;
-  // Limpiar opciones anteriores (dejar solo la primera)
-  while(sel.options.length > 1) sel.remove(1);
-  // Llenar con ciudades únicas ordenadas
-  const cities = [...new Set(mechanics.map(m => m.city).filter(Boolean))].sort((a,b) => a.localeCompare(b, 'es'));
-  cities.forEach(c => {
-    const opt = document.createElement('option');
-    opt.value = c;
-    opt.textContent = c;
-    sel.appendChild(opt);
-  });
-  // Restaurar selección anterior si sigue siendo válida
-  if(currentVal) sel.value = currentVal;
+  if(mechanics.length === 0) return;
+  allCities = [...new Set(mechanics.map(m => m.city).filter(Boolean))].sort((a,b) => a.localeCompare(b, 'es'));
+  filterCityList();
 }
 
 function clearAllFilters(){
   document.getElementById('cityFilter').value = '';
+  document.getElementById('cityDropdownLabel').textContent = '🏙 Todas las ciudades';
   document.getElementById('ratingFilter').value = '';
   document.getElementById('searchInput').value = '';
   currentFilter = 'todos';
