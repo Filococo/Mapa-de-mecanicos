@@ -1735,15 +1735,22 @@ function toggleCityDropdown(){
   const list = document.getElementById('cityDropdownList');
   const isOpen = list.style.display !== 'none';
   if(isOpen){ closeCityDropdown(); return; }
-  // Asegurarse de que allCities esté lleno
+  // Mostrar primero
+  list.style.display = 'block';
+  // Luego llenar
   if(allCities.length === 0 && mechanics.length > 0){
     allCities = [...new Set(mechanics.map(m => m.city).filter(Boolean))].sort((a,b) => a.localeCompare(b, 'es'));
   }
-  list.style.display = 'block';
   document.getElementById('citySearch').value = '';
-  filterCityList();
-  document.getElementById('citySearch').focus();
-  // Cerrar al clickar fuera
+  // Forzar render de opciones directamente
+  const container = document.getElementById('cityOptionsList');
+  if(container){
+    container.innerHTML = [
+      `<div onclick="selectCity('','Todas las ciudades')" style="padding:9px 14px;cursor:pointer;font-size:13px;color:#555;border-bottom:1px solid #eee;">🏙 Todas las ciudades</div>`,
+      ...allCities.map(c => `<div onclick="selectCity('${c.replace(/'/g,"\\'")}','${c.replace(/'/g,"\\'")}') " style="padding:9px 14px;cursor:pointer;font-size:13px;color:#111;transition:background .15s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background=''">${c}</div>`)
+    ].join('');
+  }
+  document.getElementById('citySearch')?.focus();
   setTimeout(() => document.addEventListener('click', outsideCityClick), 0);
 }
 
