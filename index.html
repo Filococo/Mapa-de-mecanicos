@@ -1735,6 +1735,10 @@ function toggleCityDropdown(){
   const list = document.getElementById('cityDropdownList');
   const isOpen = list.style.display !== 'none';
   if(isOpen){ closeCityDropdown(); return; }
+  // Asegurarse de que allCities esté lleno
+  if(allCities.length === 0 && mechanics.length > 0){
+    allCities = [...new Set(mechanics.map(m => m.city).filter(Boolean))].sort((a,b) => a.localeCompare(b, 'es'));
+  }
   list.style.display = 'block';
   document.getElementById('citySearch').value = '';
   filterCityList();
