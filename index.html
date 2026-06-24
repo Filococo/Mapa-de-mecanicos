@@ -1716,7 +1716,9 @@ let currentFilter = 'todos';
 
 function populateCityFilter(){
   const sel = document.getElementById('cityFilter');
-  if(!sel || sel.options.length > 1) return;
+  if(!sel) return;
+  // Solo llenar si aún tiene solo la opción por defecto
+  if(sel.options.length > 1) return;
   const cities = [...new Set(mechanics.map(m => m.city).filter(Boolean))].sort((a,b) => a.localeCompare(b, 'es'));
   cities.forEach(c => {
     const opt = document.createElement('option');
@@ -2287,7 +2289,7 @@ document.querySelectorAll('.tab').forEach(btn=>{
 
     if(tab === 'directorio'){
       document.getElementById('view-directorio').classList.remove('hidden');
-      if(mechanics.length > 0){ renderGrid(); } else { await loadMechanicsFromSupabase(); renderGrid(); }
+      if(mechanics.length > 0){ populateCityFilter(); renderGrid(); } else { await loadMechanicsFromSupabase(); populateCityFilter(); renderGrid(); }
     }
     if(tab === 'mapa'){
       document.getElementById('view-mapa').classList.remove('hidden');
