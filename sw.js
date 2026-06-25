@@ -1,4 +1,4 @@
-const CACHE_NAME = 'panne-v1';
+const CACHE_NAME = 'panne-v3';
 
 const CORE_ASSETS = [
   './',
