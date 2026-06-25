@@ -125,9 +125,15 @@ main{max-width:1200px;margin:0 auto;padding:20px 16px 100px;width:100%;}
 
 /* ===== STATS HERO ===== */
 .hero-stats{
-  display:flex;gap:0;margin:18px 0 0;
+  display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin:14px 0 0;
   border-top:1px solid rgba(255,255,255,.08);
-  padding-top:16px;flex-wrap:wrap;
+  padding-top:12px;
+}
+@media(max-width:400px){
+  .hero-stats{grid-template-columns:repeat(2,1fr);}
+  .hero-stat{border-right:none !important;border-bottom:1px solid rgba(255,255,255,.08);}
+  .hero-stat:nth-child(odd){border-right:1px solid rgba(255,255,255,.08) !important;}
+  .hero-stat:nth-last-child(-n+2){border-bottom:none;}
 }
 .hero-stat{
   flex:1;min-width:70px;text-align:center;
@@ -144,7 +150,7 @@ main{max-width:1200px;margin:0 auto;padding:20px 16px 100px;width:100%;}
 /* ===== BANNER PRO DESTACADO ===== */
 .pro-banner{
   position:relative;border-radius:14px;overflow:hidden;
-  margin-bottom:16px;height:160px;cursor:pointer;
+  margin-bottom:16px;height:170px;cursor:pointer;
   border:1px solid rgba(232,25,44,.3);
   box-shadow:0 4px 20px rgba(232,25,44,.15);
 }
@@ -3732,7 +3738,7 @@ function renderProBanner(){
       tipo: 'promo',
       titulo: '🔧 ¿Eres taller mecánico?',
       texto: 'Llega a miles de conductores en Chile. Regístrate gratis y activa tu ficha hoy.',
-      sub: 'PANNE · 476 talleres · 98 ciudades',
+      sub: 'PANNE · 475 talleres · 98 ciudades',
       color: 'linear-gradient(135deg, #1a0a0a, #3d0000)',
       btn: 'Registrar mi taller →',
       accion: "document.querySelector('[data-tab=\'perfil-mecanico\']').click()"
