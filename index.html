@@ -1142,7 +1142,7 @@ footer{
       <!-- Stats dinámicas -->
       <div class="hero-stats">
         <div class="hero-stat">
-          <div class="hero-stat-num" id="heroTalleres">477</div>
+          <div class="hero-stat-num" id="heroTalleres">—</div>
           <div class="hero-stat-label">Talleres registrados</div>
         </div>
         <div class="hero-stat">
@@ -1879,6 +1879,8 @@ async function loadMechanicsFromSupabase(){
     cargarEstadisticasHero();
     console.log('PANNE: ' + mechanics.length + ' negocios cargados');
     renderProBanner();
+    const heroT = document.getElementById('heroTalleres');
+    if(heroT) heroT.textContent = mechanics.length;
 
   } catch(err) {
     console.error('Error inesperado:', err.message);
@@ -3689,6 +3691,7 @@ function renderProBanner(){
     // También mostrar talleres pro sin cover
     talleresPro = mechanics.filter(m => m.es_pro);
   }
+  console.log('Talleres Pro encontrados:', talleresPro.length, talleresPro.map(t=>t.name));
   if(!talleresPro.length) return;
 
   const wrap = document.getElementById('proBannerWrap');
