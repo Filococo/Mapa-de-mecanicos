@@ -3719,14 +3719,42 @@ let proBannerIndex = 0;
 let talleresPro = [];
 
 function renderProBanner(){
-  talleresPro = mechanics.filter(m => m.es_pro && m.cover_url);
-  if(!talleresPro.length){
-    // También mostrar talleres pro sin cover
-    talleresPro = mechanics.filter(m => m.es_pro);
-  }
-  console.log('Talleres Pro encontrados:', talleresPro.length, talleresPro.map(t=>t.name));
-  console.log('Total mechanics:', mechanics.length, 'Con es_pro:', mechanics.filter(m=>m.es_pro).length);
-  if(!talleresPro.length) return;
+  talleresPro = mechanics.filter(m => m.es_pro);
+  
+  // Slides promocionales de PANNE (siempre aparecen)
+  const slidesPromo = [
+    {
+      tipo: 'promo',
+      titulo: '🔧 ¿Eres taller mecánico?',
+      texto: 'Llega a miles de conductores en Chile. Regístrate gratis y activa tu ficha hoy.',
+      sub: 'PANNE · 476 talleres · 98 ciudades',
+      color: 'linear-gradient(135deg, #1a0a0a, #3d0000)',
+      btn: 'Registrar mi taller →',
+      accion: "document.querySelector('[data-tab=\'perfil-mecanico\']').click()"
+    },
+    {
+      tipo: 'promo',
+      titulo: '⭐ Plan Mensual desde $9.990',
+      texto: 'Aparece en el directorio, recibe reseñas verificadas y destaca sobre la competencia.',
+      sub: '30 días gratis · Sin tarjeta · Sin permanencia',
+      color: 'linear-gradient(135deg, #0a0a1a, #00003d)',
+      btn: 'Ver planes →',
+      accion: "document.querySelector('[data-tab=\'perfil-mecanico\']').click()"
+    },
+    {
+      tipo: 'promo',
+      titulo: '💳 Plan Anual — Mejor valor',
+      texto: '$89.990 al año. Equivale a solo $7.499/mes. Ahorra $29.890 vs plan mensual.',
+      sub: 'Mercado Pago · Pago seguro · Cancela cuando quieras',
+      color: 'linear-gradient(135deg, #1a0800, #3d1500)',
+      btn: 'Contratar ahora →',
+      accion: "document.querySelector('[data-tab=\'perfil-mecanico\']').click()"
+    }
+  ];
+
+  // Combinar slides promo + talleres Pro
+  const todosLosSlides = [...slidesPromo, ...talleresPro];
+  talleresPro = todosLosSlides;
 
   const wrap = document.getElementById('proBannerWrap');
   if(wrap) wrap.style.display = 'block';
@@ -3759,22 +3787,45 @@ function mostrarProBanner(idx){
   const banner = document.getElementById('proBanner');
   if(!banner) return;
 
-  banner.innerHTML = `
-    ${t.cover_url ? `<img class="pro-banner-bg" src="${t.cover_url}" loading="lazy">` : '<div class="pro-banner-fallback"></div>'}
-    <div class="pro-banner-content">
-      <div>
-        <div class="pro-banner-top">
-          <span class="pro-badge">⭐ Destacado Pro</span>
-          <span class="pro-banner-name">${t.name}</span>
+  if(t.tipo === 'promo'){
+    // Slide promocional de PANNE
+    banner.innerHTML = `
+      <div style="position:absolute;inset:0;background:${t.color};"></div>
+      <div style="position:absolute;inset:0;opacity:.05;background:repeating-linear-gradient(45deg,#fff,#fff 1px,transparent 1px,transparent 20px);"></div>
+      <div class="pro-banner-content">
+        <div>
+          <div class="pro-banner-top">
+            <span style="background:linear-gradient(135deg,var(--red),#ff4444);color:#fff;font-size:9px;font-weight:800;padding:3px 8px;border-radius:20px;letter-spacing:1px;text-transform:uppercase;">PANNE</span>
+            <span class="pro-banner-name" style="font-size:16px;">${t.titulo}</span>
+          </div>
+          <div class="pro-banner-oferta">${t.texto}</div>
         </div>
-        <div class="pro-banner-oferta">${t.oferta_texto || 'Taller verificado · Atención profesional garantizada'}</div>
+        <div class="pro-banner-footer">
+          <span class="pro-banner-spec">${t.sub}</span>
+          <button class="pro-banner-btn" onclick="event.stopPropagation();${t.accion}">${t.btn}</button>
+        </div>
       </div>
-      <div class="pro-banner-footer">
-        <span class="pro-banner-spec">${t.spec.toUpperCase()} · ${t.city}</span>
-        <button class="pro-banner-btn" onclick="event.stopPropagation();openProfile('${t.id}')">Ver taller →</button>
+    `;
+  } else {
+    // Slide de taller Pro
+    banner.innerHTML = `
+      ${t.cover_url ? `<img class="pro-banner-bg" src="${t.cover_url}" loading="lazy" onerror="this.style.display='none'">` : ''}
+      <div class="pro-banner-fallback" style="${t.cover_url ? 'display:none' : ''}"></div>
+      <div class="pro-banner-content">
+        <div>
+          <div class="pro-banner-top">
+            <span class="pro-badge">⭐ Destacado Pro</span>
+            <span class="pro-banner-name">${t.name}</span>
+          </div>
+          <div class="pro-banner-oferta">${t.oferta_texto || 'Taller verificado · Atención profesional garantizada'}</div>
+        </div>
+        <div class="pro-banner-footer">
+          <span class="pro-banner-spec">${t.spec.toUpperCase()} · ${t.city}</span>
+          <button class="pro-banner-btn" onclick="event.stopPropagation();openProfile('${t.id}')">Ver taller →</button>
+        </div>
       </div>
-    </div>
-  `;
+    `;
+  }
 
   // Actualizar dots
   document.querySelectorAll('.pro-dot').forEach((d,i) => {
