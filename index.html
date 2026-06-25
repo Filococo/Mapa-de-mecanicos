@@ -1045,9 +1045,9 @@ footer{
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
         <span>Instalar</span>
       </button>
-      <button class="btn-icon" id="accountBtn">
+      <button class="btn-icon primary" id="accountBtn" style="padding:8px 16px;font-size:12px;font-weight:700;letter-spacing:.5px;">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        <span id="accountLabel">Entrar</span>
+        <span id="accountLabel">Iniciar sesión</span>
       </button>
     </div>
   </div>
@@ -1264,7 +1264,51 @@ footer{
         </div>
 
         <div class="form-step hidden" id="step-4">
-          <div class="form-section-title">Fotos</div>
+          <div class="form-section-title">Elige tu plan</div>
+          <div class="form-section-sub">Los primeros 30 días son siempre gratis. Sin tarjeta de crédito.</div>
+
+          <div style="display:grid;gap:10px;margin:16px 0;">
+            <!-- Plan gratis -->
+            <label style="cursor:pointer;">
+              <input type="radio" name="planElegido" value="mensual" style="display:none;" checked>
+              <div class="plan-option" data-plan="mensual" onclick="selectPlanForm('mensual')" style="border:2px solid var(--red);border-radius:10px;padding:14px;display:flex;align-items:center;gap:12px;background:rgba(232,25,44,.06);">
+                <div style="width:18px;height:18px;border-radius:50%;background:var(--red);border:2px solid var(--red);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><div style="width:8px;height:8px;border-radius:50%;background:#fff;"></div></div>
+                <div style="flex:1;">
+                  <div style="font-weight:700;font-size:13px;color:var(--white);">Plan Mensual — <span style="color:var(--red);">$9.990/mes</span></div>
+                  <div style="font-size:11px;color:var(--muted);margin-top:2px;">30 días gratis · Sin permanencia · Cancela cuando quieras</div>
+                </div>
+              </div>
+            </label>
+
+            <label style="cursor:pointer;">
+              <input type="radio" name="planElegido" value="semestral" style="display:none;">
+              <div class="plan-option" data-plan="semestral" onclick="selectPlanForm('semestral')" style="border:1px solid var(--border);border-radius:10px;padding:14px;display:flex;align-items:center;gap:12px;">
+                <div style="width:18px;height:18px;border-radius:50%;border:2px solid var(--border);flex-shrink:0;" id="radio-semestral"></div>
+                <div style="flex:1;">
+                  <div style="font-weight:700;font-size:13px;color:var(--white);">Plan Semestral — <span style="color:var(--red);">$49.990</span></div>
+                  <div style="font-size:11px;color:var(--muted);margin-top:2px;">30 días gratis · Equiv. $8.332/mes · Ahorras $9.950</div>
+                </div>
+                <div style="background:var(--black3);border-radius:6px;padding:3px 8px;font-size:9px;color:var(--muted);">-17%</div>
+              </div>
+            </label>
+
+            <label style="cursor:pointer;">
+              <input type="radio" name="planElegido" value="anual" style="display:none;">
+              <div class="plan-option" data-plan="anual" onclick="selectPlanForm('anual')" style="border:1px solid var(--border);border-radius:10px;padding:14px;display:flex;align-items:center;gap:12px;position:relative;">
+                <div style="position:absolute;top:-9px;right:12px;background:var(--red);color:#fff;font-size:9px;font-weight:700;padding:2px 8px;border-radius:20px;">MEJOR VALOR</div>
+                <div style="width:18px;height:18px;border-radius:50%;border:2px solid var(--border);flex-shrink:0;" id="radio-anual"></div>
+                <div style="flex:1;">
+                  <div style="font-weight:700;font-size:13px;color:var(--white);">Plan Anual — <span style="color:var(--red);">$89.990</span></div>
+                  <div style="font-size:11px;color:var(--muted);margin-top:2px;">30 días gratis · Equiv. $7.499/mes · Ahorras $29.890</div>
+                </div>
+                <div style="background:rgba(232,25,44,.15);border-radius:6px;padding:3px 8px;font-size:9px;color:var(--red);">-25%</div>
+              </div>
+            </label>
+          </div>
+
+          <div style="font-size:11px;color:var(--muted);text-align:center;">🔒 Pago seguro con Mercado Pago · Solo se cobra después del período de prueba</div>
+
+          <div class="form-section-title" style="margin-top:20px;">Fotos <span style="font-size:11px;font-family:'Inter';color:var(--muted);font-weight:400;">(opcional)</span></div>
           <div class="form-section-sub">Sube fotos de tu taller para generar confianza (máx. 6)</div>
           <input type="file" id="f-photos" accept="image/*" multiple style="font-family:'JetBrains Mono';font-size:12px;color:var(--dim);">
           <div id="photoPreview" class="photo-preview"></div>
@@ -1995,14 +2039,16 @@ async function openProfile(id){
         <div class="profile-spec">${m.spec} · ${m.years} años de experiencia</div>
       </div>
       <div class="profile-meta-row">
-        <span class="profile-meta-item" onclick="openDirectionsById('${m.id}')" style="cursor:pointer;">
+        <span class="profile-meta-item" style="cursor:pointer;" ${currentSession ? `onclick="openDirectionsById('${m.id}')"` : `onclick="openAuthModal('cliente')"`}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-          <a>${m.address}</a>
+          ${currentSession ? `<a>${m.address}</a>` : `<span style="color:var(--muted);font-style:italic;">🔒 Ver dirección</span>`}
         </span>
-        ${m.phone ? `<div style="display:flex;gap:8px;margin-top:8px;margin-bottom:4px;">
+        ${m.phone ? (currentSession ? `<div style="display:flex;gap:8px;margin-top:8px;margin-bottom:4px;">
           <a href="tel:${m.phone}" style="flex:1;background:var(--red);color:#fff;border-radius:8px;padding:10px 0;font-size:13px;font-weight:700;text-align:center;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:6px;">📞 Llamar</a>
           <a href="https://wa.me/${(m.whatsapp||m.phone).replace(/[^0-9]/g,'')}" target="_blank" style="flex:1;background:#25D366;color:#fff;border-radius:8px;padding:10px 0;font-size:13px;font-weight:700;text-align:center;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:6px;">💬 WhatsApp</a>
-        </div>` : ''}
+        </div>` : `<div style="display:flex;gap:8px;margin-top:8px;margin-bottom:4px;">
+          <button onclick="openAuthModal('cliente')" style="flex:1;background:var(--steel);color:var(--dim);border:1px solid var(--border);border-radius:8px;padding:10px 0;font-size:12px;font-weight:600;cursor:pointer;">🔒 Inicia sesión para llamar</button>
+        </div>`) : ''}
         <span class="profile-meta-item">
 
         </span>
@@ -2083,7 +2129,7 @@ async function openProfile(id){
             </div>
           </div>
           <div class="panel-body">
-            ${m.reviews_list && m.reviews_list.length ? m.reviews_list.map(r=>`
+            ${!currentSession ? `<div style="text-align:center;padding:20px;"><div style="font-size:28px;margin-bottom:8px;">🔒</div><p style="color:var(--muted);font-size:13px;margin-bottom:12px;">Inicia sesión para ver las reseñas completas y dejar la tuya</p><button onclick="openAuthModal('cliente')" style="background:var(--red);color:#fff;border:none;border-radius:8px;padding:10px 20px;font-size:13px;font-weight:700;cursor:pointer;">Crear cuenta gratis →</button></div>` : m.reviews_list && m.reviews_list.length ? m.reviews_list.map(r=>`
               <div class="review">
                 <div class="review-head">
                   <span class="review-name">${r.cliente_nombre || r.name || 'Cliente'}</span>
@@ -3425,6 +3471,31 @@ function toggleHelpModal(){
 document.getElementById('helpModalOverlay')?.addEventListener('click', function(e){
   if(e.target === this) toggleHelpModal();
 });
+
+
+/* ===== SELECTOR DE PLAN EN FORMULARIO ===== */
+let planSeleccionado = 'mensual';
+
+function selectPlanForm(plan){
+  planSeleccionado = plan;
+  document.querySelectorAll('.plan-option').forEach(el => {
+    const isSelected = el.dataset.plan === plan;
+    el.style.border = isSelected ? '2px solid var(--red)' : '1px solid var(--border)';
+    el.style.background = isSelected ? 'rgba(232,25,44,.06)' : '';
+    const radio = el.querySelector('div[id^="radio-"]') || el.querySelector('div:first-child');
+    if(radio){
+      if(isSelected){
+        radio.style.background = 'var(--red)';
+        radio.style.borderColor = 'var(--red)';
+        radio.innerHTML = '<div style="width:8px;height:8px;border-radius:50%;background:#fff;margin:3px auto;"></div>';
+      } else {
+        radio.style.background = '';
+        radio.style.borderColor = 'var(--border)';
+        radio.innerHTML = '';
+      }
+    }
+  });
+}
 
 </script>
 
