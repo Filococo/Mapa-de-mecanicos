@@ -1503,6 +1503,7 @@ footer{
 
 <footer>
   PANNE © 2026 — Directorio de talleres y vulcanizadoras en Chile · Datos de Google Maps
+  <br><a href="mailto:panne.chile@gmail.com" style="color:var(--red);text-decoration:none;letter-spacing:0;font-size:10px;">panne.chile@gmail.com</a>
 </footer>
 
 
@@ -1933,10 +1934,22 @@ document.getElementById('filterBar')?.addEventListener('click', (e)=>{
 /* ====================== PROFILE RENDER ====================== */
 let selectedStars = 0;
 
-function openProfile(id){
+async function openProfile(id){
   const m = mechanics.find(x => x.id === id);
   if(!m) return;
   selectedStars = 0;
+
+  // Cargar reseñas reales desde Supabase
+  const { data: resenasData } = await sb.from('resenas')
+    .select('*')
+    .eq('mecanico_id', id)
+    .order('created_at', { ascending: false });
+  m.reviews_list = resenasData || [];
+  // Actualizar rating y count con datos reales
+  if(m.reviews_list.length > 0){
+    m.rating = m.reviews_list.reduce((s, r) => s + (r.stars||0), 0) / m.reviews_list.length;
+    m.reviews = m.reviews_list.length;
+  }
   const initial = m.initials || (m.name||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
   const ratingDisplay = m.rating > 0 ? m.rating.toFixed(1) : '—';
   const distTxt = m.dist != null ? m.dist.toFixed(1) + ' km de tu ubicación' : '';
@@ -2061,11 +2074,11 @@ function openProfile(id){
             ${m.reviews_list && m.reviews_list.length ? m.reviews_list.map(r=>`
               <div class="review">
                 <div class="review-head">
-                  <span class="review-name">${r.name}</span>
-                  <span class="review-date">${r.date}</span>
+                  <span class="review-name">${r.cliente_nombre || r.name || 'Cliente'}</span>
+                  <span class="review-date">${r.created_at ? new Date(r.created_at).toLocaleDateString('es-CL') : r.date || ''}</span>
                 </div>
-                <div class="review-stars">${renderStars(r.stars, 13)}</div>
-                <div class="review-text">${r.text}</div>
+                <div class="review-stars">${renderStars(r.stars || r.rating || 0, 13)}</div>
+                <div class="review-text">${r.texto || r.text || ''}</div>
               </div>`).join('') : '<p style="color:var(--muted);font-size:13px;">Sin reseñas aún. ¡Sé el primero en calificar!</p>'}
             <div class="add-review">
               <div class="add-review-label">Deja tu calificación</div>
@@ -2798,7 +2811,7 @@ async function mostrarPanelMecanico() {
     const { data: resenas } = await sb.from('resenas').select('*').eq('mecanico_id', uid);
     const totalResenas = resenas?.length || 0;
     const avgRating = totalResenas > 0
-      ? (resenas.reduce((s, r) => s + r.rating, 0) / totalResenas).toFixed(1)
+      ? (resenas.reduce((s, r) => s + (r.stars||r.rating||0), 0) / totalResenas).toFixed(1)
       : '—';
 
     document.getElementById('statVisitas').textContent = '—';
@@ -2812,8 +2825,8 @@ async function mostrarPanelMecanico() {
     } else {
       resenasEl.innerHTML = resenas.map(r => `
         <div class="resena-panel-item">
-          <div class="resena-panel-meta">${'★'.repeat(r.rating)} · ${new Date(r.created_at).toLocaleDateString('es-CL')}</div>
-          <div class="resena-panel-text">${r.comment || 'Sin comentario'}</div>
+          <div class="resena-panel-meta"><b>${r.cliente_nombre || 'Cliente'}</b> · ${'★'.repeat(r.stars||r.rating||0)} · ${new Date(r.created_at).toLocaleDateString('es-CL')}</div>
+          <div class="resena-panel-text">${r.texto || r.comment || 'Sin comentario'}</div>
         </div>
       `).join('');
     }
@@ -2885,7 +2898,7 @@ async function verificarReseñasNuevas(uid) {
   const lastSeen = localStorage.getItem('resenas_last_seen_' + uid);
   
   // Contar reseñas después de esa fecha
-  let query = sb.from('reviews').select('id', { count: 'exact' }).eq('mecanico_id', uid);
+  let query = sb.from('resenas').select('id', { count: 'exact' }).eq('mecanico_id', uid);
   if(lastSeen) query = query.gt('created_at', lastSeen);
   
   const { count } = await query;
