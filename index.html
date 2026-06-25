@@ -988,6 +988,36 @@ footer{
 .resena-panel-item{background:var(--card-bg);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px;}
 .resena-panel-meta{font-size:11px;color:var(--muted);margin-bottom:6px;}
 .resena-panel-text{font-size:13px;color:var(--dim);line-height:1.5;}
+
+/* ===== BOTÓN AYUDA ===== */
+.help-btn{
+  position:fixed;bottom:24px;right:20px;z-index:900;
+  width:52px;height:52px;border-radius:50%;
+  background:var(--red);color:#fff;border:none;
+  font-size:22px;cursor:pointer;
+  box-shadow:0 4px 16px rgba(232,25,44,.4);
+  display:flex;align-items:center;justify-content:center;
+  transition:transform .2s,box-shadow .2s;
+}
+.help-btn:hover{transform:scale(1.08);box-shadow:0 6px 20px rgba(232,25,44,.5);}
+.help-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:1100;display:flex;align-items:center;justify-content:center;padding:16px;}
+.help-modal{background:var(--black2);border:1px solid var(--border);border-radius:16px;max-width:520px;width:100%;padding:28px;position:relative;max-height:90vh;overflow-y:auto;}
+.help-modal-title{font-family:'Bebas Neue';font-size:24px;color:var(--white);margin-bottom:6px;}
+.help-modal-sub{font-size:13px;color:var(--muted);margin-bottom:24px;}
+.help-card{background:var(--black3);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:12px;cursor:pointer;transition:border-color .2s;}
+.help-card:hover{border-color:var(--red);}
+.help-card-title{font-weight:700;font-size:14px;color:var(--white);margin-bottom:4px;}
+.help-card-desc{font-size:12px;color:var(--muted);}
+.help-steps{display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--border);}
+.help-steps.open{display:block;}
+.help-step{display:flex;gap:12px;margin-bottom:12px;align-items:flex-start;}
+.help-step-num{width:24px;height:24px;border-radius:50%;background:var(--red);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.help-step-text{font-size:13px;color:var(--dim);line-height:1.5;}
+.help-close{position:absolute;top:16px;right:16px;background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;}
+.help-close:hover{color:var(--white);}
+.help-contact{margin-top:20px;text-align:center;font-size:12px;color:var(--muted);}
+.help-contact a{color:var(--red);text-decoration:none;font-weight:600;}
+
 </style>
 </head>
 <body>
@@ -1845,7 +1875,7 @@ function renderGrid(){
     const initial = m.initials || (m.name||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
     const ratingDisplay = m.rating > 0 ? m.rating.toFixed(1) : null;
     const stars = m.rating > 0 ? renderStars(m.rating, 12) : '';
-    const distTxt = m.dist != null ? m.dist + ' km' : '';
+    const distTxt = m.dist != null ? m.dist.toFixed(1) + ' km' : '';
     return `
     <div class="card" onclick="openProfile('${m.id}')">
       <div class="card-cover">
@@ -1906,7 +1936,7 @@ function openProfile(id){
   selectedStars = 0;
   const initial = m.initials || (m.name||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
   const ratingDisplay = m.rating > 0 ? m.rating.toFixed(1) : '—';
-  const distTxt = m.dist != null ? m.dist + ' km de tu ubicación' : '';
+  const distTxt = m.dist != null ? m.dist.toFixed(1) + ' km de tu ubicación' : '';
 
   const profileHTML = `
     <div class="profile-cover" id="profileCover">
@@ -2238,7 +2268,7 @@ function renderMapList(){
     mapList.innerHTML = sorted.map(m => `
       <div class="map-list-item" onclick="openProfile('${m.id}')">
         <div class="mli-left">
-          <span class="mli-dist">${m.dist != null ? m.dist + 'km' : '—'}</span>
+          <span class="mli-dist">${m.dist != null ? m.dist.toFixed(1) + ' km' : '—'}</span>
           <div>
             <div class="mli-name">${m.name}</div>
             <div class="mli-spec">${m.spec.toUpperCase()} · ${m.rating > 0 ? '★'.repeat(Math.round(m.rating)) + ' ' + m.rating.toFixed(1) : 'Sin calificar'}</div>
@@ -2303,7 +2333,7 @@ function renderMap(){
     const marker = L.marker([m.lat, m.lng], {icon}).addTo(leafletMapInstance);
     marker.bindPopup(`
       <div class="popup-name">${m.name}</div>
-      <div class="popup-spec">${m.spec.toUpperCase()} · ${m.dist != null ? m.dist + 'KM' : ''}</div>
+      <div class="popup-spec">${m.spec.toUpperCase()} · ${m.dist != null ? m.dist.toFixed(1) + ' km' : ''}</div>
       <div class="popup-rating">★ ${m.rating > 0 ? m.rating.toFixed(1) : 'Sin calificar'} (${m.reviews}) · ${m.status==='open'?'Abierto':'Cerrado'}</div>
       <div style="display:flex; gap:6px; margin-top:4px;">
         <span class="popup-btn" onclick="openProfile('${m.id}')">Ver ficha →</span>
@@ -2325,7 +2355,7 @@ function renderMap(){
     mapList.innerHTML = sorted.map(m => `
       <div class="map-list-item" onclick="openProfile('${m.id}')">
         <div class="mli-left">
-          <span class="mli-dist">${m.dist != null ? m.dist + 'km' : '—'}</span>
+          <span class="mli-dist">${m.dist != null ? m.dist.toFixed(1) + ' km' : '—'}</span>
           <div>
             <div class="mli-name">${m.name}</div>
             <div class="mli-spec">${m.spec.toUpperCase()} · ${m.rating > 0 ? '★'.repeat(Math.round(m.rating)) + ' ' + m.rating.toFixed(1) : 'Sin calificar'}</div>
@@ -3265,5 +3295,59 @@ window.addEventListener('appinstalled', () => {
 });
 
 </script>
+
+<!-- BOTÓN AYUDA -->
+<button class="help-btn" onclick="toggleHelpModal()" title="Ayuda">?</button>
+
+<div id="helpModalOverlay" class="help-modal-overlay hidden">
+  <div class="help-modal">
+    <button class="help-close" onclick="toggleHelpModal()">×</button>
+    <div class="help-modal-title">¿Cómo podemos ayudarte?</div>
+    <div class="help-modal-sub">Selecciona el tema que necesitas</div>
+
+    <!-- Card usuario -->
+    <div class="help-card" onclick="toggleHelpSteps('stepsUsuario', this)">
+      <div class="help-card-title">👤 Cómo buscar un taller como usuario</div>
+      <div class="help-card-desc">Encuentra talleres cerca de ti, filtra por especialidad y deja reseñas</div>
+      <div class="help-steps" id="stepsUsuario">
+        <div class="help-step"><div class="help-step-num">1</div><div class="help-step-text">Abre <b>panne.cl</b> desde tu celular o computador.</div></div>
+        <div class="help-step"><div class="help-step-num">2</div><div class="help-step-text">Toca <b>"Tu ubicación actual"</b> para ver los talleres más cercanos a ti.</div></div>
+        <div class="help-step"><div class="help-step-num">3</div><div class="help-step-text">Usa los filtros de <b>especialidad</b> (Mecánica, Vulcanización, etc.) y <b>ciudad</b> para afinar la búsqueda.</div></div>
+        <div class="help-step"><div class="help-step-num">4</div><div class="help-step-text">Toca <b>"Ver ficha"</b> en cualquier taller para ver detalles, fotos, horarios y reseñas.</div></div>
+        <div class="help-step"><div class="help-step-num">5</div><div class="help-step-text">Si quieres dejar una reseña, crea una cuenta gratuita tocando <b>"Iniciar sesión"</b> → <b>"Soy cliente"</b>.</div></div>
+      </div>
+    </div>
+
+    <!-- Card taller -->
+    <div class="help-card" onclick="toggleHelpSteps('stepsTaller', this)">
+      <div class="help-card-title">🔧 Cómo registrar mi taller</div>
+      <div class="help-card-desc">Crea tu ficha gratis y llega a más clientes en toda Chile</div>
+      <div class="help-steps" id="stepsTaller">
+        <div class="help-step"><div class="help-step-num">1</div><div class="help-step-text">Toca <b>"Iniciar sesión"</b> en la esquina superior derecha.</div></div>
+        <div class="help-step"><div class="help-step-num">2</div><div class="help-step-text">Selecciona <b>"Soy taller"</b> y luego <b>"Crear cuenta"</b> con tu correo y una contraseña.</div></div>
+        <div class="help-step"><div class="help-step-num">3</div><div class="help-step-text">Completa el formulario de 4 pasos: nombre, especialidad, ubicación GPS y servicios.</div></div>
+        <div class="help-step"><div class="help-step-num">4</div><div class="help-step-text">Sube una <b>foto de portada</b> y una <b>foto de perfil</b> desde el panel → Mi ficha.</div></div>
+        <div class="help-step"><div class="help-step-num">5</div><div class="help-step-text">Tu taller aparece de inmediato en el directorio con <b>30 días gratis</b>. Después puedes contratar un plan desde $9.990/mes.</div></div>
+      </div>
+    </div>
+
+    <!-- Card suscripción -->
+    <div class="help-card" onclick="toggleHelpSteps('stepsSuscripcion', this)">
+      <div class="help-card-title">💳 Planes y suscripción</div>
+      <div class="help-card-desc">Información sobre precios y cómo mantenerse activo en el directorio</div>
+      <div class="help-steps" id="stepsSuscripcion">
+        <div class="help-step"><div class="help-step-num">1</div><div class="help-step-text"><b>30 días gratis</b> al registrar tu taller, sin tarjeta de crédito.</div></div>
+        <div class="help-step"><div class="help-step-num">2</div><div class="help-step-text"><b>Plan mensual:</b> $9.990/mes — sin permanencia, cancela cuando quieras.</div></div>
+        <div class="help-step"><div class="help-step-num">3</div><div class="help-step-text"><b>Plan semestral:</b> $49.990 — equivale a $8.332/mes, ahorras $9.950.</div></div>
+        <div class="help-step"><div class="help-step-num">4</div><div class="help-step-text"><b>Plan anual:</b> $89.990 — equivale a $7.499/mes, el mejor valor.</div></div>
+        <div class="help-step"><div class="help-step-num">5</div><div class="help-step-text">El pago se realiza con <b>Mercado Pago</b> — tarjeta, débito o transferencia.</div></div>
+      </div>
+    </div>
+
+    <div class="help-contact">
+      ¿Tienes otra consulta? Escríbenos a <a href="mailto:hola@panne.cl">hola@panne.cl</a>
+    </div>
+  </div>
+</div>
 </body>
 </html>
