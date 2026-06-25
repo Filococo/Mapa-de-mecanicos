@@ -141,6 +141,41 @@ main{max-width:1200px;margin:0 auto;padding:20px 16px 100px;width:100%;}
 }
 .hero-stat-label{font-size:10px;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;}
 
+/* ===== BANNER PRO DESTACADO ===== */
+.pro-banner{
+  position:relative;border-radius:14px;overflow:hidden;
+  margin-bottom:16px;height:140px;cursor:pointer;
+  border:1px solid rgba(232,25,44,.3);
+  box-shadow:0 4px 20px rgba(232,25,44,.15);
+}
+.pro-banner-bg{
+  position:absolute;inset:0;width:100%;height:100%;
+  object-fit:cover;filter:brightness(.4);
+}
+.pro-banner-fallback{
+  position:absolute;inset:0;
+  background:linear-gradient(135deg,var(--black3),var(--steel));
+}
+.pro-banner-content{
+  position:absolute;inset:0;padding:16px 20px;
+  display:flex;flex-direction:column;justify-content:space-between;
+}
+.pro-banner-top{display:flex;align-items:center;gap:10px;}
+.pro-badge{
+  background:linear-gradient(135deg,#f59e0b,#d97706);
+  color:#000;font-size:9px;font-weight:800;
+  padding:3px 8px;border-radius:20px;letter-spacing:1px;
+  text-transform:uppercase;white-space:nowrap;
+}
+.pro-banner-name{font-family:'Bebas Neue';font-size:20px;color:#fff;letter-spacing:1px;}
+.pro-banner-oferta{font-size:13px;color:rgba(255,255,255,.85);line-height:1.4;flex:1;margin-top:6px;}
+.pro-banner-footer{display:flex;align-items:center;justify-content:space-between;}
+.pro-banner-spec{font-size:11px;color:rgba(255,255,255,.5);font-family:'JetBrains Mono';}
+.pro-banner-btn{background:var(--red);color:#fff;border:none;border-radius:8px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;}
+.pro-dots{display:flex;gap:5px;justify-content:center;margin-top:8px;}
+.pro-dot{width:6px;height:6px;border-radius:50%;background:var(--border);transition:background .3s;}
+.pro-dot.active{background:var(--red);width:18px;border-radius:3px;}
+
 /* ===== POR QUÉ PANNE ===== */
 .why-panne{
   display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
@@ -1115,7 +1150,7 @@ footer{
           <div class="hero-stat-label">Ciudades cubiertas</div>
         </div>
         <div class="hero-stat">
-          <div class="hero-stat-num" id="heroUsuarios">—</div>
+          <div class="hero-stat-num" id="heroUsuarios">110+</div>
           <div class="hero-stat-label">Usuarios registrados</div>
         </div>
         <div class="hero-stat">
@@ -1165,6 +1200,12 @@ footer{
       <button class="chip" data-filter="Eléctrico Automotriz">Eléctrico</button>
       <button class="chip" data-filter="Diésel">Diésel</button>
       <button class="chip" data-filter="Vulcanización">Vulcanización</button>
+    </div>
+
+    <!-- Banner talleres Pro destacados -->
+    <div id="proBannerWrap" style="display:none;">
+      <div id="proBanner" class="pro-banner" onclick="abrirTallerPro()"></div>
+      <div class="pro-dots" id="proDots"></div>
     </div>
 
     <!-- Banner CTA talleres -->
@@ -1788,7 +1829,7 @@ async function loadMechanicsFromSupabase(){
   try {
     const { data: mecanicosData, error } = await sb
       .from('mecanicos')
-      .select('id, name, address, city, phone, lat, lng, spec, rating, review_count, sells_parts, trial_ends_at, cover_url, avatar_url, whatsapp')
+      .select('id, name, address, city, phone, lat, lng, spec, rating, review_count, sells_parts, trial_ends_at, cover_url, avatar_url, whatsapp, es_pro, oferta_texto')
       .limit(500);
 
     if(error){
@@ -1817,6 +1858,8 @@ async function loadMechanicsFromSupabase(){
       cover_url: m.cover_url || null,
       avatar_url: m.avatar_url || null,
       whatsapp: m.whatsapp || null,
+      es_pro: !!m.es_pro,
+      oferta_texto: m.oferta_texto || null,
       priceFrom: null,
       status: 'open',
       address: m.address || '',
@@ -1834,6 +1877,7 @@ async function loadMechanicsFromSupabase(){
     renderGrid();
     renderMapList();
     cargarEstadisticasHero();
+    renderProBanner();
     console.log('PANNE: ' + mechanics.length + ' negocios cargados');
 
   } catch(err) {
@@ -3615,12 +3659,7 @@ async function cargarEstadisticasHero(){
       .from('resenas')
       .select('cliente_id', { count: 'exact', head: true });
     
-    const heroUsuarios = document.getElementById('heroUsuarios');
-    if(heroUsuarios){
-      // Estimamos usuarios únicos basado en reseñas + talleres registrados
-      const totalEstimado = (userCount || 0) + (resenasCount || 0);
-      heroUsuarios.textContent = totalEstimado > 0 ? totalEstimado + '+' : '—';
-    }
+    // El contador de usuarios se gestiona manualmente
 
     // Contar ciudades únicas
     const { data: ciudades } = await sb
@@ -3636,6 +3675,79 @@ async function cargarEstadisticasHero(){
   } catch(e) {
     console.log('Stats hero:', e.message);
   }
+}
+
+
+/* ===== BANNER PRO ROTATIVO ===== */
+let proBannerInterval = null;
+let proBannerIndex = 0;
+let talleresPro = [];
+
+function renderProBanner(){
+  talleresPro = mechanics.filter(m => m.es_pro && m.cover_url);
+  if(!talleresPro.length){
+    // También mostrar talleres pro sin cover
+    talleresPro = mechanics.filter(m => m.es_pro);
+  }
+  if(!talleresPro.length) return;
+
+  const wrap = document.getElementById('proBannerWrap');
+  if(wrap) wrap.style.display = 'block';
+
+  // Dots
+  const dotsEl = document.getElementById('proDots');
+  if(dotsEl && talleresPro.length > 1){
+    dotsEl.innerHTML = talleresPro.map((_,i) =>
+      `<div class="pro-dot ${i===0?'active':''}" id="proDot${i}"></div>`
+    ).join('');
+  }
+
+  mostrarProBanner(0);
+
+  // Rotar cada 5 segundos si hay más de uno
+  if(talleresPro.length > 1){
+    if(proBannerInterval) clearInterval(proBannerInterval);
+    proBannerInterval = setInterval(() => {
+      proBannerIndex = (proBannerIndex + 1) % talleresPro.length;
+      mostrarProBanner(proBannerIndex);
+    }, 5000);
+  }
+}
+
+function mostrarProBanner(idx){
+  proBannerIndex = idx;
+  const t = talleresPro[idx];
+  if(!t) return;
+
+  const banner = document.getElementById('proBanner');
+  if(!banner) return;
+
+  banner.innerHTML = `
+    ${t.cover_url ? `<img class="pro-banner-bg" src="${t.cover_url}" loading="lazy">` : '<div class="pro-banner-fallback"></div>'}
+    <div class="pro-banner-content">
+      <div>
+        <div class="pro-banner-top">
+          <span class="pro-badge">⭐ Destacado Pro</span>
+          <span class="pro-banner-name">${t.name}</span>
+        </div>
+        <div class="pro-banner-oferta">${t.oferta_texto || 'Taller verificado · Atención profesional garantizada'}</div>
+      </div>
+      <div class="pro-banner-footer">
+        <span class="pro-banner-spec">${t.spec.toUpperCase()} · ${t.city}</span>
+        <button class="pro-banner-btn" onclick="event.stopPropagation();openProfile('${t.id}')">Ver taller →</button>
+      </div>
+    </div>
+  `;
+
+  // Actualizar dots
+  document.querySelectorAll('.pro-dot').forEach((d,i) => {
+    d.classList.toggle('active', i === idx);
+  });
+}
+
+function abrirTallerPro(){
+  const t = talleresPro[proBannerIndex];
+  if(t) openProfile(t.id);
 }
 
 </script>
