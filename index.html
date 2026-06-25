@@ -2020,6 +2020,7 @@ async function openProfile(id){
         <div class="profile-avatar" id="profileAvatar">${initial}</div>
         <div class="profile-badge">${m.spec.toUpperCase()}</div>
         <div class="profile-actions">
+          ${currentSession ? `
           <button class="btn-wa" onclick="contactWhatsAppById('${m.id}')">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M11.93 0C5.33 0 0 5.33 0 11.93c0 2.1.546 4.066 1.5 5.773L0 24l6.447-1.478A11.863 11.863 0 0 0 11.93 23.86C18.53 23.86 24 18.53 24 11.93 24 5.33 18.53 0 11.93 0zm0 21.78a9.793 9.793 0 0 1-5.043-1.395l-.36-.214-3.829.88.896-3.712-.234-.381a9.792 9.792 0 0 1-1.503-5.245C1.857 6.524 6.524 1.857 11.93 1.857c2.585 0 5.012 1.006 6.84 2.833a9.623 9.623 0 0 1 2.832 6.84c0 5.406-4.667 10.073-9.672 10.25z"/></svg>
             WhatsApp
@@ -2031,7 +2032,10 @@ async function openProfile(id){
           <button class="btn-directions" onclick="viewOnMap('${m.id}')">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
             Ver mapa
-          </button>
+          </button>` : `
+          <button onclick="openAuthModal('cliente')" style="background:var(--steel);color:var(--dim);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;">
+            🔒 Inicia sesión para contactar
+          </button>`}
         </div>
       </div>
       <div class="profile-name-block">
@@ -2129,7 +2133,7 @@ async function openProfile(id){
             </div>
           </div>
           <div class="panel-body">
-            ${!currentSession ? `<div style="text-align:center;padding:20px;"><div style="font-size:28px;margin-bottom:8px;">🔒</div><p style="color:var(--muted);font-size:13px;margin-bottom:12px;">Inicia sesión para ver las reseñas completas y dejar la tuya</p><button onclick="openAuthModal('cliente')" style="background:var(--red);color:#fff;border:none;border-radius:8px;padding:10px 20px;font-size:13px;font-weight:700;cursor:pointer;">Crear cuenta gratis →</button></div>` : m.reviews_list && m.reviews_list.length ? m.reviews_list.map(r=>`
+            ${m.reviews_list && m.reviews_list.length ? m.reviews_list.map(r=>`
               <div class="review">
                 <div class="review-head">
                   <span class="review-name">${r.cliente_nombre || r.name || 'Cliente'}</span>
@@ -2138,14 +2142,18 @@ async function openProfile(id){
                 <div class="review-stars">${renderStars(r.stars || r.rating || 0, 13)}</div>
                 <div class="review-text">${r.texto || r.text || ''}</div>
               </div>`).join('') : '<p style="color:var(--muted);font-size:13px;">Sin reseñas aún. ¡Sé el primero en calificar!</p>'}
-            <div class="add-review">
+            ${currentSession ? `<div class="add-review">
               <div class="add-review-label">Deja tu calificación</div>
               <div class="star-picker" id="starPicker">
                 ${[1,2,3,4,5].map(i=>`<span data-val="${i}">${starsSVG(false,22)}</span>`).join('')}
               </div>
               <textarea class="review-input" id="reviewText" placeholder="Cuenta tu experiencia…"></textarea>
               <button class="btn-submit-review" onclick="submitReview('${m.id}')">Publicar reseña</button>
-            </div>
+            </div>` : `<div class="add-review" style="text-align:center;padding:16px;">
+              <div style="font-size:22px;margin-bottom:6px;">⭐</div>
+              <p style="color:var(--muted);font-size:13px;margin-bottom:12px;">¿Visitaste este taller? <b style="color:var(--white);">Inicia sesión</b> para dejar tu reseña</p>
+              <button onclick="openAuthModal('cliente')" style="background:var(--red);color:#fff;border:none;border-radius:8px;padding:9px 20px;font-size:13px;font-weight:700;cursor:pointer;">Crear cuenta gratis →</button>
+            </div>`}
           </div>
         </div>
       </div>
@@ -2154,6 +2162,7 @@ async function openProfile(id){
       <div>
         <div class="sidebar-cta">
           <div class="sidebar-cta-title">Contactar</div>
+          ${currentSession ? `
           <button class="btn-full red" onclick="contactWhatsAppById('${m.id}')">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/></svg>
             Contactar por WhatsApp
@@ -2165,7 +2174,13 @@ async function openProfile(id){
           <button class="btn-full outline" onclick="viewOnMap('${m.id}')">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/></svg>
             Ver en el mapa
-          </button>
+          </button>` : `
+          <div style="text-align:center;padding:12px 0;">
+            <div style="font-size:28px;margin-bottom:8px;">🔒</div>
+            <p style="font-size:13px;color:var(--muted);margin-bottom:14px;">Regístrate gratis para ver el contacto, dirección y ubicación en el mapa</p>
+            <button onclick="openAuthModal('cliente')" style="width:100%;background:var(--red);color:#fff;border:none;border-radius:8px;padding:12px;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:8px;">Crear cuenta gratis →</button>
+            <button onclick="openAuthModal('cliente')" style="width:100%;background:none;color:var(--muted);border:1px solid var(--border);border-radius:8px;padding:10px;font-size:12px;cursor:pointer;">Ya tengo cuenta — Iniciar sesión</button>
+          </div>`}
         </div>
         <div class="panel">
           <div class="panel-head"><div class="panel-title">Especialidades</div></div>
