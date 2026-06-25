@@ -1858,7 +1858,7 @@ async function loadMechanicsFromSupabase(){
       cover_url: m.cover_url || null,
       avatar_url: m.avatar_url || null,
       whatsapp: m.whatsapp || null,
-      es_pro: !!m.es_pro,
+      es_pro: m.es_pro === true || m.es_pro === 'true' || m.es_pro === 1,
       oferta_texto: m.oferta_texto || null,
       priceFrom: null,
       status: 'open',
@@ -3692,6 +3692,7 @@ function renderProBanner(){
     talleresPro = mechanics.filter(m => m.es_pro);
   }
   console.log('Talleres Pro encontrados:', talleresPro.length, talleresPro.map(t=>t.name));
+  console.log('Total mechanics:', mechanics.length, 'Con es_pro:', mechanics.filter(m=>m.es_pro).length);
   if(!talleresPro.length) return;
 
   const wrap = document.getElementById('proBannerWrap');
