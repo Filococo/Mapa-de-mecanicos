@@ -3294,6 +3294,104 @@ window.addEventListener('appinstalled', () => {
   deferredInstallPrompt = null;
 });
 
+
+/* ===== MODAL AYUDA Y TUTORIAL ===== */
+const TUTORIALS = {
+  usuario: {
+    title: 'Cómo buscar un taller',
+    desc: 'Encuentra el taller ideal en segundos',
+    steps: [
+      { screen: `<div style="text-align:center;"><div style="font-family:'Bebas Neue';font-size:28px;color:var(--red);margin-bottom:8px;">PANNE</div><div style="font-size:11px;color:var(--muted);">Chile · Talleres & Vulcanizadoras</div><div style="margin-top:16px;background:var(--black2);border-radius:8px;padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;">🔍 Buscar por nombre, especialidad o ciudad...</div></div>`, text: 'Abre <b>panne.cl</b> desde tu celular o computador. Verás el directorio completo de talleres.' },
+      { screen: `<div style="text-align:center;"><div style="background:var(--red);border-radius:8px;padding:8px 14px;font-size:12px;color:#fff;display:inline-flex;align-items:center;gap:6px;margin-bottom:12px;">📍 Tu ubicación actual</div><div style="font-size:11px;color:var(--muted);">Ordenando por cercanía...</div></div>`, text: 'Toca <b>"Tu ubicación actual"</b> para ordenar los talleres por distancia desde donde estás.' },
+      { screen: `<div style="width:100%;text-align:center;"><div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-bottom:10px;"><div style="background:var(--red);border-radius:20px;padding:4px 10px;font-size:9px;color:#fff;">TODOS</div><div style="background:var(--black2);border:1px solid var(--border);border-radius:20px;padding:4px 10px;font-size:9px;color:var(--dim);">MECÁNICA</div><div style="background:var(--black2);border:1px solid var(--border);border-radius:20px;padding:4px 10px;font-size:9px;color:var(--dim);">VULCANIZACIÓN</div></div><div style="background:var(--black2);border-radius:8px;padding:6px 10px;font-size:10px;color:var(--muted);">🏙 Todas las ciudades ▼</div></div>`, text: 'Filtra por <b>especialidad</b> y por <b>ciudad</b> para encontrar exactamente lo que necesitas.' },
+      { screen: `<div style="background:var(--black2);border-radius:10px;padding:14px;max-width:200px;margin:0 auto;"><div style="font-size:10px;color:var(--red);font-weight:700;margin-bottom:6px;">MECÁNICA GENERAL</div><div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:4px;">Taller El Maestro</div><div style="font-size:10px;color:var(--muted);margin-bottom:8px;">★★★★★ 4.8 · 2.1 km</div><div style="background:var(--red);border-radius:6px;padding:5px 10px;font-size:10px;color:#fff;text-align:center;">Ver ficha →</div></div>`, text: 'Toca <b>"Ver ficha"</b> para ver fotos, horarios, servicios y el contacto del taller.' },
+      { screen: `<div style="text-align:center;"><div style="font-size:32px;margin-bottom:8px;">⭐</div><div style="font-size:13px;color:#fff;font-weight:700;margin-bottom:10px;">¿Cómo fue tu experiencia?</div><div style="display:flex;gap:4px;justify-content:center;">★★★★☆</div></div>`, text: 'Crea una cuenta gratis como cliente para <b>dejar reseñas</b> y ayudar a otros usuarios.' }
+    ]
+  },
+  taller: {
+    title: 'Registrar mi taller',
+    desc: '30 días gratis, sin tarjeta de crédito',
+    steps: [
+      { screen: `<div style="text-align:center;"><div style="background:var(--black2);border:1px solid var(--border);border-radius:10px;padding:14px 20px;display:inline-block;"><div style="font-size:11px;color:var(--muted);margin-bottom:10px;">Iniciar sesión</div><div style="display:flex;gap:8px;margin-bottom:10px;"><div style="background:var(--black3);border:1px solid var(--border);border-radius:6px;padding:5px 12px;font-size:10px;color:var(--dim);">Soy cliente</div><div style="background:var(--red);border-radius:6px;padding:5px 12px;font-size:10px;color:#fff;">Soy taller ✓</div></div></div></div>`, text: 'Toca <b>"Iniciar sesión"</b> arriba a la derecha y selecciona <b>"Soy taller"</b>. Luego crea tu cuenta.' },
+      { screen: `<div style="width:100%;"><div style="display:flex;justify-content:space-between;margin-bottom:10px;">${[1,2,3,4].map((n,i)=>'<div style="width:24px;height:24px;border-radius:50%;background:'+(i===0?'var(--red)':'var(--black2)')+';border:1px solid '+(i===0?'var(--red)':'var(--border)')+';display:flex;align-items:center;justify-content:center;font-size:10px;color:'+(i===0?'#fff':'var(--muted)')+';">'+n+'</div>').join('')}</div><div style="background:var(--black2);border-radius:8px;padding:10px;"><div style="font-size:9px;color:var(--muted);margin-bottom:4px;">NOMBRE DEL TALLER</div><div style="background:var(--black3);border-radius:4px;padding:5px 8px;font-size:10px;color:var(--dim);">Automotriz El Maestro</div></div></div>`, text: 'Completa los <b>4 pasos</b>: nombre del taller, especialidad, ubicación GPS y servicios que ofreces.' },
+      { screen: `<div style="text-align:center;"><div style="font-size:32px;margin-bottom:8px;">📍</div><div style="background:var(--red);border-radius:8px;padding:8px 16px;font-size:11px;color:#fff;display:inline-block;margin-bottom:8px;">Capturar mi ubicación GPS</div><div style="font-size:10px;color:var(--muted);">✓ Ubicación capturada</div></div>`, text: 'Toca <b>"Capturar mi ubicación GPS"</b> para aparecer en el mapa y que los clientes te encuentren.' },
+      { screen: `<div style="text-align:center;"><div style="font-size:32px;margin-bottom:8px;">📷</div><div style="font-size:12px;color:#fff;font-weight:700;margin-bottom:6px;">Sube tus fotos</div><div style="display:flex;gap:6px;justify-content:center;"><div style="width:50px;height:50px;border-radius:8px;background:var(--black2);border:1px dashed var(--border);display:flex;align-items:center;justify-content:center;font-size:18px;">🏪</div><div style="width:50px;height:50px;border-radius:8px;background:var(--black2);border:1px dashed var(--border);display:flex;align-items:center;justify-content:center;font-size:18px;">🔧</div><div style="width:50px;height:50px;border-radius:8px;background:var(--black2);border:1px dashed var(--border);display:flex;align-items:center;justify-content:center;font-size:18px;">+</div></div></div>`, text: 'Desde tu panel en "Mi ficha" sube una <b>foto de portada</b>, <b>foto de perfil</b> y fotos de trabajos realizados.' },
+      { screen: `<div style="text-align:center;"><div style="font-size:32px;margin-bottom:8px;">🎉</div><div style="font-size:13px;color:#fff;font-weight:700;margin-bottom:6px;">¡Tu taller está listo!</div><div style="background:rgba(232,25,44,.1);border:1px solid var(--red);border-radius:8px;padding:8px 16px;font-size:11px;color:var(--red);">30 días gratis activos</div></div>`, text: '¡Listo! Tu taller aparece de inmediato en el directorio. Después elige un plan desde <b>$9.990/mes</b>.' }
+    ]
+  },
+  planes: {
+    title: 'Planes y precios',
+    desc: 'Elige el plan que más te conviene',
+    steps: [
+      { screen: `<div style="text-align:center;"><div style="font-size:36px;margin-bottom:6px;">🆓</div><div style="font-family:'Bebas Neue';font-size:36px;color:var(--red);">30 DÍAS</div><div style="font-size:11px;color:var(--muted);">Sin tarjeta · Sin compromiso</div></div>`, text: 'Al registrar tu taller tienes <b>30 días completamente gratis</b>. Sin tarjeta ni permanencia.' },
+      { screen: `<div style="background:var(--black2);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center;max-width:160px;margin:0 auto;"><div style="font-size:9px;color:var(--muted);margin-bottom:4px;">PLAN MENSUAL</div><div style="font-family:'Bebas Neue';font-size:36px;color:#fff;">$9.990</div><div style="font-size:10px;color:var(--muted);">/mes</div><div style="margin-top:8px;font-size:9px;color:var(--dim);">Sin permanencia</div></div>`, text: 'El <b>Plan Mensual</b> cuesta $9.990/mes. Sin permanencia, cancela cuando quieras.' },
+      { screen: `<div style="background:var(--black2);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center;max-width:160px;margin:0 auto;"><div style="font-size:9px;color:var(--muted);margin-bottom:4px;">PLAN SEMESTRAL</div><div style="font-family:'Bebas Neue';font-size:36px;color:#fff;">$49.990</div><div style="font-size:10px;color:var(--muted);">/6 meses</div><div style="margin-top:6px;font-size:9px;color:#22c55e;">Ahorras $9.950</div></div>`, text: 'El <b>Plan Semestral</b> son $49.990 por 6 meses. Equivale a $8.332/mes.' },
+      { screen: `<div style="background:linear-gradient(135deg,rgba(232,25,44,.12),var(--black2));border:2px solid var(--red);border-radius:10px;padding:14px;text-align:center;max-width:160px;margin:0 auto;position:relative;"><div style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--red);color:#fff;font-size:8px;font-weight:700;padding:2px 8px;border-radius:20px;white-space:nowrap;">MEJOR VALOR</div><div style="font-size:9px;color:var(--muted);margin-top:6px;margin-bottom:4px;">PLAN ANUAL</div><div style="font-family:'Bebas Neue';font-size:36px;color:#fff;">$89.990</div><div style="font-size:10px;color:var(--muted);">/año</div><div style="margin-top:6px;font-size:9px;color:#22c55e;">Ahorras $29.890</div></div>`, text: 'El <b>Plan Anual</b> es el mejor valor: $89.990 al año, equivale a solo $7.499/mes.' },
+      { screen: `<div style="text-align:center;"><div style="font-size:32px;margin-bottom:8px;">💳</div><div style="font-size:12px;color:#fff;font-weight:700;margin-bottom:8px;">Pago seguro con Mercado Pago</div><div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap;"><div style="background:var(--black2);border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-size:10px;color:var(--dim);">Tarjeta</div><div style="background:var(--black2);border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-size:10px;color:var(--dim);">Débito</div><div style="background:var(--black2);border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-size:10px;color:var(--dim);">Transferencia</div></div></div>`, text: 'El pago se realiza con <b>Mercado Pago</b> — tarjeta de crédito, débito o transferencia bancaria.' }
+    ]
+  }
+};
+
+let currentTutorial = null;
+let currentTutorialStep = 0;
+
+function showTutorial(type){
+  currentTutorial = type;
+  currentTutorialStep = 0;
+  document.getElementById('helpHome').style.display = 'none';
+  document.getElementById('helpTutorial').style.display = 'block';
+  const t = TUTORIALS[type];
+  document.getElementById('tutorialTitle').innerHTML = t.title;
+  document.getElementById('tutorialDesc').innerHTML = t.desc;
+  renderTutorialStep();
+}
+
+function backToHelpHome(){
+  document.getElementById('helpHome').style.display = 'block';
+  document.getElementById('helpTutorial').style.display = 'none';
+}
+
+function renderTutorialStep(){
+  const t = TUTORIALS[currentTutorial];
+  const step = t.steps[currentTutorialStep];
+  const total = t.steps.length;
+  document.getElementById('tutorialScreen').innerHTML = step.screen;
+  document.getElementById('tutorialSteps').innerHTML = `
+    <div style="display:flex;gap:10px;align-items:flex-start;">
+      <div style="width:28px;height:28px;border-radius:50%;background:var(--red);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${currentTutorialStep+1}</div>
+      <div style="font-size:13px;color:var(--dim);line-height:1.6;padding-top:4px;">${step.text}</div>
+    </div>`;
+  document.getElementById('tutorialDots').innerHTML = t.steps.map((_,i) =>
+    `<div style="width:${i===currentTutorialStep?'20px':'8px'};height:8px;border-radius:4px;background:${i===currentTutorialStep?'var(--red)':'var(--border)'};transition:all .3s;"></div>`
+  ).join('');
+  document.getElementById('tutPrev').style.opacity = currentTutorialStep === 0 ? '0.3' : '1';
+  document.getElementById('tutPrev').disabled = currentTutorialStep === 0;
+  const nextBtn = document.getElementById('tutNext');
+  if(currentTutorialStep === total - 1){
+    nextBtn.textContent = '¡Entendido! ✓';
+    nextBtn.onclick = toggleHelpModal;
+  } else {
+    nextBtn.textContent = 'Siguiente ›';
+    nextBtn.onclick = () => tutorialNav(1);
+  }
+}
+
+function tutorialNav(dir){
+  const t = TUTORIALS[currentTutorial];
+  currentTutorialStep = Math.max(0, Math.min(t.steps.length - 1, currentTutorialStep + dir));
+  renderTutorialStep();
+}
+
+function toggleHelpModal(){
+  const overlay = document.getElementById('helpModalOverlay');
+  overlay.classList.toggle('hidden');
+  if(!overlay.classList.contains('hidden')) backToHelpHome();
+}
+
+document.getElementById('helpModalOverlay')?.addEventListener('click', function(e){
+  if(e.target === this) toggleHelpModal();
+});
+
 </script>
 
 <!-- BOTÓN AYUDA -->
@@ -3302,51 +3400,65 @@ window.addEventListener('appinstalled', () => {
 <div id="helpModalOverlay" class="help-modal-overlay hidden">
   <div class="help-modal">
     <button class="help-close" onclick="toggleHelpModal()">×</button>
-    <div class="help-modal-title">¿Cómo podemos ayudarte?</div>
-    <div class="help-modal-sub">Selecciona el tema que necesitas</div>
 
-    <!-- Card usuario -->
-    <div class="help-card" onclick="toggleHelpSteps('stepsUsuario', this)">
-      <div class="help-card-title">👤 Cómo buscar un taller como usuario</div>
-      <div class="help-card-desc">Encuentra talleres cerca de ti, filtra por especialidad y deja reseñas</div>
-      <div class="help-steps" id="stepsUsuario">
-        <div class="help-step"><div class="help-step-num">1</div><div class="help-step-text">Abre <b>panne.cl</b> desde tu celular o computador.</div></div>
-        <div class="help-step"><div class="help-step-num">2</div><div class="help-step-text">Toca <b>"Tu ubicación actual"</b> para ver los talleres más cercanos a ti.</div></div>
-        <div class="help-step"><div class="help-step-num">3</div><div class="help-step-text">Usa los filtros de <b>especialidad</b> (Mecánica, Vulcanización, etc.) y <b>ciudad</b> para afinar la búsqueda.</div></div>
-        <div class="help-step"><div class="help-step-num">4</div><div class="help-step-text">Toca <b>"Ver ficha"</b> en cualquier taller para ver detalles, fotos, horarios y reseñas.</div></div>
-        <div class="help-step"><div class="help-step-num">5</div><div class="help-step-text">Si quieres dejar una reseña, crea una cuenta gratuita tocando <b>"Iniciar sesión"</b> → <b>"Soy cliente"</b>.</div></div>
+    <!-- Selector de tema -->
+    <div id="helpHome">
+      <div class="help-modal-title">¿Cómo podemos ayudarte?</div>
+      <div class="help-modal-sub">Selecciona el tema que necesitas</div>
+      <div class="help-card" onclick="showTutorial('usuario')">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="width:42px;height:42px;border-radius:10px;background:rgba(232,25,44,.12);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">👤</div>
+          <div><div class="help-card-title">Cómo buscar un taller</div><div class="help-card-desc">Encuentra talleres cerca de ti y deja reseñas</div></div>
+          <div style="margin-left:auto;color:var(--muted);font-size:18px;">›</div>
+        </div>
+      </div>
+      <div class="help-card" onclick="showTutorial('taller')">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="width:42px;height:42px;border-radius:10px;background:rgba(232,25,44,.12);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">🔧</div>
+          <div><div class="help-card-title">Cómo registrar mi taller</div><div class="help-card-desc">Crea tu ficha gratis con 30 días de prueba</div></div>
+          <div style="margin-left:auto;color:var(--muted);font-size:18px;">›</div>
+        </div>
+      </div>
+      <div class="help-card" onclick="showTutorial('planes')">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="width:42px;height:42px;border-radius:10px;background:rgba(232,25,44,.12);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">💳</div>
+          <div><div class="help-card-title">Planes y precios</div><div class="help-card-desc">Mensual, semestral y anual desde $9.990</div></div>
+          <div style="margin-left:auto;color:var(--muted);font-size:18px;">›</div>
+        </div>
+      </div>
+      <div class="help-contact">
+        ¿Otra consulta? <a href="mailto:panne.chile@gmail.com">panne.chile@gmail.com</a>
       </div>
     </div>
 
-    <!-- Card taller -->
-    <div class="help-card" onclick="toggleHelpSteps('stepsTaller', this)">
-      <div class="help-card-title">🔧 Cómo registrar mi taller</div>
-      <div class="help-card-desc">Crea tu ficha gratis y llega a más clientes en toda Chile</div>
-      <div class="help-steps" id="stepsTaller">
-        <div class="help-step"><div class="help-step-num">1</div><div class="help-step-text">Toca <b>"Iniciar sesión"</b> en la esquina superior derecha.</div></div>
-        <div class="help-step"><div class="help-step-num">2</div><div class="help-step-text">Selecciona <b>"Soy taller"</b> y luego <b>"Crear cuenta"</b> con tu correo y una contraseña.</div></div>
-        <div class="help-step"><div class="help-step-num">3</div><div class="help-step-text">Completa el formulario de 4 pasos: nombre, especialidad, ubicación GPS y servicios.</div></div>
-        <div class="help-step"><div class="help-step-num">4</div><div class="help-step-text">Sube una <b>foto de portada</b> y una <b>foto de perfil</b> desde el panel → Mi ficha.</div></div>
-        <div class="help-step"><div class="help-step-num">5</div><div class="help-step-text">Tu taller aparece de inmediato en el directorio con <b>30 días gratis</b>. Después puedes contratar un plan desde $9.990/mes.</div></div>
+    <!-- Tutorial animado -->
+    <div id="helpTutorial" style="display:none;">
+      <button onclick="backToHelpHome()" style="background:none;border:none;color:var(--muted);font-size:13px;cursor:pointer;margin-bottom:16px;display:flex;align-items:center;gap:6px;">‹ Volver</button>
+      <div id="tutorialTitle" class="help-modal-title" style="font-size:20px;margin-bottom:4px;"></div>
+      <div id="tutorialDesc" style="font-size:12px;color:var(--muted);margin-bottom:20px;"></div>
+
+      <!-- Pantalla animada -->
+      <div style="background:var(--black3);border-radius:12px;border:1px solid var(--border);overflow:hidden;margin-bottom:20px;">
+        <div style="background:#1a1a1a;padding:8px 12px;display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--border);">
+          <div style="width:10px;height:10px;border-radius:50%;background:#ff5f57;"></div>
+          <div style="width:10px;height:10px;border-radius:50%;background:#febc2e;"></div>
+          <div style="width:10px;height:10px;border-radius:50%;background:#28c840;"></div>
+          <div style="flex:1;background:var(--black2);border-radius:4px;padding:3px 8px;font-size:10px;color:var(--muted);text-align:center;">panne.cl</div>
+        </div>
+        <div id="tutorialScreen" style="height:160px;display:flex;align-items:center;justify-content:center;padding:16px;"></div>
+      </div>
+
+      <!-- Pasos -->
+      <div id="tutorialSteps"></div>
+
+      <!-- Navegación -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:16px;">
+        <button id="tutPrev" onclick="tutorialNav(-1)" style="background:var(--card);border:1px solid var(--border);color:var(--dim);padding:8px 16px;border-radius:8px;font-size:13px;cursor:pointer;">‹ Anterior</button>
+        <div id="tutorialDots" style="display:flex;gap:6px;"></div>
+        <button id="tutNext" onclick="tutorialNav(1)" style="background:var(--red);border:none;color:#fff;padding:8px 16px;border-radius:8px;font-size:13px;cursor:pointer;font-weight:600;">Siguiente ›</button>
       </div>
     </div>
 
-    <!-- Card suscripción -->
-    <div class="help-card" onclick="toggleHelpSteps('stepsSuscripcion', this)">
-      <div class="help-card-title">💳 Planes y suscripción</div>
-      <div class="help-card-desc">Información sobre precios y cómo mantenerse activo en el directorio</div>
-      <div class="help-steps" id="stepsSuscripcion">
-        <div class="help-step"><div class="help-step-num">1</div><div class="help-step-text"><b>30 días gratis</b> al registrar tu taller, sin tarjeta de crédito.</div></div>
-        <div class="help-step"><div class="help-step-num">2</div><div class="help-step-text"><b>Plan mensual:</b> $9.990/mes — sin permanencia, cancela cuando quieras.</div></div>
-        <div class="help-step"><div class="help-step-num">3</div><div class="help-step-text"><b>Plan semestral:</b> $49.990 — equivale a $8.332/mes, ahorras $9.950.</div></div>
-        <div class="help-step"><div class="help-step-num">4</div><div class="help-step-text"><b>Plan anual:</b> $89.990 — equivale a $7.499/mes, el mejor valor.</div></div>
-        <div class="help-step"><div class="help-step-num">5</div><div class="help-step-text">El pago se realiza con <b>Mercado Pago</b> — tarjeta, débito o transferencia.</div></div>
-      </div>
-    </div>
-
-    <div class="help-contact">
-      ¿Tienes otra consulta? Escríbenos a <a href="mailto:hola@panne.cl">hola@panne.cl</a>
-    </div>
   </div>
 </div>
 </body>
