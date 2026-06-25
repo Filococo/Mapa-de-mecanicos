@@ -1135,6 +1135,12 @@ footer{
     <div class="search-hero">
       <h1 class="bebas">Encuentra tu taller<br><span>de confianza</span></h1>
       <p>El directorio de talleres mecánicos y vulcanizadoras más completo de Chile — de Arica a Punta Arenas.</p>
+      <!-- Banner Pro dentro del hero -->
+      <div id="proBannerWrap" style="display:none;margin-bottom:14px;">
+        <div id="proBanner" class="pro-banner" onclick="abrirTallerPro()" style="height:110px;border-radius:10px;"></div>
+        <div class="pro-dots" id="proDots" style="margin-top:6px;"></div>
+      </div>
+
       <div class="search-row">
         <input type="text" class="search-input" id="searchInput" placeholder="Buscar por nombre, especialidad o ciudad…" autocomplete="off">
         <button class="btn-search" onclick="applySearch()">Buscar</button>
@@ -1160,13 +1166,7 @@ footer{
       </div>
     </div>
 
-    <div class="stats-row">
-      <div class="stat-tag"><span class="dot"></span><span id="resultCount">Cargando…</span></div>
-      <div class="stat-tag">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-        <span id="locStatus">Activando GPS…</span>
-      </div>
-    </div>
+
 
     <!-- Por qué PANNE -->
     <div class="why-panne">
@@ -1200,12 +1200,6 @@ footer{
       <button class="chip" data-filter="Eléctrico Automotriz">Eléctrico</button>
       <button class="chip" data-filter="Diésel">Diésel</button>
       <button class="chip" data-filter="Vulcanización">Vulcanización</button>
-    </div>
-
-    <!-- Banner talleres Pro destacados -->
-    <div id="proBannerWrap" style="display:none;">
-      <div id="proBanner" class="pro-banner" onclick="abrirTallerPro()"></div>
-      <div class="pro-dots" id="proDots"></div>
     </div>
 
     <!-- Banner CTA talleres -->
