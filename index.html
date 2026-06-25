@@ -1948,7 +1948,7 @@ async function openProfile(id){
 
   // Registrar visita (solo si no es el propio mecánico viendo su perfil)
   if(!currentSession || currentSession.user.id !== id){
-    sb.rpc('increment_visit_count', { taller_id: id }).catch(()=>{});
+    try { await sb.rpc('increment_visit_count', { taller_id: id }); } catch(e){}
   }
   // Actualizar rating y count con datos reales
   if(m.reviews_list.length > 0){
