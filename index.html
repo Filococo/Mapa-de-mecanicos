@@ -1877,8 +1877,8 @@ async function loadMechanicsFromSupabase(){
     renderGrid();
     renderMapList();
     cargarEstadisticasHero();
-    renderProBanner();
     console.log('PANNE: ' + mechanics.length + ' negocios cargados');
+    renderProBanner();
 
   } catch(err) {
     console.error('Error inesperado:', err.message);
