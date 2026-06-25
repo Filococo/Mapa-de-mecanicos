@@ -1107,6 +1107,25 @@ footer{
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
         <span id="locLabel">Ubicación</span>
       </button>
+
+      <!-- Badge Google Play -->
+      <button onclick="mostrarModalTienda('android')" style="background:#000;border:1px solid #333;border-radius:8px;padding:5px 10px;cursor:pointer;display:flex;align-items:center;gap:6px;height:34px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="#fff"><path d="M3 20.5v-17c0-.83 1-1.3 1.6-.75l14 8.5c.55.33.55 1.17 0 1.5l-14 8.5c-.6.55-1.6.08-1.6-.75z"/></svg>
+        <div style="text-align:left;line-height:1.1;">
+          <div style="font-size:8px;color:#aaa;font-family:'Inter';">Disponible en</div>
+          <div style="font-size:11px;color:#fff;font-family:'Inter';font-weight:600;">Google Play</div>
+        </div>
+      </button>
+
+      <!-- Badge App Store -->
+      <button onclick="mostrarModalTienda('ios')" style="background:#000;border:1px solid #333;border-radius:8px;padding:5px 10px;cursor:pointer;display:flex;align-items:center;gap:6px;height:34px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="#fff"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+        <div style="text-align:left;line-height:1.1;">
+          <div style="font-size:8px;color:#aaa;font-family:'Inter';">Descargar en</div>
+          <div style="font-size:11px;color:#fff;font-family:'Inter';font-weight:600;">App Store</div>
+        </div>
+      </button>
+
       <button class="btn-icon primary" id="installBtn">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
         <span>Instalar</span>
@@ -1118,6 +1137,14 @@ footer{
     </div>
   </div>
 </header>
+
+<!-- Modal tiendas -->
+<div id="tiendaModalOverlay" class="modal-overlay hidden" onclick="if(event.target===this)this.classList.add('hidden')">
+  <div class="modal" style="max-width:400px;">
+    <button onclick="document.getElementById('tiendaModalOverlay').classList.add('hidden')" class="modal-close">×</button>
+    <div id="tiendaModalContent"></div>
+  </div>
+</div>
 
 <!-- NAV TABS -->
 <nav class="nav-tabs">
@@ -3758,6 +3785,50 @@ function mostrarProBanner(idx){
 function abrirTallerPro(){
   const t = talleresPro[proBannerIndex];
   if(t) openProfile(t.id);
+}
+
+
+/* ===== MODAL TIENDAS ===== */
+function mostrarModalTienda(tipo){
+  const overlay = document.getElementById('tiendaModalOverlay');
+  const contenido = document.getElementById('tiendaModalContent');
+  
+  if(tipo === 'android'){
+    contenido.innerHTML = `
+      <div style="text-align:center;padding:10px 0 20px;">
+        <div style="font-size:48px;margin-bottom:12px;">🤖</div>
+        <div style="font-family:'Bebas Neue';font-size:24px;color:var(--white);margin-bottom:8px;">PANNE en Android</div>
+        <p style="color:var(--muted);font-size:13px;margin-bottom:20px;line-height:1.6;">PANNE estará disponible próximamente en Google Play Store. Mientras tanto, puedes instalarla directamente desde Chrome:</p>
+        <div style="background:var(--black3);border-radius:10px;padding:16px;text-align:left;margin-bottom:16px;">
+          <div style="font-size:12px;color:var(--dim);line-height:1.8;">
+            1. Abre <b style="color:var(--white);">panne.cl</b> en Chrome<br>
+            2. Toca los <b style="color:var(--white);">3 puntos</b> arriba a la derecha<br>
+            3. Selecciona <b style="color:var(--white);">"Instalar app"</b> o <b style="color:var(--white);">"Agregar a pantalla de inicio"</b><br>
+            4. Confirma tocando <b style="color:var(--white);">"Instalar"</b>
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:16px;">📧 ¿Quieres que te avisemos cuando esté en Play Store?</div>
+        <a href="mailto:contacto@panne.cl?subject=Avísenme cuando PANNE esté en Play Store" style="display:block;background:var(--red);color:#fff;border-radius:8px;padding:10px;font-size:13px;font-weight:700;text-decoration:none;">Notifícame →</a>
+      </div>`;
+  } else {
+    contenido.innerHTML = `
+      <div style="text-align:center;padding:10px 0 20px;">
+        <div style="font-size:48px;margin-bottom:12px;">🍎</div>
+        <div style="font-family:'Bebas Neue';font-size:24px;color:var(--white);margin-bottom:8px;">PANNE en iPhone</div>
+        <p style="color:var(--muted);font-size:13px;margin-bottom:20px;line-height:1.6;">PANNE estará disponible próximamente en App Store. Mientras tanto, puedes instalarla desde Safari:</p>
+        <div style="background:var(--black3);border-radius:10px;padding:16px;text-align:left;margin-bottom:16px;">
+          <div style="font-size:12px;color:var(--dim);line-height:1.8;">
+            1. Abre <b style="color:var(--white);">panne.cl</b> en Safari<br>
+            2. Toca el botón <b style="color:var(--white);">Compartir</b> (cuadrado con flecha)<br>
+            3. Selecciona <b style="color:var(--white);">"Agregar a pantalla de inicio"</b><br>
+            4. Confirma tocando <b style="color:var(--white);">"Agregar"</b>
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:16px;">📧 ¿Quieres que te avisemos cuando esté en App Store?</div>
+        <a href="mailto:contacto@panne.cl?subject=Avísenme cuando PANNE esté en App Store" style="display:block;background:#000;color:#fff;border-radius:8px;padding:10px;font-size:13px;font-weight:700;text-decoration:none;">Notifícame →</a>
+      </div>`;
+  }
+  overlay.classList.remove('hidden');
 }
 
 </script>
