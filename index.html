@@ -1945,6 +1945,11 @@ async function openProfile(id){
     .eq('mecanico_id', id)
     .order('created_at', { ascending: false });
   m.reviews_list = resenasData || [];
+
+  // Registrar visita (solo si no es el propio mecánico viendo su perfil)
+  if(!currentSession || currentSession.user.id !== id){
+    sb.rpc('increment_visit_count', { taller_id: id }).catch(()=>{});
+  }
   // Actualizar rating y count con datos reales
   if(m.reviews_list.length > 0){
     m.rating = m.reviews_list.reduce((s, r) => s + (r.stars||0), 0) / m.reviews_list.length;
@@ -2814,7 +2819,9 @@ async function mostrarPanelMecanico() {
       ? (resenas.reduce((s, r) => s + (r.stars||r.rating||0), 0) / totalResenas).toFixed(1)
       : '—';
 
-    document.getElementById('statVisitas').textContent = '—';
+    // Cargar visitas reales
+    const { data: visData } = await sb.from('mecanicos').select('visit_count').eq('id', uid).single();
+    document.getElementById('statVisitas').textContent = visData?.visit_count || 0;
     document.getElementById('statResenas').textContent = totalResenas;
     document.getElementById('statRating').textContent = avgRating > 0 ? '★ ' + avgRating : '—';
 
