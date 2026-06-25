@@ -2027,7 +2027,8 @@ function renderGrid(){
   const clearBtn = document.getElementById('clearFiltersBtn');
   if(clearBtn) clearBtn.style.display = hasFilters ? 'block' : 'none';
 
-  document.getElementById('resultCount').textContent = `${filtered.length} talleres registrados`;
+  const resultCountEl = document.getElementById('resultCount');
+  if(resultCountEl) resultCountEl.textContent = `${filtered.length} talleres registrados`;
 
   if(mechanics.length === 0){
     grid.innerHTML = `<div class="empty"><div class="bebas">Cargando talleres…</div><p>Conectando con la base de datos. Si esto no desaparece en 5 segundos, <a href="javascript:location.reload()" style="color:var(--red)">recarga la página</a>.</p></div>`;
