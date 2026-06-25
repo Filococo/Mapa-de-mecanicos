@@ -1027,6 +1027,10 @@ footer{
 
 /* ===== RESPONSIVE MÓVIL ===== */
 @media(max-width:900px){
+  .store-badge-wrap button div{display:none;}
+  .store-badge-wrap button{padding:7px 9px;}
+}
+@media(max-width:480px){
   .store-badge-wrap{display:none !important;}
 }
 @media(max-width:480px){
@@ -1036,6 +1040,9 @@ footer{
   .btn-icon{padding:7px 9px;}
   .topbar-right{gap:4px;}
   .store-badge-wrap{display:none;}
+  .pro-banner{height:auto;min-height:150px;}
+  .pro-banner-content{padding:10px 12px;}
+  .pro-banner-btn{font-size:10px;padding:5px 8px;}
   .search-hero{padding:14px;}
   .search-row{flex-direction:column;}
   .btn-search{width:100%;}
@@ -3738,7 +3745,7 @@ function renderProBanner(){
       tipo: 'promo',
       titulo: '🔧 ¿Eres taller mecánico?',
       texto: 'Llega a miles de conductores en Chile. Regístrate gratis y activa tu ficha hoy.',
-      sub: 'PANNE · 475 talleres · 98 ciudades',
+      sub: '475 talleres · 98 ciudades',
       color: 'linear-gradient(135deg, #1a0a0a, #3d0000)',
       btn: 'Registrar mi taller →',
       accion: "document.querySelector('[data-tab=\'perfil-mecanico\']').click()"
@@ -3747,7 +3754,7 @@ function renderProBanner(){
       tipo: 'promo',
       titulo: '⭐ Plan Mensual desde $9.990',
       texto: 'Aparece en el directorio, recibe reseñas verificadas y destaca sobre la competencia.',
-      sub: '30 días gratis · Sin tarjeta · Sin permanencia',
+      sub: '30 días gratis · Sin permanencia',
       color: 'linear-gradient(135deg, #0a0a1a, #00003d)',
       btn: 'Ver planes →',
       accion: "document.querySelector('[data-tab=\'perfil-mecanico\']').click()"
@@ -3756,7 +3763,7 @@ function renderProBanner(){
       tipo: 'promo',
       titulo: '💳 Plan Anual — Mejor valor',
       texto: '$89.990 al año. Equivale a solo $7.499/mes. Ahorra $29.890 vs plan mensual.',
-      sub: 'Mercado Pago · Pago seguro · Cancela cuando quieras',
+      sub: 'Pago seguro con Mercado Pago',
       color: 'linear-gradient(135deg, #1a0800, #3d1500)',
       btn: 'Contratar ahora →',
       accion: "document.querySelector('[data-tab=\'perfil-mecanico\']').click()"
