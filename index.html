@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCTYPE html><!-- PANNE v2.1 -->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -1142,7 +1142,7 @@ footer{
       <!-- Stats dinámicas -->
       <div class="hero-stats">
         <div class="hero-stat">
-          <div class="hero-stat-num" id="heroTalleres">—</div>
+          <div class="hero-stat-num" id="heroTalleres">477</div>
           <div class="hero-stat-label">Talleres registrados</div>
         </div>
         <div class="hero-stat">
@@ -1877,7 +1877,8 @@ async function loadMechanicsFromSupabase(){
     renderGrid();
     renderMapList();
     cargarEstadisticasHero();
-    console.log('PANNE: ' + mechanics.length + ' negocios cargados');
+    console.log('PANNE v2.1: ' + mechanics.length + ' negocios cargados');
+    console.log('Iniciando banner Pro...');
     renderProBanner();
     const heroT = document.getElementById('heroTalleres');
     if(heroT) heroT.textContent = mechanics.length;
