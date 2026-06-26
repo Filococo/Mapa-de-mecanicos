@@ -1511,6 +1511,10 @@ footer{
         <h2>¡Ficha creada!</h2>
         <p>Tu taller ya está en PANNE. Los primeros 30 días son gratis — sin tarjeta, sin permanencia.</p>
         <div class="success-summary" id="successSummary"></div>
+        <button onclick="document.getElementById('soyMecanicoSuccess').classList.add('hidden');mostrarPanelMecanico();" style="margin-top:18px;background:#E8192C;color:#fff;border:none;border-radius:8px;padding:12px 24px;font-size:13px;font-weight:700;cursor:pointer;">
+          Ir a mi panel →
+        </button>
+        <p style="font-size:11px;color:var(--muted);margin-top:8px;">Redirigiendo automáticamente…</p>
       </div>
     </div>
 
@@ -1807,7 +1811,7 @@ async function abrirDropdownPerfil(){
   document.getElementById('dropEmail').textContent = email;
 
   // Buscar datos del taller si es mecánico
-  const { data: mec } = await sb.from('mecanicos').select('name, avatar_url, es_pro, created_at').eq('id', uid).maybeSingle();
+  const { data: mec, error: mecError } = await sb.from('mecanicos').select('name, avatar_url, es_pro, created_at').eq('id', uid).limit(1).maybeSingle(); if(mecError) console.error('Dropdown mec error:', mecError);
 
   const dropAvatar = document.getElementById('dropAvatar');
   const dropNombre = document.getElementById('dropNombre');
@@ -1828,7 +1832,7 @@ async function abrirDropdownPerfil(){
     dropPanelBtn.style.display = 'block';
     dropPanelBtn.onclick = () => {
       document.getElementById('userDropdown').style.display = 'none';
-      document.querySelector('[data-tab="perfil-mecanico"]')?.click();
+      document.getElementById('mechPanelBtn')?.click();
     };
 
     // Estado Pro
@@ -1859,7 +1863,7 @@ async function abrirDropdownPerfil(){
       dropPlanInfo.innerHTML = `
         <div style="margin-bottom:6px;">Sin plan activo</div>
         <div style="color:#888;">Taller registrado hace ${dias} día${dias !== 1 ? 's' : ''}</div>
-        <button onclick="document.getElementById('userDropdown').style.display='none';document.querySelector('[data-tab="perfil-mecanico"]')?.click();setTimeout(()=>document.querySelector('[data-panel=suscripcion]')?.click(),300);" style="margin-top:8px;background:#E8192C;border:none;border-radius:6px;padding:6px 12px;color:#fff;font-size:11px;font-weight:700;cursor:pointer;width:100%;">
+        <button onclick="document.getElementById('userDropdown').style.display='none';document.getElementById('mechPanelBtn')?.click();setTimeout(()=>document.querySelector('[data-panel=suscripcion]')?.click(),300);" style="margin-top:8px;background:#E8192C;border:none;border-radius:6px;padding:6px 12px;color:#fff;font-size:11px;font-weight:700;cursor:pointer;width:100%;">
           ⭐ Activar Plan Pro
         </button>
       `;
@@ -3061,6 +3065,12 @@ async function submitMecanicoForm(){
   document.getElementById('soyMecanicoForm').classList.add('hidden');
   document.getElementById('soyMecanicoSuccess').classList.remove('hidden');
   window.scrollTo({top:0, behavior:'smooth'});
+
+  // Redirigir al panel automáticamente después de 2.5 segundos
+  setTimeout(() => {
+    document.getElementById('soyMecanicoSuccess').classList.add('hidden');
+    mostrarPanelMecanico();
+  }, 2500);
 }
 
 // Pre-cargar un servicio vacío al entrar al paso 3 por primera vez
