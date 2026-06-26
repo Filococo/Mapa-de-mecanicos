@@ -3124,19 +3124,46 @@ function renderPlanes(destacar) {
   `;
 }
 
-function iniciarPago(plan) {
-  const links = {
-    mensual:   'https://mpago.la/2r6AJUV',
-    semestral: 'https://mpago.la/2dJEdgh',
-    anual:     'https://mpago.la/1RFT99m'
-  };
+async function iniciarPago(plan) {
   const info = {
     mensual:   '$9.990/mes',
     semestral: '$49.990 por 6 meses',
     anual:     '$89.990 por 1 año'
   };
+
+  const user = supabase.auth.getUser ? (await supabase.auth.getUser()).data?.user : null;
+  if (!user) {
+    alert('Debes iniciar sesión para suscribirte.');
+    return;
+  }
+
   const ok = confirm(`Plan ${plan.charAt(0).toUpperCase()+plan.slice(1)}: ${info[plan]}\n\nSerás redirigido a Mercado Pago para completar el pago de forma segura.\n¿Continuar?`);
-  if(ok) window.open(links[plan], '_blank');
+  if (!ok) return;
+
+  // Mostrar loading
+  const btn = document.querySelector(`button[onclick="iniciarPago('${plan}')"]`);
+  if (btn) { btn.textContent = 'Cargando...'; btn.disabled = true; }
+
+  try {
+    const res = await fetch('https://vdkvbwlzjrqcmegkxslp.supabase.co/functions/v1/mp-crear-preferencia', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mecanicoId: user.id, plan })
+    });
+
+    const data = await res.json();
+
+    if (data.init_point) {
+      window.open(data.init_point, '_blank');
+    } else {
+      alert('Error al generar el link de pago. Intenta de nuevo.');
+    }
+  } catch (err) {
+    console.error('Error iniciarPago:', err);
+    alert('Error de conexión. Intenta de nuevo.');
+  } finally {
+    if (btn) { btn.textContent = 'Suscribirme'; btn.disabled = false; }
+  }
 }
 
 /* ====================== NOTIFICACIONES DE RESEÑAS ====================== */
