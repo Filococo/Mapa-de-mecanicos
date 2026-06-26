@@ -1245,6 +1245,7 @@ footer{
       <button class="chip" data-filter="Eléctrico Automotriz">Eléctrico</button>
       <button class="chip" data-filter="Diésel">Diésel</button>
       <button class="chip" data-filter="Vulcanización">Vulcanización</button>
+      <button class="chip" data-filter="Grúa 24hrs">🚛 Grúa 24hrs</button>
     </div>
 
     <!-- Banner CTA talleres -->
@@ -1375,6 +1376,7 @@ footer{
                   <option>Climatización</option>
                   <option>Diésel</option>
                   <option>Vulcanización</option>
+                  <option>Grúa 24hrs</option>
                 </select>
               </label>
               <label class="form-label">Años de experiencia
@@ -1540,6 +1542,7 @@ footer{
                   <option>Climatización</option>
                   <option>Diésel</option>
                   <option>Vulcanización</option>
+                  <option>Grúa 24hrs</option>
                 </select>
               </label>
               <label class="form-label">Ciudad *
@@ -2101,12 +2104,12 @@ function renderGrid(){
         <div class="card-cover-pattern"></div>
         <div class="card-cover-initial">${initial}</div>
         ${m.cover_url ? `<img src="${m.cover_url}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.7;" loading="lazy" onerror="this.style.display='none'">` : ''}
-        <div class="card-spec-badge">${m.spec.toUpperCase()}</div>
+        <div class="card-spec-badge" style="${m.spec === 'Grúa 24hrs' ? 'background:rgba(255,140,0,.15);color:#FF8C00;border-color:rgba(255,140,0,.3);' : ''}">${m.spec.toUpperCase()}</div>
 
       </div>
       <div class="card-body">
         <div class="card-avatar-row">
-          <div class="avatar" style="overflow:hidden;">${m.avatar_url ? `<img src="${m.avatar_url}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;" loading="lazy" onerror="this.style.display='none'">` : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:55%;height:55%;opacity:.4;"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>`}</div>
+          <div class="avatar" style="overflow:hidden;">${m.avatar_url ? `<img src="${m.avatar_url}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;" loading="lazy" onerror="this.style.display='none'">` : m.spec === 'Grúa 24hrs' ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:60%;height:60%;opacity:.5;"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 4v4h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>` : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:55%;height:55%;opacity:.4;"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>`}</div>
           <div>
             <div class="card-name">${m.name}</div>
             <div class="card-meta">${distTxt || m.city || ""}</div>
