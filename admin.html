@@ -324,6 +324,7 @@ async function logout(){
 async function cargarDatos(){
   document.getElementById('lastUpdate').textContent = 'Actualizando...';
 
+  console.log('Cargando talleres...');
   // Talleres
   const { data: talleres, count: totalTalleres } = await sb
     .from('mecanicos')
@@ -337,6 +338,7 @@ async function cargarDatos(){
     .select('*', { count: 'exact', head: true })
     .eq('es_pro', true);
 
+  console.log('Cargando suscripciones...');
   // Suscripciones
   const { data: subs } = await sb
     .from('suscripciones')
@@ -353,6 +355,7 @@ async function cargarDatos(){
     (nombresData || []).forEach(m => { nombresTalleres[m.id] = m.name; });
   }
 
+  console.log('Cargando reseñas...');
   // Reseñas
   const { data: resenas, count: totalResenas } = await sb
     .from('resenas')
@@ -382,16 +385,14 @@ async function cargarDatos(){
   document.getElementById('kpiCiudades').textContent = ciudades.length;
 
   // Visitas totales a la página
-  const { count: visitasPagina } = await sb
-    .from('visitas_pagina')
-    .select('*', { count: 'exact', head: true });
-
-  // Visitas hoy
-  const hoy = new Date(); hoy.setHours(0,0,0,0);
-  const { count: visitasHoy } = await sb
-    .from('visitas_pagina')
-    .select('*', { count: 'exact', head: true })
-    .gte('created_at', hoy.toISOString());
+  let visitasPagina = 0, visitasHoy = 0;
+  try {
+    const r1 = await sb.from('visitas_pagina').select('*', { count: 'exact', head: true });
+    visitasPagina = r1.count || 0;
+    const hoy = new Date(); hoy.setHours(0,0,0,0);
+    const r2 = await sb.from('visitas_pagina').select('*', { count: 'exact', head: true }).gte('created_at', hoy.toISOString());
+    visitasHoy = r2.count || 0;
+  } catch(e) { console.error('Error visitas:', e); }
 
   const kpiVisitas = document.getElementById('kpiVisitas');
   if(kpiVisitas) kpiVisitas.textContent = (visitasPagina || 0).toLocaleString('es-CL');
