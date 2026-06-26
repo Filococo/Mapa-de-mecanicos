@@ -3646,6 +3646,16 @@ sb.from('mecanicos')
   });
 refreshSession();
 
+// Registrar visita a la página
+(async function registrarVisita(){
+  try {
+    await sb.from('visitas_pagina').insert({
+      referrer: document.referrer || null,
+      ciudad: null
+    });
+  } catch(e) {}
+})();
+
 // Detectar retorno desde Mercado Pago
 (function detectarRetornoPago(){
   const params = new URLSearchParams(window.location.search);
