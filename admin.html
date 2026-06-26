@@ -319,15 +319,19 @@ async function cargarDatos(){
   // Suscripciones
   const { data: subs } = await sb
     .from('suscripciones')
-    .select('*, mecanicos(name)')
+    .select('*')
     .order('created_at', { ascending: false });
 
   // Reseñas
   const { data: resenas, count: totalResenas } = await sb
     .from('resenas')
-    .select('*, mecanicos(name)', { count: 'exact' })
+    .select('*', { count: 'exact' })
     .order('created_at', { ascending: false })
     .limit(20);
+
+  // Mapa de nombres de talleres
+  const nombresTalleres = {};
+  (talleres || []).forEach(t => { nombresTalleres[t.id] = t.name; });
 
   // KPIs
   const talleresPro = talleres?.filter(t => t.es_pro) || [];
@@ -352,7 +356,7 @@ async function cargarDatos(){
       const dias = venc ? Math.ceil((venc - new Date()) / (1000*60*60*24)) : null;
       const estadoBadge = s.estado === 'activo' ? 'badge-activo' : 'badge-vencido';
       return `<tr>
-        <td style="font-weight:600;">${s.mecanicos?.name || '—'}</td>
+        <td style="font-weight:600;">${nombresTalleres[s.mecanico_id] || '—'}</td>
         <td><span class="badge badge-${s.plan}">${s.plan}</span></td>
         <td><span class="badge ${estadoBadge}">${s.estado}</span></td>
         <td>${s.fecha_inicio ? new Date(s.fecha_inicio).toLocaleDateString('es-CL') : '—'}</td>
@@ -387,7 +391,7 @@ async function cargarDatos(){
   } else {
     tbody3.innerHTML = resenas.map(r => `<tr>
       <td>${r.cliente_nombre || '—'}</td>
-      <td style="font-weight:600;">${r.mecanicos?.name || '—'}</td>
+      <td style="font-weight:600;">${nombresTalleres[r.mecanico_id] || '—'}</td>
       <td><span class="stars">${'⭐'.repeat(r.stars || 0)}</span> ${r.stars || 0}/5</td>
       <td style="color:var(--dim);font-size:12px;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${r.texto || '—'}</td>
       <td style="font-size:12px;color:var(--muted);">${r.created_at ? new Date(r.created_at).toLocaleDateString('es-CL') : '—'}</td>
