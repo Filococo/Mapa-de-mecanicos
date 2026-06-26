@@ -1760,6 +1760,13 @@ let authSelectedRole = 'cliente';
 async function refreshSession(){
   const { data } = await sb.auth.getSession();
   currentSession = data.session;
+  if(currentSession){
+    // Detectar automáticamente si es taller o cliente
+    const { data: mec } = await sb.from('mecanicos').select('id').eq('id', currentSession.user.id).limit(1).maybeSingle();
+    currentUserRole = mec ? 'mecanico' : 'cliente';
+  } else {
+    currentUserRole = null;
+  }
   updateAccountUI();
 }
 
@@ -1828,7 +1835,7 @@ async function abrirDropdownPerfil(){
     dropPanelBtn.style.display = 'block';
     dropPanelBtn.onclick = () => {
       document.getElementById('userDropdown').style.display = 'none';
-      document.getElementById('mechPanelBtn')?.click();
+      document.querySelector('[data-tab="perfil-mecanico"]')?.click();
     };
 
     // Estado Pro
@@ -1859,7 +1866,7 @@ async function abrirDropdownPerfil(){
       dropPlanInfo.innerHTML = `
         <div style="margin-bottom:6px;">Sin plan activo</div>
         <div style="color:#888;">Taller registrado hace ${dias} día${dias !== 1 ? 's' : ''}</div>
-        <button onclick="document.getElementById('userDropdown').style.display='none';document.getElementById('mechPanelBtn')?.click();setTimeout(()=>document.querySelector('[data-panel=suscripcion]')?.click(),300);" style="margin-top:8px;background:#E8192C;border:none;border-radius:6px;padding:6px 12px;color:#fff;font-size:11px;font-weight:700;cursor:pointer;width:100%;">
+        <button onclick="document.getElementById('userDropdown').style.display='none';document.querySelector('[data-tab="perfil-mecanico"]')?.click();setTimeout(()=>document.querySelector('[data-panel=suscripcion]')?.click(),300);" style="margin-top:8px;background:#E8192C;border:none;border-radius:6px;padding:6px 12px;color:#fff;font-size:11px;font-weight:700;cursor:pointer;width:100%;">
           ⭐ Activar Plan Pro
         </button>
       `;
@@ -2431,16 +2438,13 @@ async function openProfile(id){
                 <div class="review-stars">${renderStars(r.stars || r.rating || 0, 13)}</div>
                 <div class="review-text">${r.texto || r.text || ''}</div>
               </div>`).join('') : '<p style="color:var(--muted);font-size:13px;">Sin reseñas aún. ¡Sé el primero en calificar!</p>'}
-            ${currentSession && currentUserRole !== 'mecanico' ? `<div class="add-review">
+            ${currentSession ? `<div class="add-review">
               <div class="add-review-label">Deja tu calificación</div>
               <div class="star-picker" id="starPicker">
                 ${[1,2,3,4,5].map(i=>`<span data-val="${i}">${starsSVG(false,22)}</span>`).join('')}
               </div>
               <textarea class="review-input" id="reviewText" placeholder="Cuenta tu experiencia…"></textarea>
               <button class="btn-submit-review" onclick="submitReview('${m.id}')">Publicar reseña</button>
-            </div>` : currentSession && currentUserRole === 'mecanico' ? `<div class="add-review" style="text-align:center;padding:16px;">
-              <div style="font-size:22px;margin-bottom:6px;">🔧</div>
-              <p style="color:var(--muted);font-size:13px;">Los talleres no pueden dejar reseñas en otros talleres.</p>
             </div>` : `<div class="add-review" style="text-align:center;padding:16px;">
               <div style="font-size:22px;margin-bottom:6px;">⭐</div>
               <p style="color:var(--muted);font-size:13px;margin-bottom:12px;">¿Visitaste este taller? <b style="color:var(--white);">Inicia sesión</b> para dejar tu reseña</p>
@@ -2513,10 +2517,6 @@ async function openProfile(id){
 }
 
 async function submitReview(mecanicoId){
-  if(currentUserRole === 'mecanico'){
-    alert('Los talleres no pueden dejar reseñas en otros talleres.');
-    return;
-  }
   const m = mechanics.find(x => x.id === mecanicoId);
   const name = m ? m.name : 'este taller';
   if(!currentSession){
