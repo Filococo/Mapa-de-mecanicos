@@ -473,6 +473,17 @@ async function cancelarPlan(mecanicoId){
 
 // Auto-refresh cada 5 minutos
 setInterval(cargarDatos, 5 * 60 * 1000);
+
+// Verificar sesión activa al cargar
+(async function init(){
+  const { data: { session } } = await sb.auth.getSession();
+  if(session && session.user.email === ADMIN_EMAIL){
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    document.getElementById('adminEmail').textContent = session.user.email;
+    cargarDatos();
+  }
+})();
 </script>
 </body>
 </html>
