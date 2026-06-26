@@ -2290,6 +2290,12 @@ async function openProfile(id){
   if(!m) return;
   selectedStars = 0;
 
+  // Asegurar que el rol esté detectado antes de renderizar
+  if(currentSession && currentUserRole === null){
+    const { data: mec } = await sb.from('mecanicos').select('id').eq('id', currentSession.user.id).limit(1).maybeSingle();
+    currentUserRole = mec ? 'mecanico' : 'cliente';
+  }
+
   // Cargar reseñas reales desde Supabase
   const { data: resenasData } = await sb.from('resenas')
     .select('*')
