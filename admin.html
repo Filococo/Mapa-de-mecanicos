@@ -333,6 +333,16 @@ async function cargarDatos(){
     .select('*')
     .order('created_at', { ascending: false });
 
+  // Nombres de talleres para suscripciones
+  if(subs?.length){
+    const ids = [...new Set(subs.map(s => s.mecanico_id))];
+    const { data: nombresData } = await sb
+      .from('mecanicos')
+      .select('id, name')
+      .in('id', ids);
+    (nombresData || []).forEach(m => { nombresTalleres[m.id] = m.name; });
+  }
+
   // Reseñas
   const { data: resenas, count: totalResenas } = await sb
     .from('resenas')
