@@ -1511,10 +1511,6 @@ footer{
         <h2>¡Ficha creada!</h2>
         <p>Tu taller ya está en PANNE. Los primeros 30 días son gratis — sin tarjeta, sin permanencia.</p>
         <div class="success-summary" id="successSummary"></div>
-        <button onclick="document.getElementById('soyMecanicoSuccess').classList.add('hidden');mostrarPanelMecanico();" style="margin-top:18px;background:#E8192C;color:#fff;border:none;border-radius:8px;padding:12px 24px;font-size:13px;font-weight:700;cursor:pointer;">
-          Ir a mi panel →
-        </button>
-        <p style="font-size:11px;color:var(--muted);margin-top:8px;">Redirigiendo automáticamente…</p>
       </div>
     </div>
 
@@ -1811,7 +1807,7 @@ async function abrirDropdownPerfil(){
   document.getElementById('dropEmail').textContent = email;
 
   // Buscar datos del taller si es mecánico
-  const { data: mec, error: mecError } = await sb.from('mecanicos').select('name, avatar_url, es_pro, created_at').eq('id', uid).limit(1).maybeSingle(); if(mecError) console.error('Dropdown mec error:', mecError);
+  const { data: mec } = await sb.from('mecanicos').select('name, avatar_url, es_pro, created_at').eq('id', uid).maybeSingle();
 
   const dropAvatar = document.getElementById('dropAvatar');
   const dropNombre = document.getElementById('dropNombre');
@@ -2435,13 +2431,16 @@ async function openProfile(id){
                 <div class="review-stars">${renderStars(r.stars || r.rating || 0, 13)}</div>
                 <div class="review-text">${r.texto || r.text || ''}</div>
               </div>`).join('') : '<p style="color:var(--muted);font-size:13px;">Sin reseñas aún. ¡Sé el primero en calificar!</p>'}
-            ${currentSession ? `<div class="add-review">
+            ${currentSession && currentUserRole !== 'mecanico' ? `<div class="add-review">
               <div class="add-review-label">Deja tu calificación</div>
               <div class="star-picker" id="starPicker">
                 ${[1,2,3,4,5].map(i=>`<span data-val="${i}">${starsSVG(false,22)}</span>`).join('')}
               </div>
               <textarea class="review-input" id="reviewText" placeholder="Cuenta tu experiencia…"></textarea>
               <button class="btn-submit-review" onclick="submitReview('${m.id}')">Publicar reseña</button>
+            </div>` : currentSession && currentUserRole === 'mecanico' ? `<div class="add-review" style="text-align:center;padding:16px;">
+              <div style="font-size:22px;margin-bottom:6px;">🔧</div>
+              <p style="color:var(--muted);font-size:13px;">Los talleres no pueden dejar reseñas en otros talleres.</p>
             </div>` : `<div class="add-review" style="text-align:center;padding:16px;">
               <div style="font-size:22px;margin-bottom:6px;">⭐</div>
               <p style="color:var(--muted);font-size:13px;margin-bottom:12px;">¿Visitaste este taller? <b style="color:var(--white);">Inicia sesión</b> para dejar tu reseña</p>
@@ -2514,6 +2513,10 @@ async function openProfile(id){
 }
 
 async function submitReview(mecanicoId){
+  if(currentUserRole === 'mecanico'){
+    alert('Los talleres no pueden dejar reseñas en otros talleres.');
+    return;
+  }
   const m = mechanics.find(x => x.id === mecanicoId);
   const name = m ? m.name : 'este taller';
   if(!currentSession){
@@ -3065,12 +3068,6 @@ async function submitMecanicoForm(){
   document.getElementById('soyMecanicoForm').classList.add('hidden');
   document.getElementById('soyMecanicoSuccess').classList.remove('hidden');
   window.scrollTo({top:0, behavior:'smooth'});
-
-  // Redirigir al panel automáticamente después de 2.5 segundos
-  setTimeout(() => {
-    document.getElementById('soyMecanicoSuccess').classList.add('hidden');
-    mostrarPanelMecanico();
-  }, 2500);
 }
 
 // Pre-cargar un servicio vacío al entrar al paso 3 por primera vez
