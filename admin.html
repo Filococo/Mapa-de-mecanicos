@@ -187,6 +187,11 @@
         <div class="kpi-value" id="kpiCiudades">—</div>
         <div class="kpi-sub">Con cobertura activa</div>
       </div>
+      <div class="kpi-card blue">
+        <div class="kpi-label">Visitas a perfiles</div>
+        <div class="kpi-value" id="kpiVisitas">—</div>
+        <div class="kpi-sub">Total acumulado</div>
+      </div>
     </div>
 
     <!-- Suscripciones activas -->
@@ -314,7 +319,13 @@ async function cargarDatos(){
     .from('mecanicos')
     .select('*', { count: 'exact' })
     .order('created_at', { ascending: false })
-    .limit(50);
+    .limit(1000);
+
+  // Contar Pro directamente
+  const { count: totalPro } = await sb
+    .from('mecanicos')
+    .select('*', { count: 'exact', head: true })
+    .eq('es_pro', true);
 
   // Suscripciones
   const { data: subs } = await sb
@@ -340,11 +351,20 @@ async function cargarDatos(){
   const ciudades = [...new Set(talleres?.map(t => t.city).filter(Boolean))];
 
   document.getElementById('kpiTalleres').textContent = totalTalleres || talleres?.length || 0;
-  document.getElementById('kpiPro').textContent = talleresPro.length;
+  document.getElementById('kpiPro').textContent = totalPro || talleresPro.length;
   document.getElementById('kpiIngresos').textContent = '$' + ingresoEstimado.toLocaleString('es-CL');
-  document.getElementById('kpiUsuarios').textContent = '—';
+  // Contar usuarios auth
+  const { count: totalUsuarios } = await sb
+    .from('mecanicos')
+    .select('*', { count: 'exact', head: true });
+  document.getElementById('kpiUsuarios').textContent = totalUsuarios || '—';
   document.getElementById('kpiResenas').textContent = totalResenas || 0;
   document.getElementById('kpiCiudades').textContent = ciudades.length;
+
+  // Visitas totales
+  const visitasTotal = (talleres || []).reduce((sum, t) => sum + (t.visit_count || 0), 0);
+  const kpiVisitas = document.getElementById('kpiVisitas');
+  if(kpiVisitas) kpiVisitas.textContent = visitasTotal.toLocaleString('es-CL');
 
   // Tabla suscripciones
   const tbody1 = document.getElementById('tablaSuscripciones');
