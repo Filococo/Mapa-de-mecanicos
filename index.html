@@ -2291,7 +2291,7 @@ async function openProfile(id){
   selectedStars = 0;
 
   // Asegurar que el rol esté detectado antes de renderizar
-  if(currentSession && currentUserRole === null){
+  if(currentSession){
     const { data: mec } = await sb.from('mecanicos').select('id').eq('id', currentSession.user.id).limit(1).maybeSingle();
     currentUserRole = mec ? 'mecanico' : 'cliente';
   }
