@@ -3125,13 +3125,18 @@ function renderPlanes(destacar) {
 }
 
 function iniciarPago(plan) {
-  // Por ahora muestra info — se conecta con Mercado Pago en el siguiente paso
-  const info = {
-    mensual: '$9.990/mes',
-    semestral: '$49.990 por 6 meses',
-    anual: '$89.990 por 1 año'
+  const links = {
+    mensual:   'https://link.mercadopago.cl/pannecl',
+    semestral: 'https://link.mercadopago.cl/pannecl',
+    anual:     'https://link.mercadopago.cl/pannecl'
   };
-  alert(`Plan ${plan}: ${info[plan]}\n\nConexión con Mercado Pago próximamente.`);
+  const info = {
+    mensual:   '$9.990/mes',
+    semestral: '$49.990 por 6 meses',
+    anual:     '$89.990 por 1 año'
+  };
+  const ok = confirm(`Plan ${plan.charAt(0).toUpperCase()+plan.slice(1)}: ${info[plan]}\n\nSerás redirigido a Mercado Pago para completar el pago de forma segura.\n¿Continuar?`);
+  if(ok) window.open(links[plan], '_blank');
 }
 
 /* ====================== NOTIFICACIONES DE RESEÑAS ====================== */
