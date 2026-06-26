@@ -2349,13 +2349,15 @@ async function openProfile(id){
         <div class="profile-spec">${m.spec} · ${m.years} años de experiencia</div>
       </div>
       <div class="profile-meta-row">
-        <span class="profile-meta-item" style="cursor:pointer;" ${currentSession ? `onclick="openDirectionsById('${m.id}')"` : `onclick="openAuthModal('cliente')"`}>
+        <span class="profile-meta-item" style="cursor:pointer;" ${currentSession && currentUserRole !== 'mecanico' ? `onclick="openDirectionsById('${m.id}')"` : currentSession && currentUserRole === 'mecanico' ? '' : `onclick="openAuthModal('cliente')"`}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-          ${currentSession ? `<a>${m.address}</a>` : `<span style="color:var(--muted);font-style:italic;">🔒 Ver dirección</span>`}
+          ${currentSession && currentUserRole !== 'mecanico' ? `<a>${m.address}</a>` : currentSession && currentUserRole === 'mecanico' ? `<span style="color:var(--muted);">${m.address}</span>` : `<span style="color:var(--muted);font-style:italic;">🔒 Ver dirección</span>`}
         </span>
-        ${m.phone ? (currentSession ? `<div style="display:flex;gap:8px;margin-top:8px;margin-bottom:4px;">
+        ${m.phone ? (currentSession && currentUserRole !== 'mecanico' ? `<div style="display:flex;gap:8px;margin-top:8px;margin-bottom:4px;">
           <a href="tel:${m.phone}" style="flex:1;background:var(--red);color:#fff;border-radius:8px;padding:10px 0;font-size:13px;font-weight:700;text-align:center;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:6px;">📞 Llamar</a>
           <a href="https://wa.me/${(m.whatsapp||m.phone).replace(/[^0-9]/g,'')}" target="_blank" style="flex:1;background:#25D366;color:#fff;border-radius:8px;padding:10px 0;font-size:13px;font-weight:700;text-align:center;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:6px;">💬 WhatsApp</a>
+        </div>` : currentSession && currentUserRole === 'mecanico' ? `<div style="display:flex;gap:8px;margin-top:8px;margin-bottom:4px;">
+          <div style="flex:1;background:var(--steel);color:var(--muted);border:1px solid var(--border);border-radius:8px;padding:10px 0;font-size:12px;text-align:center;">🔧 Solo clientes pueden contactar talleres</div>
         </div>` : `<div style="display:flex;gap:8px;margin-top:8px;margin-bottom:4px;">
           <button onclick="openAuthModal('cliente')" style="flex:1;background:var(--steel);color:var(--dim);border:1px solid var(--border);border-radius:8px;padding:10px 0;font-size:12px;font-weight:600;cursor:pointer;">🔒 Inicia sesión para llamar</button>
         </div>`) : ''}
