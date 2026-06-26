@@ -1865,7 +1865,7 @@ async function abrirDropdownPerfil(){
       dropPlanInfo.innerHTML = `
         <div style="margin-bottom:6px;">Sin plan activo</div>
         <div style="color:#888;">Taller registrado hace ${dias} día${dias !== 1 ? 's' : ''}</div>
-        <button onclick="document.getElementById('userDropdown').style.display='none';document.querySelector('[data-tab="perfil-mecanico"]')?.click();setTimeout(()=>document.querySelector('[data-panel=suscripcion]')?.click(),300);" style="margin-top:8px;background:#E8192C;border:none;border-radius:6px;padding:6px 12px;color:#fff;font-size:11px;font-weight:700;cursor:pointer;width:100%;">
+        <button onclick="irAActivarPro()" style="margin-top:8px;background:#E8192C;border:none;border-radius:6px;padding:6px 12px;color:#fff;font-size:11px;font-weight:700;cursor:pointer;width:100%;">
           ⭐ Activar Plan Pro
         </button>
       `;
@@ -3274,6 +3274,12 @@ function iniciarPago(plan) {
   };
   const ok = confirm(`Plan ${plan.charAt(0).toUpperCase()+plan.slice(1)}: ${info[plan]}\n\nSerás redirigido a Mercado Pago para completar el pago de forma segura.\n¿Continuar?`);
   if(ok) window.open(links[plan], '_blank');
+}
+
+function irAActivarPro(){
+  document.getElementById('userDropdown').style.display = 'none';
+  document.querySelector('[data-tab="perfil-mecanico"]')?.click();
+  setTimeout(() => document.querySelector('[data-panel="suscripcion"]')?.click(), 400);
 }
 
 /* ====================== NOTIFICACIONES DE RESEÑAS ====================== */
