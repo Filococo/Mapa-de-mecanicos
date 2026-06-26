@@ -1148,10 +1148,38 @@ footer{
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
         <span>Instalar</span>
       </button>
-      <button class="btn-icon primary" id="accountBtn" style="padding:8px 16px;font-size:12px;font-weight:700;letter-spacing:.5px;">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        <span id="accountLabel">Iniciar sesión</span>
-      </button>
+      <div style="position:relative;">
+        <button class="btn-icon primary" id="accountBtn" style="padding:8px 16px;font-size:12px;font-weight:700;letter-spacing:.5px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <span id="accountLabel">Iniciar sesión</span>
+        </button>
+        <div id="userDropdown" style="display:none;position:absolute;top:calc(100% + 8px);right:0;width:260px;background:#1a1a2e;border:1px solid rgba(255,255,255,.12);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.5);z-index:9999;overflow:hidden;">
+          <div style="padding:16px;border-bottom:1px solid rgba(255,255,255,.08);">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div id="dropAvatar" style="width:40px;height:40px;border-radius:50%;background:#E8192C;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;color:#fff;flex-shrink:0;overflow:hidden;"></div>
+              <div style="flex:1;min-width:0;">
+                <div id="dropNombre" style="font-size:13px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
+                <div id="dropEmail" style="font-size:11px;color:#888;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
+              </div>
+            </div>
+          </div>
+          <div id="dropSuscripcion" style="padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.08);">
+            <div id="dropProBadge" style="display:none;background:linear-gradient(135deg,#f0c040,#e8a000);border-radius:6px;padding:6px 10px;margin-bottom:8px;align-items:center;gap:6px;">
+              <span style="font-size:13px;">⭐</span>
+              <span style="font-size:12px;font-weight:700;color:#1a1a2e;">TALLER PRO</span>
+            </div>
+            <div id="dropPlanInfo" style="font-size:11px;color:#aaa;"></div>
+          </div>
+          <div style="padding:8px;">
+            <button id="dropPanelBtn" style="display:none;width:100%;background:rgba(255,255,255,.05);border:none;border-radius:8px;padding:10px 14px;color:#fff;font-size:12px;font-weight:600;cursor:pointer;text-align:left;margin-bottom:4px;" onmouseover="this.style.background='rgba(255,255,255,.1)'" onmouseout="this.style.background='rgba(255,255,255,.05)'">
+              🔧 Mi panel de taller
+            </button>
+            <button onclick="cerrarSesionDesdeDropdown()" style="width:100%;background:rgba(232,25,44,.1);border:1px solid rgba(232,25,44,.3);border-radius:8px;padding:10px 14px;color:#E8192C;font-size:12px;font-weight:600;cursor:pointer;text-align:left;" onmouseover="this.style.background='rgba(232,25,44,.2)'" onmouseout="this.style.background='rgba(232,25,44,.1)'">
+              → Cerrar sesión
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </header>
@@ -1743,20 +1771,116 @@ function updateAccountUI(){
     label.textContent = email.length > 18 ? email.slice(0,16) + '…' : email;
   } else {
     label.textContent = 'Iniciar sesión';
+    document.getElementById('userDropdown').style.display = 'none';
   }
 }
 
+// Dropdown perfil
 document.getElementById('accountBtn')?.addEventListener('click', async () => {
   if(currentSession){
-    if(confirm('¿Cerrar sesión?')){
-      await sb.auth.signOut();
-      currentSession = null;
-      updateAccountUI();
+    const dropdown = document.getElementById('userDropdown');
+    if(dropdown.style.display === 'none'){
+      await abrirDropdownPerfil();
+      dropdown.style.display = 'block';
+    } else {
+      dropdown.style.display = 'none';
     }
   } else {
     openAuthModal('cliente');
   }
 });
+
+// Cerrar dropdown al click fuera
+document.addEventListener('click', (e) => {
+  const wrap = document.getElementById('accountBtn')?.closest('div[style*="position:relative"]');
+  if(wrap && !wrap.contains(e.target)){
+    const dd = document.getElementById('userDropdown');
+    if(dd) dd.style.display = 'none';
+  }
+});
+
+async function abrirDropdownPerfil(){
+  const uid = currentSession?.user?.id;
+  const email = currentSession?.user?.email || '';
+
+  // Email
+  document.getElementById('dropEmail').textContent = email;
+
+  // Buscar datos del taller si es mecánico
+  const { data: mec } = await sb.from('mecanicos').select('name, avatar_url, es_pro, created_at').eq('id', uid).maybeSingle();
+
+  const dropAvatar = document.getElementById('dropAvatar');
+  const dropNombre = document.getElementById('dropNombre');
+  const dropProBadge = document.getElementById('dropProBadge');
+  const dropPlanInfo = document.getElementById('dropPlanInfo');
+  const dropPanelBtn = document.getElementById('dropPanelBtn');
+
+  if(mec){
+    // Es taller
+    dropNombre.textContent = mec.name || email;
+    if(mec.avatar_url){
+      dropAvatar.innerHTML = `<img src="${mec.avatar_url}" style="width:100%;height:100%;object-fit:cover;">`;
+    } else {
+      dropAvatar.textContent = (mec.name || email)[0].toUpperCase();
+    }
+
+    // Panel btn
+    dropPanelBtn.style.display = 'block';
+    dropPanelBtn.onclick = () => {
+      document.getElementById('userDropdown').style.display = 'none';
+      document.getElementById('mechPanelBtn')?.click();
+    };
+
+    // Estado Pro
+    if(mec.es_pro){
+      dropProBadge.style.display = 'flex';
+      // Buscar suscripción
+      const { data: sub } = await sb.from('suscripciones').select('plan, fecha_inicio, fecha_vencimiento, estado').eq('mecanico_id', uid).eq('estado', 'activo').maybeSingle();
+      if(sub){
+        const inicio = new Date(sub.fecha_inicio);
+        const venc = new Date(sub.fecha_vencimiento);
+        const hoy = new Date();
+        const diasRestantes = Math.ceil((venc - hoy) / (1000*60*60*24));
+        const mesesActivo = Math.floor((hoy - inicio) / (1000*60*60*24*30));
+        dropPlanInfo.innerHTML = `
+          <div style="margin-bottom:4px;">📅 Plan: <b style="color:#fff;">${sub.plan.charAt(0).toUpperCase()+sub.plan.slice(1)}</b></div>
+          <div style="margin-bottom:4px;">⏳ Vence: <b style="color:#f0c040;">${venc.toLocaleDateString('es-CL')}</b> (${diasRestantes} días)</div>
+          <div>🕐 Activo hace <b style="color:#fff;">${mesesActivo > 0 ? mesesActivo + ' mes' + (mesesActivo > 1 ? 'es' : '') : 'menos de un mes'}</b></div>
+        `;
+      } else {
+        dropPlanInfo.innerHTML = '<span style="color:#f0c040;">Plan Pro activo</span>';
+      }
+    } else {
+      dropProBadge.style.display = 'none';
+      // Calcular tiempo desde registro
+      const creado = new Date(mec.created_at);
+      const hoy = new Date();
+      const dias = Math.floor((hoy - creado) / (1000*60*60*24));
+      dropPlanInfo.innerHTML = `
+        <div style="margin-bottom:6px;">Sin plan activo</div>
+        <div style="color:#888;">Taller registrado hace ${dias} día${dias !== 1 ? 's' : ''}</div>
+        <button onclick="document.getElementById('userDropdown').style.display='none';document.getElementById('mechPanelBtn')?.click();setTimeout(()=>document.querySelector('[data-panel=suscripcion]')?.click(),300);" style="margin-top:8px;background:#E8192C;border:none;border-radius:6px;padding:6px 12px;color:#fff;font-size:11px;font-weight:700;cursor:pointer;width:100%;">
+          ⭐ Activar Plan Pro
+        </button>
+      `;
+    }
+  } else {
+    // Es cliente
+    dropNombre.textContent = email.split('@')[0];
+    dropAvatar.textContent = email[0].toUpperCase();
+    dropProBadge.style.display = 'none';
+    dropPanelBtn.style.display = 'none';
+    dropPlanInfo.innerHTML = '<span style="color:#888;">Cuenta de cliente</span>';
+  }
+}
+
+function cerrarSesionDesdeDropdown(){
+  document.getElementById('userDropdown').style.display = 'none';
+  sb.auth.signOut().then(() => {
+    currentSession = null;
+    updateAccountUI();
+  });
+}
 
 function openAuthModal(preselectRole){
   document.getElementById('authOverlay').classList.remove('hidden');
@@ -3124,46 +3248,19 @@ function renderPlanes(destacar) {
   `;
 }
 
-async function iniciarPago(plan) {
+function iniciarPago(plan) {
+  const links = {
+    mensual:   'https://mpago.la/2r6AJUV',
+    semestral: 'https://mpago.la/2dJEdgh',
+    anual:     'https://mpago.la/1RFT99m'
+  };
   const info = {
     mensual:   '$9.990/mes',
     semestral: '$49.990 por 6 meses',
     anual:     '$89.990 por 1 año'
   };
-
-  const user = supabase.auth.getUser ? (await supabase.auth.getUser()).data?.user : null;
-  if (!user) {
-    alert('Debes iniciar sesión para suscribirte.');
-    return;
-  }
-
   const ok = confirm(`Plan ${plan.charAt(0).toUpperCase()+plan.slice(1)}: ${info[plan]}\n\nSerás redirigido a Mercado Pago para completar el pago de forma segura.\n¿Continuar?`);
-  if (!ok) return;
-
-  // Mostrar loading
-  const btn = document.querySelector(`button[onclick="iniciarPago('${plan}')"]`);
-  if (btn) { btn.textContent = 'Cargando...'; btn.disabled = true; }
-
-  try {
-    const res = await fetch('https://vdkvbwlzjrqcmegkxslp.supabase.co/functions/v1/mp-crear-preferencia', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ mecanicoId: user.id, plan })
-    });
-
-    const data = await res.json();
-
-    if (data.init_point) {
-      window.open(data.init_point, '_blank');
-    } else {
-      alert('Error al generar el link de pago. Intenta de nuevo.');
-    }
-  } catch (err) {
-    console.error('Error iniciarPago:', err);
-    alert('Error de conexión. Intenta de nuevo.');
-  } finally {
-    if (btn) { btn.textContent = 'Suscribirme'; btn.disabled = false; }
-  }
+  if(ok) window.open(links[plan], '_blank');
 }
 
 /* ====================== NOTIFICACIONES DE RESEÑAS ====================== */
