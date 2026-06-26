@@ -1126,23 +1126,7 @@ footer{
         <span id="locLabel">Ubicación</span>
       </button>
 
-      <!-- Badges tiendas -->
-      <div class="store-badge-wrap" style="display:flex;gap:6px;">
-        <button onclick="mostrarModalTienda('android')" style="background:#000;border:1px solid #333;border-radius:8px;padding:5px 10px;cursor:pointer;display:flex;align-items:center;gap:6px;height:34px;">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="#fff"><path d="M3 20.5v-17c0-.83 1-1.3 1.6-.75l14 8.5c.55.33.55 1.17 0 1.5l-14 8.5c-.6.55-1.6.08-1.6-.75z"/></svg>
-          <div style="text-align:left;line-height:1.1;">
-            <div style="font-size:8px;color:#aaa;font-family:'Inter';">Disponible en</div>
-            <div style="font-size:11px;color:#fff;font-family:'Inter';font-weight:600;">Google Play</div>
-          </div>
-        </button>
-        <button onclick="mostrarModalTienda('ios')" style="background:#000;border:1px solid #333;border-radius:8px;padding:5px 10px;cursor:pointer;display:flex;align-items:center;gap:6px;height:34px;">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="#fff"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
-          <div style="text-align:left;line-height:1.1;">
-            <div style="font-size:8px;color:#aaa;font-family:'Inter';">Descargar en</div>
-            <div style="font-size:11px;color:#fff;font-family:'Inter';font-weight:600;">App Store</div>
-          </div>
-        </button>
-      </div>
+
 
       <button class="btn-icon primary" id="installBtn">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
@@ -1597,6 +1581,9 @@ footer{
                 <input type="tel" class="form-input" id="edit-whatsapp" placeholder="+56 9 1234 5678">
               </label>
             </div>
+            <label class="form-label" style="margin-top:8px;">Correo electrónico (opcional)
+              <input type="email" class="form-input" id="edit-email" placeholder="contacto@mitaller.cl">
+            </label>
 
             <!-- Horario -->
             <div class="form-section-title" style="font-size:13px;margin-top:8px;margin-bottom:8px;">Horario de atención</div>
@@ -1741,6 +1728,16 @@ footer{
     <div class="modal-body">
       <div id="installInstructions" class="install-steps"></div>
     </div>
+  </div>
+</div>
+
+<!-- Modal post-pago -->
+<div id="pagoModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:#1a1a2e;border-radius:16px;padding:36px;max-width:400px;width:100%;text-align:center;border:1px solid rgba(255,255,255,.1);">
+    <div id="pagoModalIcon" style="font-size:52px;margin-bottom:16px;"></div>
+    <h2 id="pagoModalTitulo" style="color:#fff;margin:0 0 10px;font-size:22px;"></h2>
+    <p id="pagoModalTexto" style="color:#aaa;font-size:14px;margin:0 0 24px;"></p>
+    <button onclick="cerrarModalPago()" style="background:#E8192C;color:#fff;border:none;border-radius:8px;padding:12px 32px;font-size:14px;font-weight:700;cursor:pointer;">Continuar</button>
   </div>
 </div>
 
@@ -2006,7 +2003,7 @@ async function loadMechanicsFromSupabase(){
   try {
     const { data: mecanicosData, error } = await sb
       .from('mecanicos')
-      .select('id, name, address, city, phone, lat, lng, spec, rating, review_count, sells_parts, trial_ends_at, cover_url, avatar_url, whatsapp, es_pro, oferta_texto')
+      .select('id, name, address, city, phone, lat, lng, spec, rating, review_count, sells_parts, trial_ends_at, cover_url, avatar_url, whatsapp, es_pro, oferta_texto, email')
       .limit(500);
 
     if(error){
@@ -2037,6 +2034,7 @@ async function loadMechanicsFromSupabase(){
       whatsapp: m.whatsapp || null,
       es_pro: m.es_pro === true || m.es_pro === 'true' || m.es_pro === 1,
       oferta_texto: m.oferta_texto || null,
+      email: m.email || null,
       priceFrom: null,
       status: 'open',
       address: m.address || '',
@@ -2365,6 +2363,7 @@ async function openProfile(id){
 
         </span>
         ${m.whatsapp && m.whatsapp !== m.phone ? `<span class="profile-meta-item">💬 WhatsApp: ${m.whatsapp}</span>` : ''}
+        ${m.email && currentSession && currentUserRole !== 'mecanico' ? `<span class="profile-meta-item">✉️ <a href="mailto:${m.email}" style="color:var(--dim);text-decoration:none;">${m.email}</a></span>` : ''}
         ${distTxt ? `<span class="profile-meta-item">📍 ${distTxt}</span>` : ''}
       </div>
       <div class="profile-rating-block">
@@ -3142,6 +3141,7 @@ async function mostrarPanelMecanico() {
     document.getElementById('edit-city').value = mec.city || '';
     document.getElementById('edit-sells-parts').checked = !!mec.sells_parts;
     if(mec.whatsapp) document.getElementById('edit-whatsapp').value = mec.whatsapp;
+    if(mec.email) document.getElementById('edit-email').value = mec.email;
     if(mec.description) document.getElementById('edit-description').value = mec.description;
     // Horario
     if(mec.schedule) {
@@ -3573,8 +3573,10 @@ async function guardarFicha() {
   // Campos opcionales (si existen en la tabla)
   const whatsapp = document.getElementById('edit-whatsapp')?.value.trim();
   const description = document.getElementById('edit-description')?.value.trim();
+  const emailTaller = document.getElementById('edit-email')?.value.trim();
   if(whatsapp) datosActualizados.whatsapp = whatsapp;
   if(description) datosActualizados.description = description;
+  if(emailTaller) datosActualizados.email = emailTaller;
   if(horario) datosActualizados.schedule = horario;
 
   const { error } = await sb.from('mecanicos').update(datosActualizados).eq('id', uid);
@@ -3611,7 +3613,7 @@ async function guardarFicha() {
 /* ====================== INIT ====================== */
 // Fetch directo sin función intermedia
 sb.from('mecanicos')
-  .select('id, name, address, city, phone, lat, lng, spec, rating, review_count, sells_parts, trial_ends_at, cover_url, avatar_url, whatsapp, es_pro, oferta_texto')
+  .select('id, name, address, city, phone, lat, lng, spec, rating, review_count, sells_parts, trial_ends_at, cover_url, avatar_url, whatsapp, es_pro, oferta_texto, email')
   .limit(500)
   .then(({ data, error }) => {
     if(error){ console.error('INIT error:', error.message); return; }
@@ -3643,6 +3645,44 @@ sb.from('mecanicos')
     if(heroT) heroT.textContent = mechanics.length;
   });
 refreshSession();
+
+// Detectar retorno desde Mercado Pago
+(function detectarRetornoPago(){
+  const params = new URLSearchParams(window.location.search);
+  const pago = params.get('pago');
+  if(!pago) return;
+
+  // Limpiar URL sin recargar
+  window.history.replaceState({}, '', window.location.pathname);
+
+  const modal = document.getElementById('pagoModal');
+  const icon = document.getElementById('pagoModalIcon');
+  const titulo = document.getElementById('pagoModalTitulo');
+  const texto = document.getElementById('pagoModalTexto');
+
+  if(pago === 'ok'){
+    icon.textContent = '🎉';
+    titulo.textContent = '¡Pago exitoso!';
+    texto.textContent = 'Tu plan Pro está siendo activado. En unos segundos verás el sello ⭐ en tu perfil. Revisa tu correo para la confirmación.';
+    modal.style.display = 'flex';
+    // Recargar datos después de 3 segundos para mostrar Pro
+    setTimeout(() => location.reload(), 4000);
+  } else if(pago === 'error'){
+    icon.textContent = '❌';
+    titulo.textContent = 'Pago no completado';
+    texto.textContent = 'Hubo un problema con tu pago. No se realizó ningún cobro. Puedes intentarlo nuevamente cuando quieras.';
+    modal.style.display = 'flex';
+  } else if(pago === 'pendiente'){
+    icon.textContent = '⏳';
+    titulo.textContent = 'Pago en proceso';
+    texto.textContent = 'Tu pago está siendo procesado. Te notificaremos por correo cuando se confirme y tu plan Pro esté activo.';
+    modal.style.display = 'flex';
+  }
+})();
+
+function cerrarModalPago(){
+  document.getElementById('pagoModal').style.display = 'none';
+}
 
 /* ====================== PWA: Service Worker + Install Prompt ====================== */
 // Desregistrar cualquier service worker anterior para evitar caché agresivo
