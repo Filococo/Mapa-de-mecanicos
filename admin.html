@@ -7,276 +7,137 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root {
-    --bg: #0d0d14;
-    --bg2: #13131f;
-    --bg3: #1a1a2e;
-    --red: #E8192C;
-    --gold: #f0c040;
-    --green: #22c55e;
-    --blue: #3b82f6;
-    --border: rgba(255,255,255,.08);
-    --muted: #666;
-    --dim: #aaa;
-    --white: #fff;
+    --bg:#0d0d14;--bg2:#13131f;--bg3:#1a1a2e;
+    --red:#E8192C;--gold:#f0c040;--green:#22c55e;--blue:#3b82f6;
+    --border:rgba(255,255,255,.08);--muted:#666;--dim:#aaa;--white:#fff;
   }
-  * { margin:0; padding:0; box-sizing:border-box; }
-  body { background:var(--bg); color:var(--white); font-family:'Inter',system-ui,sans-serif; min-height:100vh; }
-  
-  /* Login */
-  #loginScreen {
-    display:flex; align-items:center; justify-content:center;
-    min-height:100vh; padding:20px;
-  }
-  .login-box {
-    background:var(--bg3); border:1px solid var(--border);
-    border-radius:16px; padding:40px; width:100%; max-width:380px;
-  }
-  .login-logo { text-align:center; margin-bottom:28px; }
-  .login-logo h1 { font-size:28px; font-weight:900; color:var(--red); letter-spacing:-1px; }
-  .login-logo p { color:var(--muted); font-size:12px; margin-top:4px; }
-  .form-label { display:block; font-size:11px; font-weight:600; color:var(--dim); text-transform:uppercase; letter-spacing:.5px; margin-bottom:6px; }
-  .form-input { width:100%; background:rgba(255,255,255,.05); border:1px solid var(--border); border-radius:8px; padding:10px 14px; color:var(--white); font-size:14px; margin-bottom:16px; outline:none; transition:border .2s; }
-  .form-input:focus { border-color:var(--red); }
-  .btn-login { width:100%; background:var(--red); color:#fff; border:none; border-radius:8px; padding:12px; font-size:14px; font-weight:700; cursor:pointer; }
-  .login-error { color:var(--red); font-size:12px; margin-top:8px; text-align:center; }
-
-  /* Dashboard */
-  #dashboard { display:none; }
-  
-  .topbar {
-    background:var(--bg3); border-bottom:1px solid var(--border);
-    padding:0 24px; height:56px; display:flex; align-items:center; justify-content:space-between;
-    position:sticky; top:0; z-index:100;
-  }
-  .topbar-logo { font-size:18px; font-weight:900; color:var(--red); letter-spacing:-1px; }
-  .topbar-logo span { color:var(--white); font-size:11px; font-weight:400; margin-left:8px; opacity:.5; }
-  .topbar-user { display:flex; align-items:center; gap:12px; }
-  .topbar-user span { font-size:12px; color:var(--dim); }
-  .btn-logout { background:none; border:1px solid var(--border); border-radius:6px; padding:6px 12px; color:var(--dim); font-size:12px; cursor:pointer; }
-  .btn-logout:hover { border-color:var(--red); color:var(--red); }
-
-  .main { padding:24px; max-width:1200px; margin:0 auto; }
-  
-  .page-title { font-size:22px; font-weight:800; margin-bottom:4px; }
-  .page-sub { font-size:12px; color:var(--muted); margin-bottom:24px; }
-
-  /* KPI Cards */
-  .kpi-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px; margin-bottom:28px; }
-  .kpi-card {
-    background:var(--bg3); border:1px solid var(--border); border-radius:12px;
-    padding:20px; position:relative; overflow:hidden;
-  }
-  .kpi-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; }
-  .kpi-card.red::before { background:var(--red); }
-  .kpi-card.gold::before { background:var(--gold); }
-  .kpi-card.green::before { background:var(--green); }
-  .kpi-card.blue::before { background:var(--blue); }
-  .kpi-label { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; margin-bottom:8px; }
-  .kpi-value { font-size:32px; font-weight:900; line-height:1; }
-  .kpi-card.red .kpi-value { color:var(--red); }
-  .kpi-card.gold .kpi-value { color:var(--gold); }
-  .kpi-card.green .kpi-value { color:var(--green); }
-  .kpi-card.blue .kpi-value { color:var(--blue); }
-  .kpi-sub { font-size:11px; color:var(--muted); margin-top:6px; }
-
-  /* Sections */
-  .section { background:var(--bg3); border:1px solid var(--border); border-radius:12px; margin-bottom:20px; overflow:hidden; }
-  .section-header { padding:16px 20px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
-  .section-title { font-size:14px; font-weight:700; }
-  .section-badge { font-size:11px; background:rgba(255,255,255,.05); border-radius:20px; padding:3px 10px; color:var(--dim); }
-  
-  /* Table */
-  .table-wrap { overflow-x:auto; }
-  table { width:100%; border-collapse:collapse; }
-  th { font-size:10px; text-transform:uppercase; letter-spacing:.5px; color:var(--muted); padding:10px 20px; text-align:left; border-bottom:1px solid var(--border); font-weight:600; }
-  td { padding:12px 20px; font-size:13px; border-bottom:1px solid rgba(255,255,255,.04); }
-  tr:last-child td { border-bottom:none; }
-  tr:hover td { background:rgba(255,255,255,.02); }
-  
-  .badge { display:inline-block; padding:3px 8px; border-radius:20px; font-size:10px; font-weight:700; }
-  .badge-pro { background:rgba(240,192,64,.15); color:var(--gold); border:1px solid rgba(240,192,64,.3); }
-  .badge-activo { background:rgba(34,197,94,.15); color:var(--green); border:1px solid rgba(34,197,94,.3); }
-  .badge-vencido { background:rgba(255,255,255,.05); color:var(--muted); border:1px solid var(--border); }
-  .badge-mensual { background:rgba(59,130,246,.15); color:var(--blue); }
-  .badge-semestral { background:rgba(168,85,247,.15); color:#a855f7; }
-  .badge-anual { background:rgba(240,192,64,.15); color:var(--gold); }
-
-  .stars { color:var(--gold); font-size:12px; }
-  .empty { text-align:center; padding:32px; color:var(--muted); font-size:13px; }
-
-  /* Acción manual Pro */
-  .btn-activar { background:rgba(240,192,64,.1); border:1px solid rgba(240,192,64,.3); color:var(--gold); border-radius:6px; padding:4px 10px; font-size:11px; font-weight:700; cursor:pointer; }
-  .btn-activar:hover { background:rgba(240,192,64,.2); }
-  .btn-desactivar { background:rgba(232,25,44,.1); border:1px solid rgba(232,25,44,.3); color:var(--red); border-radius:6px; padding:4px 10px; font-size:11px; font-weight:700; cursor:pointer; }
-  .btn-desactivar:hover { background:rgba(232,25,44,.2); }
-
-  .loading { text-align:center; padding:40px; color:var(--muted); }
-  .refresh-btn { background:none; border:1px solid var(--border); border-radius:6px; padding:5px 12px; color:var(--dim); font-size:11px; cursor:pointer; }
-  .refresh-btn:hover { border-color:var(--white); color:var(--white); }
-
-  @media(max-width:600px){
-    .main { padding:16px; }
-    .kpi-grid { grid-template-columns:1fr 1fr; }
-  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--white);font-family:'Inter',system-ui,sans-serif;min-height:100vh;}
+  #loginScreen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;}
+  .login-box{background:var(--bg3);border:1px solid var(--border);border-radius:16px;padding:40px;width:100%;max-width:380px;}
+  .login-logo{text-align:center;margin-bottom:28px;}
+  .login-logo h1{font-size:28px;font-weight:900;color:var(--red);}
+  .login-logo p{color:var(--muted);font-size:12px;margin-top:4px;}
+  .lbl{display:block;font-size:11px;font-weight:600;color:var(--dim);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;margin-top:14px;}
+  .inp{width:100%;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--white);font-size:14px;outline:none;}
+  .inp:focus{border-color:var(--red);}
+  .btn-login{width:100%;background:var(--red);color:#fff;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;margin-top:18px;}
+  .err{color:var(--red);font-size:12px;margin-top:8px;text-align:center;}
+  #dashboard{display:none;}
+  .topbar{background:var(--bg3);border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+  .logo{font-size:18px;font-weight:900;color:var(--red);}
+  .logo span{color:var(--white);font-size:11px;font-weight:400;margin-left:8px;opacity:.5;}
+  .btn-out{background:none;border:1px solid var(--border);border-radius:6px;padding:6px 12px;color:var(--dim);font-size:12px;cursor:pointer;}
+  .main{padding:24px;max-width:1300px;margin:0 auto;}
+  .page-title{font-size:22px;font-weight:800;margin-bottom:4px;}
+  .page-sub{font-size:12px;color:var(--muted);margin-bottom:24px;}
+  .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:24px;}
+  .kpi{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:18px;position:relative;overflow:hidden;}
+  .kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+  .kpi.r::before{background:var(--red);}
+  .kpi.g::before{background:var(--green);}
+  .kpi.y::before{background:var(--gold);}
+  .kpi.b::before{background:var(--blue);}
+  .kpi-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;}
+  .kpi-val{font-size:28px;font-weight:900;}
+  .kpi.r .kpi-val{color:var(--red);}
+  .kpi.g .kpi-val{color:var(--green);}
+  .kpi.y .kpi-val{color:var(--gold);}
+  .kpi.b .kpi-val{color:var(--blue);}
+  .kpi-sub{font-size:10px;color:var(--muted);margin-top:4px;}
+  .section{background:var(--bg3);border:1px solid var(--border);border-radius:12px;margin-bottom:20px;overflow:hidden;}
+  .sec-head{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+  .sec-title{font-size:14px;font-weight:700;}
+  .sec-badge{font-size:11px;background:rgba(255,255,255,.05);border-radius:20px;padding:3px 10px;color:var(--dim);}
+  table{width:100%;border-collapse:collapse;}
+  th{font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);padding:10px 20px;text-align:left;border-bottom:1px solid var(--border);font-weight:600;}
+  td{padding:11px 20px;font-size:13px;border-bottom:1px solid rgba(255,255,255,.04);}
+  tr:last-child td{border-bottom:none;}
+  tr:hover td{background:rgba(255,255,255,.02);}
+  .badge{display:inline-block;padding:3px 8px;border-radius:20px;font-size:10px;font-weight:700;}
+  .bp{background:rgba(240,192,64,.15);color:var(--gold);border:1px solid rgba(240,192,64,.3);}
+  .ba{background:rgba(34,197,94,.15);color:var(--green);border:1px solid rgba(34,197,94,.3);}
+  .bv{background:rgba(255,255,255,.05);color:var(--muted);border:1px solid var(--border);}
+  .bm{background:rgba(59,130,246,.15);color:var(--blue);}
+  .bs{background:rgba(168,85,247,.15);color:#a855f7;}
+  .ban{background:rgba(240,192,64,.15);color:var(--gold);}
+  .btn-a{background:rgba(240,192,64,.1);border:1px solid rgba(240,192,64,.3);color:var(--gold);border-radius:6px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;}
+  .btn-d{background:rgba(232,25,44,.1);border:1px solid rgba(232,25,44,.3);color:var(--red);border-radius:6px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;}
+  .empty{text-align:center;padding:28px;color:var(--muted);font-size:13px;}
+  .ref-btn{background:none;border:1px solid var(--border);border-radius:6px;padding:5px 12px;color:var(--dim);font-size:11px;cursor:pointer;}
 </style>
 </head>
 <body>
 
-<!-- Login -->
 <div id="loginScreen">
   <div class="login-box">
     <div class="login-logo">
       <h1>🔧 PANNE</h1>
       <p>Panel de administración</p>
     </div>
-    <label class="form-label">Correo</label>
-    <input type="email" class="form-input" id="loginEmail" placeholder="tu@correo.cl" value="contacto@panne.cl">
-    <label class="form-label">Contraseña</label>
-    <div style="position:relative;">
-      <input type="password" class="form-input" id="loginPass" placeholder="••••••••" style="padding-right:42px;">
-      <button type="button" onclick="togglePass()" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#666;">👁</button>
-    </div>
-    <button class="btn-login" onclick="login()">Entrar al panel</button>
-    <div class="login-error" id="loginError"></div>
+    <label class="lbl">Correo</label>
+    <input type="email" class="inp" id="loginEmail" value="contacto@panne.cl">
+    <label class="lbl">Contraseña</label>
+    <input type="password" class="inp" id="loginPass" placeholder="••••••••">
+    <button class="btn-login" onclick="login()">Entrar</button>
+    <div class="err" id="loginErr"></div>
   </div>
 </div>
 
-<!-- Dashboard -->
 <div id="dashboard">
   <div class="topbar">
-    <div class="topbar-logo">PANNE <span>Admin</span></div>
-    <div class="topbar-user">
-      <span id="adminEmail"></span>
-      <button class="btn-logout" onclick="logout()">Cerrar sesión</button>
+    <div class="logo">PANNE <span>Admin</span></div>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <span style="font-size:12px;color:var(--dim);" id="adminEmail"></span>
+      <button class="btn-out" onclick="logout()">Cerrar sesión</button>
     </div>
   </div>
-
   <div class="main">
     <div class="page-title">Panel de control</div>
-    <div class="page-sub" id="lastUpdate">Cargando datos...</div>
+    <div class="page-sub" id="lastUpdate">Cargando...</div>
 
-    <!-- KPIs -->
     <div class="kpi-grid">
-      <div class="kpi-card red">
-        <div class="kpi-label">Talleres totales</div>
-        <div class="kpi-value" id="kpiTalleres">—</div>
-        <div class="kpi-sub">Registrados en PANNE</div>
+      <div class="kpi r"><div class="kpi-lbl">Talleres</div><div class="kpi-val" id="k1">—</div><div class="kpi-sub">Registrados</div></div>
+      <div class="kpi y"><div class="kpi-lbl">Talleres Pro</div><div class="kpi-val" id="k2">—</div><div class="kpi-sub">Plan activo ⭐</div></div>
+      <div class="kpi g"><div class="kpi-lbl">Ingreso estimado</div><div class="kpi-val" id="k3">—</div><div class="kpi-sub">Suscripciones activas</div></div>
+      <div class="kpi b"><div class="kpi-lbl">Usuarios</div><div class="kpi-val" id="k4">—</div><div class="kpi-sub">Cuentas registradas</div></div>
+      <div class="kpi r"><div class="kpi-lbl">Reseñas</div><div class="kpi-val" id="k5">—</div><div class="kpi-sub">Publicadas</div></div>
+      <div class="kpi y"><div class="kpi-lbl">Ciudades</div><div class="kpi-val" id="k6">—</div><div class="kpi-sub">Con cobertura</div></div>
+      <div class="kpi b"><div class="kpi-lbl">Visitas al sitio</div><div class="kpi-val" id="k7">—</div><div class="kpi-sub">Total acumulado</div></div>
+      <div class="kpi g"><div class="kpi-lbl">Visitas hoy</div><div class="kpi-val" id="k8">—</div><div class="kpi-sub">Desde medianoche</div></div>
+      <div class="kpi r"><div class="kpi-lbl">Visitas perfiles</div><div class="kpi-val" id="k9">—</div><div class="kpi-sub">Clics en talleres</div></div>
+    </div>
+
+    <div class="section">
+      <div class="sec-head">
+        <div class="sec-title">💳 Suscripciones activas</div>
+        <button class="ref-btn" onclick="cargarDatos()">↻ Actualizar</button>
       </div>
-      <div class="kpi-card gold">
-        <div class="kpi-label">Talleres Pro</div>
-        <div class="kpi-value" id="kpiPro">—</div>
-        <div class="kpi-sub">Con plan activo ⭐</div>
-      </div>
-      <div class="kpi-card green">
-        <div class="kpi-label">Ingreso estimado</div>
-        <div class="kpi-value" id="kpiIngresos">—</div>
-        <div class="kpi-sub">Suscripciones activas</div>
-      </div>
-      <div class="kpi-card blue">
-        <div class="kpi-label">Usuarios totales</div>
-        <div class="kpi-value" id="kpiUsuarios">—</div>
-        <div class="kpi-sub">Clientes + talleres</div>
-      </div>
-      <div class="kpi-card red">
-        <div class="kpi-label">Reseñas totales</div>
-        <div class="kpi-value" id="kpiResenas">—</div>
-        <div class="kpi-sub">Publicadas en el directorio</div>
-      </div>
-      <div class="kpi-card gold">
-        <div class="kpi-label">Ciudades</div>
-        <div class="kpi-value" id="kpiCiudades">—</div>
-        <div class="kpi-sub">Con cobertura activa</div>
-      </div>
-      <div class="kpi-card blue">
-        <div class="kpi-label">Visitas al sitio</div>
-        <div class="kpi-value" id="kpiVisitas">—</div>
-        <div class="kpi-sub">Total acumulado</div>
-      </div>
-      <div class="kpi-card green">
-        <div class="kpi-label">Visitas hoy</div>
-        <div class="kpi-value" id="kpiVisitasHoy">—</div>
-        <div class="kpi-sub">Desde medianoche</div>
-      </div>
-      <div class="kpi-card red">
-        <div class="kpi-label">Visitas a perfiles</div>
-        <div class="kpi-value" id="kpiVisitas2">—</div>
-        <div class="kpi-sub">Clics en talleres</div>
+      <div style="overflow-x:auto;">
+        <table><thead><tr><th>Taller</th><th>Plan</th><th>Estado</th><th>Inicio</th><th>Vencimiento</th><th>Días</th><th>Acción</th></tr></thead>
+        <tbody id="tSubs"><tr><td colspan="7" class="empty">Cargando...</td></tr></tbody></table>
       </div>
     </div>
 
-    <!-- Suscripciones activas -->
     <div class="section">
-      <div class="section-header">
-        <div class="section-title">💳 Suscripciones activas</div>
-        <button class="refresh-btn" onclick="cargarDatos()">↻ Actualizar</button>
+      <div class="sec-head">
+        <div class="sec-title">🔧 Talleres recientes</div>
+        <span class="sec-badge" id="bTalleres">—</span>
       </div>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Taller</th>
-              <th>Plan</th>
-              <th>Estado</th>
-              <th>Inicio</th>
-              <th>Vencimiento</th>
-              <th>Días restantes</th>
-              <th>Acción</th>
-            </tr>
-          </thead>
-          <tbody id="tablaSuscripciones">
-            <tr><td colspan="7" class="loading">Cargando...</td></tr>
-          </tbody>
-        </table>
+      <div style="overflow-x:auto;">
+        <table><thead><tr><th>Nombre</th><th>Ciudad</th><th>Especialidad</th><th>Pro</th><th>Reseñas</th><th>Rating</th><th>Acción</th></tr></thead>
+        <tbody id="tTalleres"><tr><td colspan="7" class="empty">Cargando...</td></tr></tbody></table>
       </div>
     </div>
 
-    <!-- Talleres recientes -->
     <div class="section">
-      <div class="section-header">
-        <div class="section-title">🔧 Talleres recientes</div>
-        <span class="section-badge" id="badgeTalleres">—</span>
+      <div class="sec-head">
+        <div class="sec-title">⭐ Reseñas recientes</div>
+        <span class="sec-badge" id="bResenas">—</span>
       </div>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Nombre</th>
-              <th>Ciudad</th>
-              <th>Especialidad</th>
-              <th>Pro</th>
-              <th>Reseñas</th>
-              <th>Rating</th>
-              <th>Acción</th>
-            </tr>
-          </thead>
-          <tbody id="tablaTalleres">
-            <tr><td colspan="7" class="loading">Cargando...</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- Reseñas recientes -->
-    <div class="section">
-      <div class="section-header">
-        <div class="section-title">⭐ Reseñas recientes</div>
-        <span class="section-badge" id="badgeResenas">—</span>
-      </div>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Cliente</th>
-              <th>Taller</th>
-              <th>Calificación</th>
-              <th>Comentario</th>
-              <th>Fecha</th>
-            </tr>
-          </thead>
-          <tbody id="tablaResenas">
-            <tr><td colspan="5" class="loading">Cargando...</td></tr>
-          </tbody>
-        </table>
+      <div style="overflow-x:auto;">
+        <table><thead><tr><th>Cliente</th><th>Taller</th><th>Calificación</th><th>Comentario</th><th>Fecha</th></tr></thead>
+        <tbody id="tResenas"><tr><td colspan="5" class="empty">Cargando...</td></tr></tbody></table>
       </div>
     </div>
   </div>
@@ -284,32 +145,23 @@
 
 <script>
 const SUPABASE_URL = 'https://vdkvbwlzjrqcmegkxslp.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_afbIDXILgu4oM1v3GUuzDQ_jWZnds9v';
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-const ADMIN_EMAIL = 'contacto@panne.cl';
-
-const PRECIOS = { mensual: 9990, semestral: 49990, anual: 89990 };
-
-function togglePass(){
-  const i = document.getElementById('loginPass');
-  i.type = i.type === 'password' ? 'text' : 'password';
-}
+const SUPABASE_KEY = 'sb_publishable_afbIDXILgu4oM1v3GUuzDQ_jWZnds9v';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const ADMIN = 'contacto@panne.cl';
+const PRECIOS = { mensual:9990, semestral:49990, anual:89990 };
 
 async function login(){
   const email = document.getElementById('loginEmail').value.trim();
   const pass = document.getElementById('loginPass').value;
-  const err = document.getElementById('loginError');
+  const err = document.getElementById('loginErr');
   err.textContent = '';
-
-  if(email !== ADMIN_EMAIL){
-    err.textContent = 'Acceso no autorizado.';
-    return;
-  }
-
-  const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+  if(email !== ADMIN){ err.textContent = 'Acceso no autorizado.'; return; }
+  const { error } = await sb.auth.signInWithPassword({ email, password: pass });
   if(error){ err.textContent = 'Credenciales incorrectas.'; return; }
+  mostrarDashboard(email);
+}
 
+function mostrarDashboard(email){
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('dashboard').style.display = 'block';
   document.getElementById('adminEmail').textContent = email;
@@ -323,166 +175,128 @@ async function logout(){
 
 async function cargarDatos(){
   document.getElementById('lastUpdate').textContent = 'Actualizando...';
-
-  console.log('Cargando talleres...');
-  // Talleres
-  const { data: talleres, count: totalTalleres } = await sb
-    .from('mecanicos')
-    .select('*', { count: 'exact' })
-    .order('created_at', { ascending: false })
-    .limit(1000);
-
-  // Contar Pro directamente
-  const { count: totalPro } = await sb
-    .from('mecanicos')
-    .select('*', { count: 'exact', head: true })
-    .eq('es_pro', true);
-
-  console.log('Cargando suscripciones...');
-  // Suscripciones
-  const { data: subs } = await sb
-    .from('suscripciones')
-    .select('*')
-    .order('created_at', { ascending: false });
-
-  // Nombres de talleres para suscripciones
-  if(subs?.length){
-    const ids = [...new Set(subs.map(s => s.mecanico_id))];
-    const { data: nombresData } = await sb
-      .from('mecanicos')
-      .select('id, name')
-      .in('id', ids);
-    (nombresData || []).forEach(m => { nombresTalleres[m.id] = m.name; });
-  }
-
-  console.log('Cargando reseñas...');
-  // Reseñas
-  const { data: resenas, count: totalResenas } = await sb
-    .from('resenas')
-    .select('*', { count: 'exact' })
-    .order('created_at', { ascending: false })
-    .limit(20);
-
-  // Mapa de nombres de talleres
-  const nombresTalleres = {};
-  (talleres || []).forEach(t => { nombresTalleres[t.id] = t.name; });
-
-  // KPIs
-  const talleresPro = talleres?.filter(t => t.es_pro) || [];
-  const subsActivas = subs?.filter(s => s.estado === 'activo') || [];
-  const ingresoEstimado = subsActivas.reduce((sum, s) => sum + (PRECIOS[s.plan] || 0), 0);
-  const ciudades = [...new Set(talleres?.map(t => t.city).filter(Boolean))];
-
-  document.getElementById('kpiTalleres').textContent = totalTalleres || talleres?.length || 0;
-  document.getElementById('kpiPro').textContent = totalPro || talleresPro.length;
-  document.getElementById('kpiIngresos').textContent = '$' + ingresoEstimado.toLocaleString('es-CL');
-  // Contar usuarios auth
-  const { count: totalUsuarios } = await sb
-    .from('mecanicos')
-    .select('*', { count: 'exact', head: true });
-  document.getElementById('kpiUsuarios').textContent = totalUsuarios || '—';
-  document.getElementById('kpiResenas').textContent = totalResenas || 0;
-  document.getElementById('kpiCiudades').textContent = ciudades.length;
-
-  // Visitas totales a la página
-  let visitasPagina = 0, visitasHoy = 0;
   try {
-    const r1 = await sb.from('visitas_pagina').select('*', { count: 'exact', head: true });
-    visitasPagina = r1.count || 0;
-    const hoy = new Date(); hoy.setHours(0,0,0,0);
-    const r2 = await sb.from('visitas_pagina').select('*', { count: 'exact', head: true }).gte('created_at', hoy.toISOString());
-    visitasHoy = r2.count || 0;
-  } catch(e) { console.error('Error visitas:', e); }
+    // Queries en paralelo
+    const [r1,r2,r3,r4,r5,r6] = await Promise.all([
+      sb.from('mecanicos').select('id,name,city,spec,es_pro,review_count,rating,visit_count').order('created_at',{ascending:false}).limit(100),
+      sb.from('mecanicos').select('*',{count:'exact',head:true}),
+      sb.from('mecanicos').select('*',{count:'exact',head:true}).eq('es_pro',true),
+      sb.from('suscripciones').select('*').order('created_at',{ascending:false}),
+      sb.from('resenas').select('*').order('created_at',{ascending:false}).limit(20),
+      sb.from('resenas').select('*',{count:'exact',head:true})
+    ]);
 
-  const kpiVisitas = document.getElementById('kpiVisitas');
-  if(kpiVisitas) kpiVisitas.textContent = (visitasPagina || 0).toLocaleString('es-CL');
-  const kpiVisitasHoy = document.getElementById('kpiVisitasHoy');
-  if(kpiVisitasHoy) kpiVisitasHoy.textContent = visitasHoy || 0;
+    const talleres = r1.data || [];
+    const totalTalleres = r2.count || 0;
+    const totalPro = r3.count || 0;
+    const subs = r4.data || [];
+    const resenas = r5.data || [];
+    const totalResenas = r6.count || 0;
 
-  // Visitas a perfiles
-  const visitasPerfiles = (talleres || []).reduce((sum, t) => sum + (t.visit_count || 0), 0);
-  const kpiVisitasPerfiles = document.getElementById('kpiVisitas2');
-  if(kpiVisitasPerfiles) kpiVisitasPerfiles.textContent = visitasPerfiles.toLocaleString('es-CL');
+    // Mapa nombres
+    const nombres = {};
+    talleres.forEach(t => nombres[t.id] = t.name);
 
-  // Tabla suscripciones
-  const tbody1 = document.getElementById('tablaSuscripciones');
-  if(!subs?.length){
-    tbody1.innerHTML = '<tr><td colspan="7" class="empty">Sin suscripciones aún</td></tr>';
-  } else {
-    tbody1.innerHTML = subs.map(s => {
+    // Nombres faltantes en subs
+    const idsExtra = subs.map(s=>s.mecanico_id).filter(id=>!nombres[id]);
+    if(idsExtra.length){
+      const { data: ex } = await sb.from('mecanicos').select('id,name').in('id',idsExtra);
+      (ex||[]).forEach(m => nombres[m.id] = m.name);
+    }
+
+    // Visitas
+    let v1=0, v2=0;
+    try {
+      const rv1 = await sb.from('visitas_pagina').select('*',{count:'exact',head:true});
+      v1 = rv1.count || 0;
+      const hoy = new Date(); hoy.setHours(0,0,0,0);
+      const rv2 = await sb.from('visitas_pagina').select('*',{count:'exact',head:true}).gte('created_at',hoy.toISOString());
+      v2 = rv2.count || 0;
+    } catch(e){}
+
+    const visitasPerfiles = talleres.reduce((s,t)=>s+(t.visit_count||0),0);
+    const ciudades = [...new Set(talleres.map(t=>t.city).filter(Boolean))];
+    const ingreso = subs.filter(s=>s.estado==='activo').reduce((s,sub)=>s+(PRECIOS[sub.plan]||0),0);
+
+    // KPIs
+    document.getElementById('k1').textContent = totalTalleres;
+    document.getElementById('k2').textContent = totalPro;
+    document.getElementById('k3').textContent = '$'+ingreso.toLocaleString('es-CL');
+    document.getElementById('k4').textContent = totalTalleres;
+    document.getElementById('k5').textContent = totalResenas;
+    document.getElementById('k6').textContent = ciudades.length;
+    document.getElementById('k7').textContent = v1.toLocaleString('es-CL');
+    document.getElementById('k8').textContent = v2;
+    document.getElementById('k9').textContent = visitasPerfiles.toLocaleString('es-CL');
+
+    // Tabla suscripciones
+    const ts = document.getElementById('tSubs');
+    ts.innerHTML = subs.length ? subs.map(s=>{
       const venc = s.fecha_vencimiento ? new Date(s.fecha_vencimiento) : null;
-      const dias = venc ? Math.ceil((venc - new Date()) / (1000*60*60*24)) : null;
-      const estadoBadge = s.estado === 'activo' ? 'badge-activo' : 'badge-vencido';
+      const dias = venc ? Math.ceil((venc-new Date())/(864e5)) : null;
+      const col = dias!==null ? (dias<7?'var(--red)':dias<30?'var(--gold)':'var(--green)') : '';
       return `<tr>
-        <td style="font-weight:600;">${nombresTalleres[s.mecanico_id] || '—'}</td>
-        <td><span class="badge badge-${s.plan}">${s.plan}</span></td>
-        <td><span class="badge ${estadoBadge}">${s.estado}</span></td>
-        <td>${s.fecha_inicio ? new Date(s.fecha_inicio).toLocaleDateString('es-CL') : '—'}</td>
-        <td>${venc ? venc.toLocaleDateString('es-CL') : '—'}</td>
-        <td style="color:${dias !== null && dias < 7 ? '#E8192C' : dias !== null && dias < 30 ? '#f0c040' : '#22c55e'}">${dias !== null ? dias + ' días' : '—'}</td>
-        <td><button class="btn-desactivar" onclick="cancelarPlan('${s.mecanico_id}')">Cancelar</button></td>
+        <td style="font-weight:600;">${nombres[s.mecanico_id]||'—'}</td>
+        <td><span class="badge b${s.plan?.[0]}">${s.plan||'—'}</span></td>
+        <td><span class="badge ${s.estado==='activo'?'ba':'bv'}">${s.estado}</span></td>
+        <td>${s.fecha_inicio?new Date(s.fecha_inicio).toLocaleDateString('es-CL'):'—'}</td>
+        <td>${venc?venc.toLocaleDateString('es-CL'):'—'}</td>
+        <td style="color:${col};font-weight:700;">${dias!==null?dias+' días':'—'}</td>
+        <td><button class="btn-d" onclick="cancelarPlan('${s.mecanico_id}')">Cancelar</button></td>
       </tr>`;
-    }).join('');
-  }
+    }).join('') : '<tr><td colspan="7" class="empty">Sin suscripciones activas</td></tr>';
 
-  // Tabla talleres
-  const tbody2 = document.getElementById('tablaTalleres');
-  document.getElementById('badgeTalleres').textContent = (talleres?.length || 0) + ' talleres';
-  tbody2.innerHTML = (talleres || []).map(t => `<tr>
-    <td style="font-weight:600;">${t.name || '—'}</td>
-    <td>${t.city || '—'}</td>
-    <td style="font-size:12px;color:var(--dim);">${t.spec || '—'}</td>
-    <td>${t.es_pro ? '<span class="badge badge-pro">⭐ PRO</span>' : '<span style="color:var(--muted);font-size:12px;">No</span>'}</td>
-    <td>${t.review_count || 0}</td>
-    <td>${t.rating ? '⭐ ' + Number(t.rating).toFixed(1) : '—'}</td>
-    <td>${t.es_pro 
-      ? `<button class="btn-desactivar" onclick="togglePro('${t.id}', false)">Quitar Pro</button>`
-      : `<button class="btn-activar" onclick="togglePro('${t.id}', true)">Activar Pro</button>`
-    }</td>
-  </tr>`).join('');
-
-  // Tabla reseñas
-  const tbody3 = document.getElementById('tablaResenas');
-  document.getElementById('badgeResenas').textContent = (totalResenas || 0) + ' reseñas';
-  if(!resenas?.length){
-    tbody3.innerHTML = '<tr><td colspan="5" class="empty">Sin reseñas aún</td></tr>';
-  } else {
-    tbody3.innerHTML = resenas.map(r => `<tr>
-      <td>${r.cliente_nombre || '—'}</td>
-      <td style="font-weight:600;">${nombresTalleres[r.mecanico_id] || '—'}</td>
-      <td><span class="stars">${'⭐'.repeat(r.stars || 0)}</span> ${r.stars || 0}/5</td>
-      <td style="color:var(--dim);font-size:12px;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${r.texto || '—'}</td>
-      <td style="font-size:12px;color:var(--muted);">${r.created_at ? new Date(r.created_at).toLocaleDateString('es-CL') : '—'}</td>
+    // Tabla talleres
+    document.getElementById('bTalleres').textContent = totalTalleres+' talleres';
+    document.getElementById('tTalleres').innerHTML = talleres.map(t=>`<tr>
+      <td style="font-weight:600;">${t.name||'—'}</td>
+      <td>${t.city||'—'}</td>
+      <td style="font-size:12px;color:var(--dim);">${t.spec||'—'}</td>
+      <td>${t.es_pro?'<span class="badge bp">⭐ PRO</span>':'<span style="color:var(--muted);font-size:12px;">No</span>'}</td>
+      <td>${t.review_count||0}</td>
+      <td>${t.rating?'⭐ '+Number(t.rating).toFixed(1):'—'}</td>
+      <td>${t.es_pro
+        ?`<button class="btn-d" onclick="togglePro('${t.id}',false)">Quitar Pro</button>`
+        :`<button class="btn-a" onclick="togglePro('${t.id}',true)">Activar Pro</button>`
+      }</td>
     </tr>`).join('');
+
+    // Tabla reseñas
+    document.getElementById('bResenas').textContent = totalResenas+' reseñas';
+    const tr = document.getElementById('tResenas');
+    tr.innerHTML = resenas.length ? resenas.map(r=>`<tr>
+      <td>${r.cliente_nombre||'—'}</td>
+      <td style="font-weight:600;">${nombres[r.mecanico_id]||'—'}</td>
+      <td>${'⭐'.repeat(r.stars||0)} ${r.stars||0}/5</td>
+      <td style="color:var(--dim);font-size:12px;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${r.texto||'—'}</td>
+      <td style="font-size:12px;color:var(--muted);">${r.created_at?new Date(r.created_at).toLocaleDateString('es-CL'):'—'}</td>
+    </tr>`).join('') : '<tr><td colspan="5" class="empty">Sin reseñas aún</td></tr>';
+
+    document.getElementById('lastUpdate').textContent = 'Actualizado: '+new Date().toLocaleTimeString('es-CL');
+  } catch(e){
+    console.error('Error cargarDatos:', e);
+    document.getElementById('lastUpdate').textContent = 'Error al cargar: '+e.message;
   }
-
-  document.getElementById('lastUpdate').textContent = 'Última actualización: ' + new Date().toLocaleTimeString('es-CL');
 }
 
-async function togglePro(mecanicoId, activar){
-  const { error } = await sb.from('mecanicos').update({ es_pro: activar }).eq('id', mecanicoId);
-  if(!error) cargarDatos();
-}
-
-async function cancelarPlan(mecanicoId){
-  if(!confirm('¿Cancelar el plan de este taller?')) return;
-  await sb.from('suscripciones').update({ estado: 'cancelado' }).eq('mecanico_id', mecanicoId).eq('estado', 'activo');
-  await sb.from('mecanicos').update({ es_pro: false }).eq('id', mecanicoId);
+async function togglePro(id, activar){
+  await sb.from('mecanicos').update({es_pro:activar}).eq('id',id);
   cargarDatos();
 }
 
-// Auto-refresh cada 5 minutos
-setInterval(cargarDatos, 5 * 60 * 1000);
+async function cancelarPlan(id){
+  if(!confirm('¿Cancelar el plan?')) return;
+  await sb.from('suscripciones').update({estado:'cancelado'}).eq('mecanico_id',id).eq('estado','activo');
+  await sb.from('mecanicos').update({es_pro:false}).eq('id',id);
+  cargarDatos();
+}
 
-// Verificar sesión activa al cargar
-(async function init(){
-  const { data: { session } } = await sb.auth.getSession();
-  if(session && session.user.email === ADMIN_EMAIL){
-    document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('dashboard').style.display = 'block';
-    document.getElementById('adminEmail').textContent = session.user.email;
-    cargarDatos();
-  }
+setInterval(cargarDatos, 5*60*1000);
+
+// Verificar sesión al cargar
+(async()=>{
+  const { data:{session} } = await sb.auth.getSession();
+  if(session?.user?.email === ADMIN) mostrarDashboard(session.user.email);
 })();
 </script>
 </body>
