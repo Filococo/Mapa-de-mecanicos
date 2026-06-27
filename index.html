@@ -3305,7 +3305,7 @@ async function iniciarPago(plan) {
     anual:     '$89.990 por 1 año'
   };
 
-  const user = supabase.auth.getUser ? (await supabase.auth.getUser()).data?.user : null;
+  const user = sb.auth.getUser ? (await sb.auth.getUser()).data?.user : null;
   if (!user) {
     alert('Debes iniciar sesión para suscribirte.');
     return;
