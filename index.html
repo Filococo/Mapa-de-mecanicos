@@ -1969,6 +1969,15 @@ document.getElementById('authSubmit')?.addEventListener('click', async () => {
     currentUserRole = authSelectedRole;
     updateAccountUI();
     document.getElementById('authOverlay').classList.add('hidden');
+
+    // Email de bienvenida
+    const nombreBienvenida = email.split('@')[0];
+    fetch('https://vdkvbwlzjrqcmegkxslp.supabase.co/functions/v1/email-bienvenida', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, nombre: nombreBienvenida, tipo: authSelectedRole })
+    }).catch(()=>{});
+
     if(authSelectedRole === 'mecanico'){
       alert('Cuenta creada. Ahora puedes completar tu ficha de mecánico — tienes 30 días de prueba gratis.');
       document.querySelector('[data-tab="perfil-mecanico"]').click();
@@ -2577,6 +2586,21 @@ async function submitReview(mecanicoId){
   document.getElementById('reviewText').value = '';
   selectedStars = 0;
   document.querySelectorAll('#starPicker span').forEach(c => c.innerHTML = starsSVG(false,20));
+
+  // Notificar al taller por email si tiene correo registrado
+  if(m?.email) {
+    fetch('https://vdkvbwlzjrqcmegkxslp.supabase.co/functions/v1/email-resena', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        emailTaller: m.email,
+        nombreTaller: m.name,
+        clienteNombre,
+        stars: selectedStars,
+        texto: text
+      })
+    }).catch(()=>{});
+  }
 
   await loadMechanicsFromSupabase();
   openProfile(mecanicoId);
