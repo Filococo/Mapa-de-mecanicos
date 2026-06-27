@@ -3682,6 +3682,10 @@ refreshSession();
 
 // Detectar retorno desde Mercado Pago
 (function detectarRetornoPago(){
+  // Asegurar que el modal esté oculto al inicio
+  const modalInit = document.getElementById('pagoModal');
+  if(modalInit) modalInit.style.display = 'none';
+
   const params = new URLSearchParams(window.location.search);
   const pago = params.get('pago');
   if(!pago) return;
