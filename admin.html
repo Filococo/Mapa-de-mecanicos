@@ -111,8 +111,13 @@
 
     <div class="section">
       <div class="sec-head">
-        <div class="sec-title">📈 Registros diarios (últimos 30 días)</div>
-        <button class="ref-btn" onclick="cargarGrafico()">↻ Actualizar</button>
+        <div class="sec-title">📈 Nuevos registros <span id="grafTotal" style="font-size:11px;color:var(--muted);font-weight:400;margin-left:8px;"></span></div>
+        <div style="display:flex;gap:6px;">
+          <button class="graf-btn" data-p="7d" onclick="cargarGrafico('7d')" style="background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:6px;padding:4px 10px;color:var(--dim);font-size:11px;cursor:pointer;">7 días</button>
+          <button class="graf-btn" data-p="30d" onclick="cargarGrafico('30d')" style="background:var(--red);border:1px solid var(--red);border-radius:6px;padding:4px 10px;color:#fff;font-size:11px;cursor:pointer;">30 días</button>
+          <button class="graf-btn" data-p="6m" onclick="cargarGrafico('6m')" style="background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:6px;padding:4px 10px;color:var(--dim);font-size:11px;cursor:pointer;">6 meses</button>
+          <button class="graf-btn" data-p="1a" onclick="cargarGrafico('1a')" style="background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:6px;padding:4px 10px;color:var(--dim);font-size:11px;cursor:pointer;">1 año</button>
+        </div>
       </div>
       <div style="padding:20px;">
         <canvas id="graficoRegistros" height="80"></canvas>
@@ -306,11 +311,25 @@ async function cancelarPlan(id){
 setInterval(cargarDatos, 5*60*1000);
 
 let chartInstance = null;
+let periodoActual = '30d';
 
-async function cargarGrafico(){
-  // Últimos 30 días
+async function cargarGrafico(periodo = periodoActual){
+  periodoActual = periodo;
+
+  // Actualizar botones activos
+  document.querySelectorAll('.graf-btn').forEach(b => {
+    b.style.background = b.dataset.p === periodo ? 'var(--red)' : 'rgba(255,255,255,.05)';
+    b.style.color = b.dataset.p === periodo ? '#fff' : 'var(--dim)';
+  });
+
+  let dias, agrupar;
+  if(periodo === '7d')  { dias = 7;   agrupar = 'dia'; }
+  if(periodo === '30d') { dias = 30;  agrupar = 'dia'; }
+  if(periodo === '6m')  { dias = 180; agrupar = 'mes'; }
+  if(periodo === '1a')  { dias = 365; agrupar = 'mes'; }
+
   const desde = new Date();
-  desde.setDate(desde.getDate() - 29);
+  desde.setDate(desde.getDate() - (dias - 1));
   desde.setHours(0,0,0,0);
 
   const { data } = await sb
@@ -319,22 +338,41 @@ async function cargarGrafico(){
     .gte('created_at', desde.toISOString())
     .order('created_at', { ascending: true });
 
-  // Agrupar por día
   const conteo = {};
-  for(let i=0; i<30; i++){
-    const d = new Date(desde);
-    d.setDate(d.getDate() + i);
-    const key = d.toLocaleDateString('es-CL', {day:'2-digit',month:'2-digit'});
-    conteo[key] = 0;
-  }
 
-  (data||[]).forEach(m => {
-    const key = new Date(m.created_at).toLocaleDateString('es-CL', {day:'2-digit',month:'2-digit'});
-    if(conteo[key] !== undefined) conteo[key]++;
-  });
+  if(agrupar === 'dia'){
+    for(let i=0; i<dias; i++){
+      const d = new Date(desde);
+      d.setDate(d.getDate() + i);
+      const key = `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`;
+      conteo[key] = 0;
+    }
+    (data||[]).forEach(m => {
+      const d = new Date(m.created_at);
+      const key = `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`;
+      if(conteo[key] !== undefined) conteo[key]++;
+    });
+  } else {
+    // Agrupar por mes
+    for(let i=0; i<dias; i++){
+      const d = new Date(desde);
+      d.setDate(d.getDate() + i);
+      const meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+      const key = `${meses[d.getMonth()]} ${d.getFullYear()}`;
+      conteo[key] = 0;
+    }
+    (data||[]).forEach(m => {
+      const d = new Date(m.created_at);
+      const meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+      const key = `${meses[d.getMonth()]} ${d.getFullYear()}`;
+      if(conteo[key] !== undefined) conteo[key]++;
+    });
+  }
 
   const labels = Object.keys(conteo);
   const valores = Object.values(conteo);
+  const total = valores.reduce((a,b)=>a+b,0);
+  document.getElementById('grafTotal').textContent = `${total} registros en el período`;
 
   const ctx = document.getElementById('graficoRegistros').getContext('2d');
   if(chartInstance) chartInstance.destroy();
@@ -346,7 +384,7 @@ async function cargarGrafico(){
       datasets: [{
         label: 'Registros',
         data: valores,
-        backgroundColor: 'rgba(232,25,44,0.7)',
+        backgroundColor: 'rgba(232,25,44,0.6)',
         borderColor: '#E8192C',
         borderWidth: 1,
         borderRadius: 4,
@@ -357,19 +395,28 @@ async function cargarGrafico(){
       plugins: {
         legend: { display: false },
         tooltip: {
+          backgroundColor: '#1a1a2e',
+          titleColor: '#fff',
+          bodyColor: '#aaa',
           callbacks: {
-            label: ctx => `${ctx.parsed.y} registro${ctx.parsed.y !== 1 ? 's' : ''}`
+            label: c => ` ${c.parsed.y} registro${c.parsed.y !== 1 ? 's' : ''}`
           }
         }
       },
       scales: {
         x: {
-          ticks: { color: '#666', font: { size: 10 }, maxRotation: 45 },
-          grid: { color: 'rgba(255,255,255,.04)' }
+          ticks: { 
+            color: '#666', 
+            font: { size: 9 }, 
+            maxRotation: 45,
+            autoSkip: true,
+            maxTicksLimit: dias <= 30 ? 15 : 12
+          },
+          grid: { color: 'rgba(255,255,255,.03)' }
         },
         y: {
           ticks: { color: '#666', stepSize: 1 },
-          grid: { color: 'rgba(255,255,255,.06)' },
+          grid: { color: 'rgba(255,255,255,.05)' },
           beginAtZero: true
         }
       }
