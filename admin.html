@@ -7,139 +7,297 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
-  :root {
-    --bg:#0d0d14;--bg2:#13131f;--bg3:#1a1a2e;
-    --red:#E8192C;--gold:#f0c040;--green:#22c55e;--blue:#3b82f6;
-    --border:rgba(255,255,255,.08);--muted:#666;--dim:#aaa;--white:#fff;
-  }
-  *{margin:0;padding:0;box-sizing:border-box;}
-  body{background:var(--bg);color:var(--white);font-family:'Inter',system-ui,sans-serif;min-height:100vh;}
-  #loginScreen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;}
-  .login-box{background:var(--bg3);border:1px solid var(--border);border-radius:16px;padding:40px;width:100%;max-width:380px;}
-  .login-logo{text-align:center;margin-bottom:28px;}
-  .login-logo h1{font-size:28px;font-weight:900;color:var(--red);}
-  .login-logo p{color:var(--muted);font-size:12px;margin-top:4px;}
-  .lbl{display:block;font-size:11px;font-weight:600;color:var(--dim);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;margin-top:14px;}
-  .inp{width:100%;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--white);font-size:14px;outline:none;}
-  .inp:focus{border-color:var(--red);}
-  .btn-login{width:100%;background:var(--red);color:#fff;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;margin-top:18px;}
-  .err{color:var(--red);font-size:12px;margin-top:8px;text-align:center;}
-  #dashboard{display:none;}
-  .topbar{background:var(--bg3);border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
-  .logo{font-size:18px;font-weight:900;color:var(--red);}
-  .logo span{color:var(--white);font-size:11px;font-weight:400;margin-left:8px;opacity:.5;}
-  .btn-out{background:none;border:1px solid var(--border);border-radius:6px;padding:6px 12px;color:var(--dim);font-size:12px;cursor:pointer;}
-  .main{padding:24px;max-width:1300px;margin:0 auto;}
-  .page-title{font-size:22px;font-weight:800;margin-bottom:4px;}
-  .page-sub{font-size:12px;color:var(--muted);margin-bottom:24px;}
-  .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:24px;}
-  .kpi{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:18px;position:relative;overflow:hidden;}
-  .kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
-  .kpi.r::before{background:var(--red);}
-  .kpi.g::before{background:var(--green);}
-  .kpi.y::before{background:var(--gold);}
-  .kpi.b::before{background:var(--blue);}
-  .kpi-lbl{font-size:11px;color:#ccc;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;font-weight:600;}
-  .kpi-val{font-size:28px;font-weight:900;}
-  .kpi.r .kpi-val{color:var(--red);}
-  .kpi.g .kpi-val{color:var(--green);}
-  .kpi.y .kpi-val{color:var(--gold);}
-  .kpi.b .kpi-val{color:var(--blue);}
-  .kpi-sub{font-size:11px;color:#999;margin-top:4px;}
-  .section{background:var(--bg3);border:1px solid var(--border);border-radius:12px;margin-bottom:20px;overflow:hidden;}
-  .sec-head{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
-  .sec-title{font-size:14px;font-weight:700;}
-  .sec-badge{font-size:11px;background:rgba(255,255,255,.05);border-radius:20px;padding:3px 10px;color:var(--dim);}
-  table{width:100%;border-collapse:collapse;}
-  th{font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);padding:10px 20px;text-align:left;border-bottom:1px solid var(--border);font-weight:600;}
-  td{padding:11px 20px;font-size:13px;border-bottom:1px solid rgba(255,255,255,.04);}
-  tr:last-child td{border-bottom:none;}
-  tr:hover td{background:rgba(255,255,255,.02);}
-  .badge{display:inline-block;padding:3px 8px;border-radius:20px;font-size:10px;font-weight:700;}
-  .bp{background:rgba(240,192,64,.15);color:var(--gold);border:1px solid rgba(240,192,64,.3);}
-  .ba{background:rgba(34,197,94,.15);color:var(--green);border:1px solid rgba(34,197,94,.3);}
-  .bv{background:rgba(255,255,255,.05);color:var(--muted);border:1px solid var(--border);}
-  .bm{background:rgba(59,130,246,.15);color:var(--blue);}
-  .bs{background:rgba(168,85,247,.15);color:#a855f7;}
-  .ban{background:rgba(240,192,64,.15);color:var(--gold);}
-  .btn-a{background:rgba(240,192,64,.1);border:1px solid rgba(240,192,64,.3);color:var(--gold);border-radius:6px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;}
-  .btn-d{background:rgba(232,25,44,.1);border:1px solid rgba(232,25,44,.3);color:var(--red);border-radius:6px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;}
-  .empty{text-align:center;padding:28px;color:var(--muted);font-size:13px;}
-  .ref-btn{background:none;border:1px solid var(--border);border-radius:6px;padding:5px 12px;color:var(--dim);font-size:11px;cursor:pointer;}
+:root{
+  --bg:#0d0d14;--bg2:#13131f;--bg3:#1a1a2e;--bg4:#222236;
+  --red:#E8192C;--gold:#f0c040;--green:#22c55e;--blue:#3b82f6;--purple:#a855f7;
+  --border:rgba(255,255,255,.08);--muted:#666;--dim:#aaa;--white:#fff;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--white);font-family:'Inter',system-ui,sans-serif;min-height:100vh;}
+
+/* LOGIN */
+#loginScreen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;background:radial-gradient(ellipse at top,#1a0a0e,var(--bg));}
+.login-box{background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:44px;width:100%;max-width:380px;box-shadow:0 24px 64px rgba(0,0,0,.5);}
+.login-logo{text-align:center;margin-bottom:32px;}
+.login-logo-mark{width:56px;height:56px;background:var(--red);border-radius:14px;transform:rotate(45deg);margin:0 auto 16px;display:flex;align-items:center;justify-content:center;}
+.login-logo-mark svg{transform:rotate(-45deg);width:24px;height:24px;}
+.login-logo h1{font-size:26px;font-weight:900;color:var(--white);}
+.login-logo p{color:var(--muted);font-size:12px;margin-top:4px;}
+.lbl{display:block;font-size:11px;font-weight:600;color:var(--dim);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;margin-top:16px;}
+.inp{width:100%;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--white);font-size:14px;outline:none;transition:.2s;}
+.inp:focus{border-color:var(--red);background:rgba(232,25,44,.05);}
+.btn-login{width:100%;background:var(--red);color:#fff;border:none;border-radius:10px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;margin-top:20px;transition:.2s;}
+.btn-login:hover{background:#c8101f;}
+.err{color:var(--red);font-size:12px;margin-top:8px;text-align:center;}
+
+/* DASHBOARD */
+#dashboard{display:none;}
+.topbar{background:rgba(13,13,20,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 28px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;}
+.logo{display:flex;align-items:center;gap:10px;}
+.logo-mark{width:32px;height:32px;background:var(--red);border-radius:8px;transform:rotate(45deg);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.logo-mark svg{transform:rotate(-45deg);width:14px;height:14px;}
+.logo-name{font-size:18px;font-weight:900;color:var(--white);}
+.logo-tag{font-size:10px;color:var(--muted);font-weight:400;margin-left:4px;}
+.topbar-right{display:flex;align-items:center;gap:12px;}
+.admin-pill{background:rgba(232,25,44,.1);border:1px solid rgba(232,25,44,.2);border-radius:20px;padding:4px 12px;font-size:11px;color:var(--red);font-weight:600;}
+.btn-out{background:none;border:1px solid var(--border);border-radius:8px;padding:7px 14px;color:var(--dim);font-size:12px;cursor:pointer;transition:.2s;}
+.btn-out:hover{border-color:var(--red);color:var(--white);}
+.main{padding:28px;max-width:1400px;margin:0 auto;}
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;}
+.page-title{font-size:24px;font-weight:900;}
+.page-sub{font-size:12px;color:var(--muted);margin-top:4px;}
+.ref-btn{background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:8px;padding:8px 16px;color:var(--dim);font-size:12px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:.2s;}
+.ref-btn:hover{border-color:var(--blue);color:var(--white);}
+
+/* KPI GRID */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px;margin-bottom:28px;}
+.kpi{background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:20px;position:relative;overflow:hidden;cursor:pointer;transition:.2s;}
+.kpi:hover{border-color:rgba(255,255,255,.18);transform:translateY(-1px);box-shadow:0 8px 24px rgba(0,0,0,.3);}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:14px 14px 0 0;}
+.kpi.r::before{background:linear-gradient(90deg,var(--red),#ff6b7a);}
+.kpi.g::before{background:linear-gradient(90deg,var(--green),#4ade80);}
+.kpi.y::before{background:linear-gradient(90deg,var(--gold),#fde047);}
+.kpi.b::before{background:linear-gradient(90deg,var(--blue),#60a5fa);}
+.kpi.p::before{background:linear-gradient(90deg,var(--purple),#c084fc);}
+.kpi-icon{font-size:20px;margin-bottom:10px;}
+.kpi-lbl{font-size:10px;color:#bbb;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px;font-weight:600;}
+.kpi-val{font-size:30px;font-weight:900;line-height:1;}
+.kpi.r .kpi-val{color:var(--red);}
+.kpi.g .kpi-val{color:var(--green);}
+.kpi.y .kpi-val{color:var(--gold);}
+.kpi.b .kpi-val{color:var(--blue);}
+.kpi.p .kpi-val{color:var(--purple);}
+.kpi-sub{font-size:11px;color:#888;margin-top:6px;}
+.kpi-arrow{position:absolute;bottom:14px;right:14px;color:rgba(255,255,255,.2);font-size:14px;transition:.2s;}
+.kpi:hover .kpi-arrow{color:rgba(255,255,255,.5);}
+
+/* SECTIONS */
+.section{background:var(--bg3);border:1px solid var(--border);border-radius:14px;margin-bottom:20px;overflow:hidden;}
+.sec-head{padding:16px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.sec-title{font-size:14px;font-weight:700;display:flex;align-items:center;gap:8px;}
+.sec-badge{font-size:11px;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:20px;padding:3px 12px;color:var(--dim);}
+
+/* TABLES */
+table{width:100%;border-collapse:collapse;}
+th{font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);padding:11px 20px;text-align:left;border-bottom:1px solid var(--border);font-weight:600;background:rgba(255,255,255,.01);}
+td{padding:12px 20px;font-size:13px;border-bottom:1px solid rgba(255,255,255,.03);}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:rgba(255,255,255,.025);}
+.empty{text-align:center;padding:32px;color:var(--muted);font-size:13px;}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:700;gap:4px;}
+.bp{background:rgba(240,192,64,.12);color:var(--gold);border:1px solid rgba(240,192,64,.25);}
+.ba{background:rgba(34,197,94,.12);color:var(--green);border:1px solid rgba(34,197,94,.25);}
+.bv{background:rgba(255,255,255,.05);color:var(--muted);border:1px solid var(--border);}
+.bm{background:rgba(59,130,246,.12);color:var(--blue);border:1px solid rgba(59,130,246,.25);}
+.bs{background:rgba(168,85,247,.12);color:#a855f7;border:1px solid rgba(168,85,247,.25);}
+.ban{background:rgba(240,192,64,.12);color:var(--gold);border:1px solid rgba(240,192,64,.25);}
+
+/* BTNS */
+.btn-a{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.25);color:var(--green);border-radius:7px;padding:5px 11px;font-size:11px;font-weight:700;cursor:pointer;transition:.2s;}
+.btn-a:hover{background:rgba(34,197,94,.2);}
+.btn-d{background:rgba(232,25,44,.1);border:1px solid rgba(232,25,44,.25);color:var(--red);border-radius:7px;padding:5px 11px;font-size:11px;font-weight:700;cursor:pointer;transition:.2s;}
+.btn-d:hover{background:rgba(232,25,44,.2);}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);z-index:1000;align-items:center;justify-content:center;padding:20px;}
+.modal-overlay.active{display:flex;}
+.modal{background:var(--bg3);border:1px solid var(--border);border-radius:16px;width:100%;max-width:640px;max-height:80vh;overflow-y:auto;}
+.modal-head{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--bg3);}
+.modal-title{font-size:16px;font-weight:700;}
+.modal-close{background:rgba(255,255,255,.08);border:none;color:var(--dim);border-radius:8px;width:32px;height:32px;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;}
+.modal-close:hover{background:rgba(232,25,44,.2);color:var(--red);}
+.modal-body{padding:20px 24px;}
+
+/* GRAFICO BTNS */
+.graf-btn{border-radius:7px;padding:5px 12px;font-size:11px;cursor:pointer;font-weight:600;border:1px solid var(--border);transition:.2s;}
+
+/* CIUDAD BARS */
+.ciudad-bar{margin-bottom:12px;}
+.ciudad-bar-header{display:flex;justify-content:space-between;margin-bottom:5px;}
+.ciudad-bar-name{font-size:12px;font-weight:600;}
+.ciudad-bar-val{font-size:12px;font-weight:700;}
+.ciudad-bar-track{background:rgba(255,255,255,.06);border-radius:4px;height:5px;}
+.ciudad-bar-fill{height:5px;border-radius:4px;transition:.6s;}
+
+/* SEARCH */
+.tbl-search{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--white);font-size:12px;outline:none;width:200px;}
+.tbl-search:focus{border-color:var(--blue);}
+
+@media(max-width:768px){
+  .kpi-grid{grid-template-columns:repeat(2,1fr);}
+  .main{padding:16px;}
+  .ciudad-grid{grid-template-columns:1fr!important;}
+}
 </style>
 </head>
 <body>
 
+<!-- LOGIN -->
 <div id="loginScreen">
   <div class="login-box">
     <div class="login-logo">
-      <h1>🔧 PANNE</h1>
+      <div class="login-logo-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+      </div>
+      <h1>PANNE</h1>
       <p>Panel de administración</p>
     </div>
     <label class="lbl">Correo</label>
     <input type="email" class="inp" id="loginEmail" value="contacto@panne.cl">
     <label class="lbl">Contraseña</label>
-    <input type="password" class="inp" id="loginPass" placeholder="••••••••">
-    <button class="btn-login" onclick="login()">Entrar</button>
+    <input type="password" class="inp" id="loginPass" placeholder="••••••••" onkeydown="if(event.key==='Enter')login()">
+    <button class="btn-login" onclick="login()">Entrar al panel →</button>
     <div class="err" id="loginErr"></div>
   </div>
 </div>
 
+<!-- DASHBOARD -->
 <div id="dashboard">
   <div class="topbar">
-    <div class="logo">PANNE <span>Admin</span></div>
-    <div style="display:flex;align-items:center;gap:12px;">
-      <span style="font-size:12px;color:var(--dim);" id="adminEmail"></span>
-      <button class="btn-out" onclick="logout()">Cerrar sesión</button>
+    <div class="logo">
+      <div class="logo-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+      </div>
+      <div>
+        <div class="logo-name">PANNE <span class="logo-tag">Admin</span></div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <span class="admin-pill" id="adminEmail"></span>
+      <button class="btn-out" onclick="logout()">← Cerrar sesión</button>
     </div>
   </div>
-  <div class="main">
-    <div class="page-title">Panel de control</div>
-    <div class="page-sub" id="lastUpdate">Cargando...</div>
 
-    <div class="kpi-grid">
-      <div class="kpi r"><div class="kpi-lbl">Talleres</div><div class="kpi-val" id="k1">—</div><div class="kpi-sub">Registrados</div></div>
-      <div class="kpi y"><div class="kpi-lbl">Talleres Pro</div><div class="kpi-val" id="k2">—</div><div class="kpi-sub">Plan activo ⭐</div></div>
-      <div class="kpi g"><div class="kpi-lbl">Ingreso estimado</div><div class="kpi-val" id="k3">—</div><div class="kpi-sub">Suscripciones activas</div></div>
-      <div class="kpi b"><div class="kpi-lbl">Clientes</div><div class="kpi-val" id="k4">—</div><div class="kpi-sub">Usuarios registrados</div></div>
-      <div class="kpi g"><div class="kpi-lbl">Talleres registrados</div><div class="kpi-val" id="k10">—</div><div class="kpi-sub">Con cuenta propia</div></div>
-      <div class="kpi r"><div class="kpi-lbl">Reseñas</div><div class="kpi-val" id="k5">—</div><div class="kpi-sub">Publicadas</div></div>
-      <div class="kpi y"><div class="kpi-lbl">Ciudades</div><div class="kpi-val" id="k6">—</div><div class="kpi-sub">Con cobertura</div></div>
-      <div class="kpi b"><div class="kpi-lbl">Visitas al sitio</div><div class="kpi-val" id="k7">—</div><div class="kpi-sub">Total acumulado</div></div>
-      <div class="kpi g"><div class="kpi-lbl">Visitas hoy</div><div class="kpi-val" id="k8">—</div><div class="kpi-sub">Desde medianoche</div></div>
-      <div class="kpi r"><div class="kpi-lbl">Visitas perfiles</div><div class="kpi-val" id="k9">—</div><div class="kpi-sub">Clics en talleres</div></div>
+  <div class="main">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Panel de control</div>
+        <div class="page-sub" id="lastUpdate">Cargando datos...</div>
+      </div>
+      <button class="ref-btn" onclick="cargarDatos()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        Actualizar
+      </button>
     </div>
 
+    <!-- KPIs CLICKEABLES -->
+    <div class="kpi-grid">
+      <div class="kpi r" onclick="abrirModal('talleres')">
+        <div class="kpi-icon">🔧</div>
+        <div class="kpi-lbl">Talleres</div>
+        <div class="kpi-val" id="k1">—</div>
+        <div class="kpi-sub">Total registrados</div>
+        <span class="kpi-arrow">→</span>
+      </div>
+      <div class="kpi y" onclick="abrirModal('pros')">
+        <div class="kpi-icon">⭐</div>
+        <div class="kpi-lbl">Talleres Pro</div>
+        <div class="kpi-val" id="k2">—</div>
+        <div class="kpi-sub">Plan activo</div>
+        <span class="kpi-arrow">→</span>
+      </div>
+      <div class="kpi g" onclick="abrirModal('subs')">
+        <div class="kpi-icon">💰</div>
+        <div class="kpi-lbl">Ingreso estimado</div>
+        <div class="kpi-val" id="k3">—</div>
+        <div class="kpi-sub">Suscripciones activas</div>
+        <span class="kpi-arrow">→</span>
+      </div>
+      <div class="kpi b" onclick="abrirModal('clientes')">
+        <div class="kpi-icon">👤</div>
+        <div class="kpi-lbl">Clientes</div>
+        <div class="kpi-val" id="k4">—</div>
+        <div class="kpi-sub">Usuarios registrados</div>
+        <span class="kpi-arrow">→</span>
+      </div>
+      <div class="kpi g" onclick="abrirModal('talleres')">
+        <div class="kpi-icon">🏪</div>
+        <div class="kpi-lbl">Con cuenta propia</div>
+        <div class="kpi-val" id="k10">—</div>
+        <div class="kpi-sub">Talleres registrados</div>
+        <span class="kpi-arrow">→</span>
+      </div>
+      <div class="kpi p" onclick="abrirModal('resenas')">
+        <div class="kpi-icon">⭐</div>
+        <div class="kpi-lbl">Reseñas</div>
+        <div class="kpi-val" id="k5">—</div>
+        <div class="kpi-sub">Publicadas</div>
+        <span class="kpi-arrow">→</span>
+      </div>
+      <div class="kpi y" onclick="abrirModal('ciudades')">
+        <div class="kpi-icon">🏙</div>
+        <div class="kpi-lbl">Ciudades</div>
+        <div class="kpi-val" id="k6">—</div>
+        <div class="kpi-sub">Con cobertura</div>
+        <span class="kpi-arrow">→</span>
+      </div>
+      <div class="kpi b" onclick="abrirModal('visitas')">
+        <div class="kpi-icon">👁</div>
+        <div class="kpi-lbl">Visitas al sitio</div>
+        <div class="kpi-val" id="k7">—</div>
+        <div class="kpi-sub">Total acumulado</div>
+        <span class="kpi-arrow">→</span>
+      </div>
+      <div class="kpi g">
+        <div class="kpi-icon">📅</div>
+        <div class="kpi-lbl">Visitas hoy</div>
+        <div class="kpi-val" id="k8">—</div>
+        <div class="kpi-sub">Desde medianoche</div>
+      </div>
+      <div class="kpi r">
+        <div class="kpi-icon">🖱</div>
+        <div class="kpi-lbl">Clics en perfiles</div>
+        <div class="kpi-val" id="k9">—</div>
+        <div class="kpi-sub">Visitas a talleres</div>
+      </div>
+    </div>
+
+    <!-- GRÁFICO -->
     <div class="section">
       <div class="sec-head">
-        <div class="sec-title">📈 Nuevos registros <span id="grafTotal" style="font-size:11px;color:var(--muted);font-weight:400;margin-left:8px;"></span></div>
+        <div class="sec-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          Nuevos registros
+          <span style="font-size:11px;color:var(--muted);font-weight:400;" id="grafTotal"></span>
+        </div>
         <div style="display:flex;gap:6px;">
-          <button class="graf-btn" data-p="7d" onclick="cargarGrafico('7d')" style="background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:6px;padding:4px 10px;color:var(--dim);font-size:11px;cursor:pointer;">7 días</button>
-          <button class="graf-btn" data-p="30d" onclick="cargarGrafico('30d')" style="background:var(--red);border:1px solid var(--red);border-radius:6px;padding:4px 10px;color:#fff;font-size:11px;cursor:pointer;">30 días</button>
-          <button class="graf-btn" data-p="6m" onclick="cargarGrafico('6m')" style="background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:6px;padding:4px 10px;color:var(--dim);font-size:11px;cursor:pointer;">6 meses</button>
-          <button class="graf-btn" data-p="1a" onclick="cargarGrafico('1a')" style="background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:6px;padding:4px 10px;color:var(--dim);font-size:11px;cursor:pointer;">1 año</button>
+          <button class="graf-btn" data-p="7d" onclick="cargarGrafico('7d')" style="background:rgba(255,255,255,.05);color:var(--dim);">7 días</button>
+          <button class="graf-btn" data-p="30d" onclick="cargarGrafico('30d')" style="background:var(--red);color:#fff;border-color:var(--red);">30 días</button>
+          <button class="graf-btn" data-p="6m" onclick="cargarGrafico('6m')" style="background:rgba(255,255,255,.05);color:var(--dim);">6 meses</button>
+          <button class="graf-btn" data-p="1a" onclick="cargarGrafico('1a')" style="background:rgba(255,255,255,.05);color:var(--dim);">1 año</button>
         </div>
       </div>
-      <div style="padding:20px;">
-        <canvas id="graficoRegistros" height="80"></canvas>
-      </div>
+      <div style="padding:20px;"><canvas id="graficoRegistros" height="80"></canvas></div>
     </div>
 
+    <!-- SUSCRIPCIONES -->
     <div class="section">
       <div class="sec-head">
-        <div class="sec-title">💳 Suscripciones activas</div>
-        <button class="ref-btn" onclick="cargarDatos()">↻ Actualizar</button>
+        <div class="sec-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+          Suscripciones activas
+        </div>
+        <span class="sec-badge" id="bSubs">—</span>
       </div>
       <div style="overflow-x:auto;">
-        <table><thead><tr><th>Taller</th><th>Plan</th><th>Estado</th><th>Inicio</th><th>Vencimiento</th><th>Días</th><th>Acción</th></tr></thead>
+        <table><thead><tr><th>Taller</th><th>Plan</th><th>Estado</th><th>Inicio</th><th>Vencimiento</th><th>Días restantes</th><th>Acción</th></tr></thead>
         <tbody id="tSubs"><tr><td colspan="7" class="empty">Cargando...</td></tr></tbody></table>
       </div>
     </div>
 
+    <!-- TALLERES -->
     <div class="section">
       <div class="sec-head">
-        <div class="sec-title">🔧 Talleres recientes</div>
-        <span class="sec-badge" id="bTalleres">—</span>
+        <div class="sec-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+          Talleres recientes
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <input type="text" class="tbl-search" placeholder="Buscar taller..." oninput="filtrarTalleres(this.value)">
+          <span class="sec-badge" id="bTalleres">—</span>
+        </div>
       </div>
       <div style="overflow-x:auto;">
         <table><thead><tr><th>Nombre</th><th>Ciudad</th><th>Especialidad</th><th>Pro</th><th>Reseñas</th><th>Rating</th><th>Acción</th></tr></thead>
@@ -147,26 +305,34 @@
       </div>
     </div>
 
+    <!-- CIUDADES -->
     <div class="section">
       <div class="sec-head">
-        <div class="sec-title">🏙 Ciudades con más actividad</div>
+        <div class="sec-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          Ciudades con más actividad
+        </div>
         <span class="sec-badge" id="bCiudades">—</span>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;">
-        <div style="padding:16px 20px;border-right:1px solid rgba(255,255,255,.08);">
-          <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;">🔧 Talleres por ciudad</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;" class="ciudad-grid">
+        <div style="padding:18px 22px;border-right:1px solid var(--border);">
+          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px;font-weight:600;">🔧 Talleres por ciudad</div>
           <div id="ciudadesTalleres"></div>
         </div>
-        <div style="padding:16px 20px;">
-          <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;">👤 Clientes por ciudad</div>
+        <div style="padding:18px 22px;">
+          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px;font-weight:600;">👤 Clientes por ciudad</div>
           <div id="ciudadesClientes"></div>
         </div>
       </div>
     </div>
 
+    <!-- RESEÑAS -->
     <div class="section">
       <div class="sec-head">
-        <div class="sec-title">⭐ Reseñas recientes</div>
+        <div class="sec-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          Reseñas recientes
+        </div>
         <span class="sec-badge" id="bResenas">—</span>
       </div>
       <div style="overflow-x:auto;">
@@ -177,12 +343,26 @@
   </div>
 </div>
 
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)cerrarModal()">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title" id="modalTitle">—</div>
+      <button class="modal-close" onclick="cerrarModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
 <script>
 const SUPABASE_URL = 'https://vdkvbwlzjrqcmegkxslp.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_afbIDXILgu4oM1v3GUuzDQ_jWZnds9v';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const ADMIN = 'contacto@panne.cl';
 const PRECIOS = { mensual:9990, semestral:49990, anual:89990 };
+
+// Estado global
+let _talleres=[], _subs=[], _resenas=[], _nombres={}, _totalPro=0, _totalTalleres=0;
 
 async function login(){
   const email = document.getElementById('loginEmail').value.trim();
@@ -203,17 +383,13 @@ function mostrarDashboard(email){
   cargarGrafico();
 }
 
-async function logout(){
-  await sb.auth.signOut();
-  location.reload();
-}
+async function logout(){ await sb.auth.signOut(); location.reload(); }
 
 async function cargarDatos(){
   document.getElementById('lastUpdate').textContent = 'Actualizando...';
   try {
-    // Queries en paralelo
     const [r1,r2,r3,r4,r5,r6,r7,r8,r9] = await Promise.all([
-      sb.from('mecanicos').select('id,name,city,spec,es_pro,review_count,rating,visit_count').order('created_at',{ascending:false}).limit(100),
+      sb.from('mecanicos').select('id,name,city,spec,es_pro,review_count,rating,visit_count,email').order('created_at',{ascending:false}).limit(200),
       sb.from('mecanicos').select('*',{count:'exact',head:true}),
       sb.from('mecanicos').select('*',{count:'exact',head:true}).eq('es_pro',true),
       sb.rpc('contar_clientes_vs_talleres'),
@@ -224,149 +400,144 @@ async function cargarDatos(){
       sb.rpc('ciudades_clientes_top')
     ]);
 
-    const talleres = r1.data || [];
-    const totalTalleres = r2.count || 0;
-    const totalPro = r3.count || 0;
-    // Clientes vs talleres desde función RPC
+    _talleres = r1.data || [];
+    _totalTalleres = r2.count || 0;
+    _totalPro = r3.count || 0;
     let totalClientes = '—', totalConCuenta = '—';
-    if(r4.data) {
-      totalClientes = r4.data.clientes ?? '—';
-      totalConCuenta = r4.data.talleres_con_cuenta ?? '—';
-    }
-    const subs = r5.data || [];
-    const resenas = r6.data || [];
+    if(r4.data){ totalClientes = r4.data.clientes ?? '—'; totalConCuenta = r4.data.talleres_con_cuenta ?? '—'; }
+    _subs = r5.data || [];
+    _resenas = r6.data || [];
     const totalResenas = r7.count || 0;
-
-    // Ciudades con más talleres
     const todasCiudades = r8.data || [];
-    const ciudadesCount = {};
-    todasCiudades.forEach(t => { ciudadesCount[t.city] = (ciudadesCount[t.city]||0)+1; });
-    const topCiudadesTalleres = Object.entries(ciudadesCount)
-      .sort((a,b)=>b[1]-a[1]).slice(0,10);
-
-    // Ciudades con más clientes (desde RPC)
     const topCiudadesClientes = r9.data || [];
 
     // Mapa nombres
-    const nombres = {};
-    talleres.forEach(t => nombres[t.id] = t.name);
-
-    // Nombres faltantes en subs
-    const idsExtra = subs.map(s=>s.mecanico_id).filter(id=>!nombres[id]);
+    _nombres = {};
+    _talleres.forEach(t => _nombres[t.id] = t.name);
+    const idsExtra = _subs.map(s=>s.mecanico_id).filter(id=>!_nombres[id]);
     if(idsExtra.length){
       const { data: ex } = await sb.from('mecanicos').select('id,name').in('id',idsExtra);
-      (ex||[]).forEach(m => nombres[m.id] = m.name);
+      (ex||[]).forEach(m => _nombres[m.id] = m.name);
     }
 
     // Visitas
     let v1=0, v2=0;
     try {
-      const rv1 = await sb.from('visitas_pagina').select('*',{count:'exact',head:true});
-      v1 = rv1.count || 0;
+      v1 = (await sb.from('visitas_pagina').select('*',{count:'exact',head:true})).count || 0;
       const hoy = new Date(); hoy.setHours(0,0,0,0);
-      const rv2 = await sb.from('visitas_pagina').select('*',{count:'exact',head:true}).gte('created_at',hoy.toISOString());
-      v2 = rv2.count || 0;
+      v2 = (await sb.from('visitas_pagina').select('*',{count:'exact',head:true}).gte('created_at',hoy.toISOString())).count || 0;
     } catch(e){}
 
-    const visitasPerfiles = talleres.reduce((s,t)=>s+(t.visit_count||0),0);
+    const visitasPerfiles = _talleres.reduce((s,t)=>s+(t.visit_count||0),0);
     const ciudades = [...new Set(todasCiudades.map(t=>t.city).filter(Boolean))];
-    const ingreso = subs.filter(s=>s.estado==='activo').reduce((s,sub)=>s+(PRECIOS[sub.plan]||0),0);
+    const ingreso = _subs.filter(s=>s.estado==='activo').reduce((s,sub)=>s+(PRECIOS[sub.plan]||0),0);
+    const ciudadesCount = {};
+    todasCiudades.forEach(t=>{ ciudadesCount[t.city]=(ciudadesCount[t.city]||0)+1; });
+    const topCiudadesTalleres = Object.entries(ciudadesCount).sort((a,b)=>b[1]-a[1]).slice(0,10);
 
     // KPIs
-    document.getElementById('k1').textContent = totalTalleres;
-    document.getElementById('k2').textContent = totalPro;
+    document.getElementById('k1').textContent = _totalTalleres.toLocaleString('es-CL');
+    document.getElementById('k2').textContent = _totalPro;
     document.getElementById('k3').textContent = '$'+ingreso.toLocaleString('es-CL');
     document.getElementById('k4').textContent = totalClientes;
     document.getElementById('k10').textContent = totalConCuenta;
     document.getElementById('k5').textContent = totalResenas;
     document.getElementById('k6').textContent = ciudades.length;
-
-    // Render ranking ciudades talleres
-    const ctEl = document.getElementById('ciudadesTalleres');
-    const maxT = topCiudadesTalleres[0]?.[1] || 1;
-    if(ctEl) ctEl.innerHTML = topCiudadesTalleres.map(([city,count],i)=>`
-      <div style="margin-bottom:10px;">
-        <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
-          <span style="font-size:12px;font-weight:600;">${i+1}. ${city}</span>
-          <span style="font-size:12px;color:var(--red);font-weight:700;">${count}</span>
-        </div>
-        <div style="background:rgba(255,255,255,.06);border-radius:4px;height:4px;">
-          <div style="background:var(--red);height:4px;border-radius:4px;width:${Math.round(count/maxT*100)}%;"></div>
-        </div>
-      </div>`).join('');
-
-    // Render ranking ciudades clientes
-    const ccEl = document.getElementById('ciudadesClientes');
-    const maxC = topCiudadesClientes[0]?.total || 1;
-    if(ccEl) {
-      if(topCiudadesClientes.length) {
-        ccEl.innerHTML = topCiudadesClientes.map((r,i)=>`
-          <div style="margin-bottom:10px;">
-            <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
-              <span style="font-size:12px;font-weight:600;">${i+1}. ${r.city||'Sin ciudad'}</span>
-              <span style="font-size:12px;color:var(--blue);font-weight:700;">${r.total}</span>
-            </div>
-            <div style="background:rgba(255,255,255,.06);border-radius:4px;height:4px;">
-              <div style="background:var(--blue);height:4px;border-radius:4px;width:${Math.round(r.total/maxC*100)}%;"></div>
-            </div>
-          </div>`).join('');
-      } else {
-        ccEl.innerHTML = '<p style="color:var(--muted);font-size:12px;">Sin datos aún</p>';
-      }
-    }
-    document.getElementById('bCiudades').textContent = Object.keys(ciudadesCount).length + ' ciudades';
     document.getElementById('k7').textContent = v1.toLocaleString('es-CL');
     document.getElementById('k8').textContent = v2;
     document.getElementById('k9').textContent = visitasPerfiles.toLocaleString('es-CL');
 
-    // Tabla suscripciones
-    const ts = document.getElementById('tSubs');
-    ts.innerHTML = subs.length ? subs.map(s=>{
-      const venc = s.fecha_vencimiento ? new Date(s.fecha_vencimiento) : null;
-      const dias = venc ? Math.ceil((venc-new Date())/(864e5)) : null;
-      const col = dias!==null ? (dias<7?'var(--red)':dias<30?'var(--gold)':'var(--green)') : '';
-      return `<tr>
-        <td style="font-weight:600;">${nombres[s.mecanico_id]||'—'}</td>
-        <td><span class="badge b${s.plan?.[0]}">${s.plan||'—'}</span></td>
-        <td><span class="badge ${s.estado==='activo'?'ba':'bv'}">${s.estado}</span></td>
-        <td>${s.fecha_inicio?new Date(s.fecha_inicio).toLocaleDateString('es-CL'):'—'}</td>
-        <td>${venc?venc.toLocaleDateString('es-CL'):'—'}</td>
-        <td style="color:${col};font-weight:700;">${dias!==null?dias+' días':'—'}</td>
-        <td><button class="btn-d" onclick="cancelarPlan('${s.mecanico_id}')">Cancelar</button></td>
-      </tr>`;
-    }).join('') : '<tr><td colspan="7" class="empty">Sin suscripciones activas</td></tr>';
+    // Ciudades
+    const maxT = topCiudadesTalleres[0]?.[1]||1;
+    document.getElementById('ciudadesTalleres').innerHTML = topCiudadesTalleres.map(([city,count],i)=>`
+      <div class="ciudad-bar">
+        <div class="ciudad-bar-header">
+          <span class="ciudad-bar-name">${i+1}. ${city}</span>
+          <span class="ciudad-bar-val" style="color:var(--red);">${count}</span>
+        </div>
+        <div class="ciudad-bar-track"><div class="ciudad-bar-fill" style="background:var(--red);width:${Math.round(count/maxT*100)}%;"></div></div>
+      </div>`).join('');
 
-    // Tabla talleres
-    document.getElementById('bTalleres').textContent = totalTalleres+' talleres';
-    document.getElementById('tTalleres').innerHTML = talleres.map(t=>`<tr>
-      <td style="font-weight:600;">${t.name||'—'}</td>
-      <td>${t.city||'—'}</td>
-      <td style="font-size:12px;color:var(--dim);">${t.spec||'—'}</td>
-      <td>${t.es_pro?'<span class="badge bp">⭐ PRO</span>':'<span style="color:var(--muted);font-size:12px;">No</span>'}</td>
-      <td>${t.review_count||0}</td>
-      <td>${t.rating?'⭐ '+Number(t.rating).toFixed(1):'—'}</td>
-      <td>${t.es_pro
-        ?`<button class="btn-d" onclick="togglePro('${t.id}',false)">Quitar Pro</button>`
-        :`<button class="btn-a" onclick="togglePro('${t.id}',true)">Activar Pro</button>`
-      }</td>
-    </tr>`).join('');
+    const maxC = topCiudadesClientes[0]?.total||1;
+    document.getElementById('ciudadesClientes').innerHTML = topCiudadesClientes.length
+      ? topCiudadesClientes.map((r,i)=>`
+          <div class="ciudad-bar">
+            <div class="ciudad-bar-header">
+              <span class="ciudad-bar-name">${i+1}. ${r.city||'Sin ciudad'}</span>
+              <span class="ciudad-bar-val" style="color:var(--blue);">${r.total}</span>
+            </div>
+            <div class="ciudad-bar-track"><div class="ciudad-bar-fill" style="background:var(--blue);width:${Math.round(r.total/maxC*100)}%;"></div></div>
+          </div>`).join('')
+      : '<p style="color:var(--muted);font-size:12px;">Sin datos aún</p>';
 
-    // Tabla reseñas
-    document.getElementById('bResenas').textContent = totalResenas+' reseñas';
-    const tr = document.getElementById('tResenas');
-    tr.innerHTML = resenas.length ? resenas.map(r=>`<tr>
-      <td>${r.cliente_nombre||'—'}</td>
-      <td style="font-weight:600;">${nombres[r.mecanico_id]||'—'}</td>
-      <td>${'⭐'.repeat(r.stars||0)} ${r.stars||0}/5</td>
-      <td style="color:var(--dim);font-size:12px;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${r.texto||'—'}</td>
-      <td style="font-size:12px;color:var(--muted);">${r.created_at?new Date(r.created_at).toLocaleDateString('es-CL'):'—'}</td>
-    </tr>`).join('') : '<tr><td colspan="5" class="empty">Sin reseñas aún</td></tr>';
+    document.getElementById('bCiudades').textContent = ciudades.length + ' ciudades';
 
-    document.getElementById('lastUpdate').textContent = 'Actualizado: '+new Date().toLocaleTimeString('es-CL');
+    // Suscripciones
+    const subsActivas = _subs.filter(s=>s.estado==='activo');
+    document.getElementById('bSubs').textContent = subsActivas.length + ' activas';
+    renderSubs(_subs);
+
+    // Talleres
+    document.getElementById('bTalleres').textContent = _totalTalleres.toLocaleString('es-CL') + ' talleres';
+    renderTalleres(_talleres);
+
+    // Reseñas
+    document.getElementById('bResenas').textContent = totalResenas + ' reseñas';
+    renderResenas(_resenas);
+
+    document.getElementById('lastUpdate').textContent = 'Actualizado: ' + new Date().toLocaleTimeString('es-CL');
   } catch(e){
-    console.error('Error cargarDatos:', e);
-    document.getElementById('lastUpdate').textContent = 'Error al cargar: '+e.message;
+    document.getElementById('lastUpdate').textContent = 'Error: ' + e.message;
   }
+}
+
+function renderSubs(subs){
+  const ts = document.getElementById('tSubs');
+  ts.innerHTML = subs.length ? subs.map(s=>{
+    const venc = s.fecha_vencimiento ? new Date(s.fecha_vencimiento) : null;
+    const dias = venc ? Math.ceil((venc-new Date())/864e5) : null;
+    const col = dias!==null ? (dias<7?'var(--red)':dias<30?'var(--gold)':'var(--green)') : '';
+    const planBadge = s.plan==='mensual'?'bm':s.plan==='semestral'?'bs':'ban';
+    return `<tr>
+      <td style="font-weight:600;">${_nombres[s.mecanico_id]||'—'}</td>
+      <td><span class="badge ${planBadge}">${s.plan||'—'}</span></td>
+      <td><span class="badge ${s.estado==='activo'?'ba':'bv'}">${s.estado}</span></td>
+      <td style="color:var(--dim);">${s.fecha_inicio?new Date(s.fecha_inicio).toLocaleDateString('es-CL'):'—'}</td>
+      <td style="color:var(--dim);">${venc?venc.toLocaleDateString('es-CL'):'—'}</td>
+      <td><span style="color:${col};font-weight:700;">${dias!==null?dias+' días':'—'}</span></td>
+      <td><button class="btn-d" onclick="cancelarPlan('${s.mecanico_id}')">Cancelar</button></td>
+    </tr>`;
+  }).join('') : '<tr><td colspan="7" class="empty">Sin suscripciones</td></tr>';
+}
+
+function renderTalleres(lista){
+  document.getElementById('tTalleres').innerHTML = lista.map(t=>`<tr>
+    <td style="font-weight:600;">${t.name||'—'}</td>
+    <td style="color:var(--dim);">${t.city||'—'}</td>
+    <td style="font-size:12px;color:var(--muted);">${t.spec||'—'}</td>
+    <td>${t.es_pro?'<span class="badge bp">⭐ PRO</span>':'<span style="color:var(--muted);font-size:11px;">No</span>'}</td>
+    <td style="color:var(--dim);">${t.review_count||0}</td>
+    <td>${t.rating?'<span style="color:var(--gold);">★</span> '+Number(t.rating).toFixed(1):'—'}</td>
+    <td>${t.es_pro
+      ?`<button class="btn-d" onclick="togglePro('${t.id}',false)">Quitar Pro</button>`
+      :`<button class="btn-a" onclick="togglePro('${t.id}',true)">Activar Pro</button>`
+    }</td>
+  </tr>`).join('');
+}
+
+function renderResenas(lista){
+  document.getElementById('tResenas').innerHTML = lista.length ? lista.map(r=>`<tr>
+    <td style="font-weight:600;">${r.cliente_nombre||'—'}</td>
+    <td style="color:var(--dim);">${_nombres[r.mecanico_id]||'—'}</td>
+    <td><span style="color:var(--gold);">${'★'.repeat(r.stars||0)}</span><span style="color:var(--muted);">${'☆'.repeat(5-(r.stars||0))}</span></td>
+    <td style="color:var(--dim);font-size:12px;max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${r.texto||'—'}</td>
+    <td style="font-size:12px;color:var(--muted);">${r.created_at?new Date(r.created_at).toLocaleDateString('es-CL'):'—'}</td>
+  </tr>`).join('') : '<tr><td colspan="5" class="empty">Sin reseñas aún</td></tr>';
+}
+
+function filtrarTalleres(q){
+  const f = q.toLowerCase();
+  renderTalleres(f ? _talleres.filter(t=>(t.name||'').toLowerCase().includes(f)||(t.city||'').toLowerCase().includes(f)) : _talleres);
 }
 
 async function togglePro(id, activar){
@@ -375,133 +546,208 @@ async function togglePro(id, activar){
 }
 
 async function cancelarPlan(id){
-  if(!confirm('¿Cancelar el plan?')) return;
+  if(!confirm('¿Cancelar el plan de este taller?')) return;
   await sb.from('suscripciones').update({estado:'cancelado'}).eq('mecanico_id',id).eq('estado','activo');
   await sb.from('mecanicos').update({es_pro:false}).eq('id',id);
   cargarDatos();
 }
 
-setInterval(cargarDatos, 5*60*1000);
+// MODALES POR KPI
+function abrirModal(tipo){
+  const overlay = document.getElementById('modalOverlay');
+  const title = document.getElementById('modalTitle');
+  const body = document.getElementById('modalBody');
+  overlay.classList.add('active');
 
-let chartInstance = null;
-let periodoActual = '30d';
-
-async function cargarGrafico(periodo = periodoActual){
-  periodoActual = periodo;
-
-  // Actualizar botones activos
-  document.querySelectorAll('.graf-btn').forEach(b => {
-    b.style.background = b.dataset.p === periodo ? 'var(--red)' : 'rgba(255,255,255,.05)';
-    b.style.color = b.dataset.p === periodo ? '#fff' : 'var(--dim)';
-  });
-
-  let dias, agrupar;
-  if(periodo === '7d')  { dias = 7;   agrupar = 'dia'; }
-  if(periodo === '30d') { dias = 30;  agrupar = 'dia'; }
-  if(periodo === '6m')  { dias = 180; agrupar = 'mes'; }
-  if(periodo === '1a')  { dias = 365; agrupar = 'mes'; }
-
-  const desde = new Date();
-  desde.setDate(desde.getDate() - (dias - 1));
-  desde.setHours(0,0,0,0);
-
-  const { data } = await sb
-    .from('mecanicos')
-    .select('created_at')
-    .gte('created_at', desde.toISOString())
-    .order('created_at', { ascending: true });
-
-  const conteo = {};
-
-  if(agrupar === 'dia'){
-    for(let i=0; i<dias; i++){
-      const d = new Date(desde);
-      d.setDate(d.getDate() + i);
-      const key = `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`;
-      conteo[key] = 0;
-    }
-    (data||[]).forEach(m => {
-      const d = new Date(m.created_at);
-      const key = `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`;
-      if(conteo[key] !== undefined) conteo[key]++;
-    });
-  } else {
-    // Agrupar por mes
-    for(let i=0; i<dias; i++){
-      const d = new Date(desde);
-      d.setDate(d.getDate() + i);
-      const meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-      const key = `${meses[d.getMonth()]} ${d.getFullYear()}`;
-      conteo[key] = 0;
-    }
-    (data||[]).forEach(m => {
-      const d = new Date(m.created_at);
-      const meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-      const key = `${meses[d.getMonth()]} ${d.getFullYear()}`;
-      if(conteo[key] !== undefined) conteo[key]++;
-    });
+  if(tipo==='talleres'){
+    title.textContent = '🔧 Detalle de Talleres';
+    const pros = _talleres.filter(t=>t.es_pro);
+    const conResenas = _talleres.filter(t=>t.review_count>0);
+    body.innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:20px;">
+        <div style="background:var(--bg);border-radius:10px;padding:14px;text-align:center;">
+          <div style="font-size:24px;font-weight:900;color:var(--red);">${_totalTalleres.toLocaleString('es-CL')}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px;">Total talleres</div>
+        </div>
+        <div style="background:var(--bg);border-radius:10px;padding:14px;text-align:center;">
+          <div style="font-size:24px;font-weight:900;color:var(--gold);">${pros.length}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px;">Talleres Pro</div>
+        </div>
+        <div style="background:var(--bg);border-radius:10px;padding:14px;text-align:center;">
+          <div style="font-size:24px;font-weight:900;color:var(--green);">${conResenas.length}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px;">Con reseñas</div>
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:8px;">Últimos 10 registrados:</div>
+      ${_talleres.slice(0,10).map(t=>`
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);">
+          <div>
+            <div style="font-size:13px;font-weight:600;">${t.name}</div>
+            <div style="font-size:11px;color:var(--muted);">${t.city||'Sin ciudad'} · ${t.spec||'—'}</div>
+          </div>
+          ${t.es_pro?'<span class="badge bp">⭐ PRO</span>':''}
+        </div>`).join('')}`;
   }
 
-  const labels = Object.keys(conteo);
-  const valores = Object.values(conteo);
-  const total = valores.reduce((a,b)=>a+b,0);
-  document.getElementById('grafTotal').textContent = `${total} registros en el período`;
+  else if(tipo==='pros'){
+    title.textContent = '⭐ Talleres Pro Activos';
+    const pros = _talleres.filter(t=>t.es_pro);
+    const subsActivas = _subs.filter(s=>s.estado==='activo');
+    body.innerHTML = `
+      <div style="margin-bottom:16px;font-size:13px;color:var(--dim);">
+        ${pros.length} talleres con sello PRO activo — ${subsActivas.length} con suscripción pagada
+      </div>
+      ${pros.map(t=>{
+        const sub = subsActivas.find(s=>s.mecanico_id===t.id);
+        const venc = sub?.fecha_vencimiento ? new Date(sub.fecha_vencimiento) : null;
+        const dias = venc ? Math.ceil((venc-new Date())/864e5) : null;
+        return `<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border);">
+          <div>
+            <div style="font-size:13px;font-weight:700;">${t.name}</div>
+            <div style="font-size:11px;color:var(--muted);">${t.city||'—'} · ${sub?sub.plan:'Manual'}</div>
+          </div>
+          <div style="text-align:right;">
+            ${dias!==null?`<div style="font-size:12px;color:${dias<7?'var(--red)':dias<30?'var(--gold)':'var(--green)'};font-weight:700;">${dias} días</div>`:'<div style="font-size:11px;color:var(--muted);">Sin sub.</div>'}
+            ${venc?`<div style="font-size:10px;color:var(--muted);">${venc.toLocaleDateString('es-CL')}</div>`:''}
+          </div>
+        </div>`;
+      }).join('') || '<p style="color:var(--muted);">Sin talleres Pro activos</p>'}`;
+  }
 
-  const ctx = document.getElementById('graficoRegistros').getContext('2d');
-  if(chartInstance) chartInstance.destroy();
+  else if(tipo==='subs'){
+    title.textContent = '💰 Ingresos y Suscripciones';
+    const activas = _subs.filter(s=>s.estado==='activo');
+    const ingreso = activas.reduce((s,sub)=>s+(PRECIOS[sub.plan]||0),0);
+    const mens = activas.filter(s=>s.plan==='mensual').length;
+    const sems = activas.filter(s=>s.plan==='semestral').length;
+    const anu = activas.filter(s=>s.plan==='anual').length;
+    body.innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
+        <div style="background:var(--bg);border-radius:10px;padding:16px;">
+          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Ingreso mensual estimado</div>
+          <div style="font-size:28px;font-weight:900;color:var(--green);">$${ingreso.toLocaleString('es-CL')}</div>
+        </div>
+        <div style="background:var(--bg);border-radius:10px;padding:16px;">
+          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Proyección anual</div>
+          <div style="font-size:28px;font-weight:900;color:var(--gold);">$${(ingreso*12).toLocaleString('es-CL')}</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:20px;">
+        <div style="background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);border-radius:10px;padding:12px;text-align:center;">
+          <div style="font-size:20px;font-weight:900;color:var(--blue);">${mens}</div>
+          <div style="font-size:11px;color:var(--muted);">Mensual</div>
+          <div style="font-size:10px;color:var(--blue);">$${(mens*9990).toLocaleString('es-CL')}</div>
+        </div>
+        <div style="background:rgba(168,85,247,.08);border:1px solid rgba(168,85,247,.2);border-radius:10px;padding:12px;text-align:center;">
+          <div style="font-size:20px;font-weight:900;color:#a855f7;">${sems}</div>
+          <div style="font-size:11px;color:var(--muted);">Semestral</div>
+          <div style="font-size:10px;color:#a855f7;">$${(sems*49990).toLocaleString('es-CL')}</div>
+        </div>
+        <div style="background:rgba(240,192,64,.08);border:1px solid rgba(240,192,64,.2);border-radius:10px;padding:12px;text-align:center;">
+          <div style="font-size:20px;font-weight:900;color:var(--gold);">${anu}</div>
+          <div style="font-size:11px;color:var(--muted);">Anual</div>
+          <div style="font-size:10px;color:var(--gold);">$${(anu*89990).toLocaleString('es-CL')}</div>
+        </div>
+      </div>`;
+  }
 
-  chartInstance = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels,
-      datasets: [{
-        label: 'Registros',
-        data: valores,
-        backgroundColor: 'rgba(232,25,44,0.6)',
-        borderColor: '#E8192C',
-        borderWidth: 1,
-        borderRadius: 4,
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          backgroundColor: '#1a1a2e',
-          titleColor: '#fff',
-          bodyColor: '#aaa',
-          callbacks: {
-            label: c => ` ${c.parsed.y} registro${c.parsed.y !== 1 ? 's' : ''}`
-          }
-        }
-      },
-      scales: {
-        x: {
-          ticks: { 
-            color: '#666', 
-            font: { size: 9 }, 
-            maxRotation: 45,
-            autoSkip: true,
-            maxTicksLimit: dias <= 30 ? 15 : 12
-          },
-          grid: { color: 'rgba(255,255,255,.03)' }
-        },
-        y: {
-          ticks: { color: '#666', stepSize: 1 },
-          grid: { color: 'rgba(255,255,255,.05)' },
-          beginAtZero: true
-        }
-      }
-    }
-  });
+  else if(tipo==='clientes'){
+    title.textContent = '👤 Clientes Registrados';
+    body.innerHTML = `
+      <p style="color:var(--dim);font-size:13px;margin-bottom:16px;">Usuarios que se registraron como clientes (no talleres) en PANNE.</p>
+      <div style="background:var(--bg);border-radius:10px;padding:20px;text-align:center;">
+        <div style="font-size:40px;font-weight:900;color:var(--blue);" id="modalClientesNum">—</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:6px;">clientes registrados</div>
+      </div>
+      <p style="color:var(--muted);font-size:12px;margin-top:16px;">Los datos de clientes provienen de auth.users filtrados por cuentas sin ficha de taller y sin correo @panne.cl</p>`;
+    document.getElementById('modalClientesNum').textContent = document.getElementById('k4').textContent;
+  }
+
+  else if(tipo==='resenas'){
+    title.textContent = '⭐ Reseñas Publicadas';
+    const porRating = [5,4,3,2,1].map(r=>({ r, count: _resenas.filter(rv=>rv.stars===r).length }));
+    body.innerHTML = `
+      <div style="margin-bottom:20px;">
+        ${porRating.map(({r,count})=>`
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+            <span style="color:var(--gold);width:20px;">${r}★</span>
+            <div style="flex:1;background:rgba(255,255,255,.06);border-radius:4px;height:8px;">
+              <div style="background:var(--gold);height:8px;border-radius:4px;width:${_resenas.length?Math.round(count/_resenas.length*100):0}%;"></div>
+            </div>
+            <span style="font-size:12px;color:var(--dim);width:24px;">${count}</span>
+          </div>`).join('')}
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:10px;">Últimas reseñas:</div>
+      ${_resenas.slice(0,5).map(r=>`
+        <div style="padding:10px 0;border-bottom:1px solid var(--border);">
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+            <span style="font-size:13px;font-weight:600;">${r.cliente_nombre||'—'}</span>
+            <span style="color:var(--gold);">${'★'.repeat(r.stars||0)}</span>
+          </div>
+          <div style="font-size:12px;color:var(--muted);">${_nombres[r.mecanico_id]||'—'}</div>
+          ${r.texto?`<div style="font-size:12px;color:var(--dim);margin-top:4px;">"${r.texto}"</div>`:''}
+        </div>`).join('')}`;
+  }
+
+  else if(tipo==='ciudades'){
+    title.textContent = '🏙 Ciudades con Cobertura';
+    body.innerHTML = `<p style="color:var(--dim);font-size:13px;">PANNE tiene talleres en <strong style="color:var(--white);">${document.getElementById('k6').textContent} ciudades</strong> de Chile, desde Arica hasta Punta Arenas.</p>`;
+  }
+
+  else if(tipo==='visitas'){
+    title.textContent = '👁 Visitas al Sitio';
+    body.innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div style="background:var(--bg);border-radius:10px;padding:16px;text-align:center;">
+          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;margin-bottom:6px;">Total acumulado</div>
+          <div style="font-size:28px;font-weight:900;color:var(--blue);">${document.getElementById('k7').textContent}</div>
+        </div>
+        <div style="background:var(--bg);border-radius:10px;padding:16px;text-align:center;">
+          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;margin-bottom:6px;">Hoy</div>
+          <div style="font-size:28px;font-weight:900;color:var(--green);">${document.getElementById('k8').textContent}</div>
+        </div>
+      </div>`;
+  }
 }
 
-// Verificar sesión al cargar
-(async()=>{
-  const { data:{session} } = await sb.auth.getSession();
-  if(session?.user?.email === ADMIN) mostrarDashboard(session.user.email);
-})();
+function cerrarModal(){ document.getElementById('modalOverlay').classList.remove('active'); }
+document.addEventListener('keydown', e => { if(e.key==='Escape') cerrarModal(); });
+
+setInterval(cargarDatos, 5*60*1000);
+
+let chartInstance=null, periodoActual='30d';
+async function cargarGrafico(periodo=periodoActual){
+  periodoActual=periodo;
+  document.querySelectorAll('.graf-btn').forEach(b=>{
+    const act = b.dataset.p===periodo;
+    b.style.background = act?'var(--red)':'rgba(255,255,255,.05)';
+    b.style.color = act?'#fff':'var(--dim)';
+    b.style.borderColor = act?'var(--red)':'var(--border)';
+  });
+  let dias, agrupar;
+  if(periodo==='7d'){dias=7;agrupar='dia';}
+  if(periodo==='30d'){dias=30;agrupar='dia';}
+  if(periodo==='6m'){dias=180;agrupar='mes';}
+  if(periodo==='1a'){dias=365;agrupar='mes';}
+  const desde=new Date(); desde.setDate(desde.getDate()-(dias-1)); desde.setHours(0,0,0,0);
+  const {data}=await sb.from('mecanicos').select('created_at').gte('created_at',desde.toISOString()).order('created_at',{ascending:true});
+  const conteo={};
+  if(agrupar==='dia'){
+    for(let i=0;i<dias;i++){const d=new Date(desde);d.setDate(d.getDate()+i);conteo[`${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`]=0;}
+    (data||[]).forEach(m=>{const d=new Date(m.created_at);const k=`${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`;if(conteo[k]!==undefined)conteo[k]++;});
+  } else {
+    const meses=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+    for(let i=0;i<dias;i++){const d=new Date(desde);d.setDate(d.getDate()+i);conteo[`${meses[d.getMonth()]} ${d.getFullYear()}`]=0;}
+    (data||[]).forEach(m=>{const d=new Date(m.created_at);const k=`${meses[d.getMonth()]} ${d.getFullYear()}`;if(conteo[k]!==undefined)conteo[k]++;});
+  }
+  const labels=Object.keys(conteo), valores=Object.values(conteo);
+  document.getElementById('grafTotal').textContent=`· ${valores.reduce((a,b)=>a+b,0)} registros`;
+  const ctx=document.getElementById('graficoRegistros').getContext('2d');
+  if(chartInstance)chartInstance.destroy();
+  chartInstance=new Chart(ctx,{type:'bar',data:{labels,datasets:[{label:'Registros',data:valores,backgroundColor:'rgba(232,25,44,0.5)',borderColor:'#E8192C',borderWidth:1,borderRadius:5}]},options:{responsive:true,plugins:{legend:{display:false},tooltip:{backgroundColor:'#1a1a2e',titleColor:'#fff',bodyColor:'#aaa',callbacks:{label:c=>` ${c.parsed.y} registro${c.parsed.y!==1?'s':''}`}}},scales:{x:{ticks:{color:'#555',font:{size:9},maxRotation:45,autoSkip:true,maxTicksLimit:dias<=30?15:12},grid:{color:'rgba(255,255,255,.02)'}},y:{ticks:{color:'#555',stepSize:1},grid:{color:'rgba(255,255,255,.04)'},beginAtZero:true}}}});
+}
+
+(async()=>{ const {data:{session}}=await sb.auth.getSession(); if(session?.user?.email===ADMIN)mostrarDashboard(session.user.email); })();
 </script>
 </body>
 </html>
