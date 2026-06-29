@@ -208,14 +208,12 @@ async function cargarDatos(){
     const talleres = r1.data || [];
     const totalTalleres = r2.count || 0;
     const totalPro = r3.count || 0;
-    // Clientes vs talleres desde función RPC (fallback si no existe)
-    let totalClientes = 0, totalConCuenta = 0;
-    try {
-      const rCont = await sb.rpc('contar_clientes_vs_talleres');
-      if(rCont.data) { totalClientes = rCont.data.clientes || 0; totalConCuenta = rCont.data.talleres_con_cuenta || 0; }
-    } catch(e) {
-      // fallback: contar auth.users via admin no disponible en cliente
-      totalClientes = '—'; totalConCuenta = totalTalleres;
+    // Clientes vs talleres desde función RPC
+    let totalClientes = '—', totalConCuenta = '—';
+    const rCont = await sb.rpc('contar_clientes_vs_talleres');
+    if(rCont.data) {
+      totalClientes = rCont.data.clientes ?? '—';
+      totalConCuenta = rCont.data.talleres_con_cuenta ?? '—';
     }
     const subs = r4.data || [];
     const resenas = r5.data || [];
