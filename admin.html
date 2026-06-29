@@ -195,7 +195,7 @@ async function cargarDatos(){
   document.getElementById('lastUpdate').textContent = 'Actualizando...';
   try {
     // Queries en paralelo
-    const [r1,r2,r3,r4,r5,r6] = await Promise.all([
+    const [r1,r2,r3,r4,r5,r6,r7] = await Promise.all([
       sb.from('mecanicos').select('id,name,city,spec,es_pro,review_count,rating,visit_count').order('created_at',{ascending:false}).limit(100),
       sb.from('mecanicos').select('*',{count:'exact',head:true}),
       sb.from('mecanicos').select('*',{count:'exact',head:true}).eq('es_pro',true),
@@ -210,14 +210,13 @@ async function cargarDatos(){
     const totalPro = r3.count || 0;
     // Clientes vs talleres desde función RPC
     let totalClientes = '—', totalConCuenta = '—';
-    const rCont = await sb.rpc('contar_clientes_vs_talleres');
-    if(rCont.data) {
-      totalClientes = rCont.data.clientes ?? '—';
-      totalConCuenta = rCont.data.talleres_con_cuenta ?? '—';
+    if(r4.data) {
+      totalClientes = r4.data.clientes ?? '—';
+      totalConCuenta = r4.data.talleres_con_cuenta ?? '—';
     }
-    const subs = r4.data || [];
-    const resenas = r5.data || [];
-    const totalResenas = r6.count || 0;
+    const subs = r5.data || [];
+    const resenas = r6.data || [];
+    const totalResenas = r7.count || 0;
 
     // Mapa nombres
     const nombres = {};
