@@ -362,7 +362,7 @@ const ADMIN = 'contacto@panne.cl';
 const PRECIOS = { mensual:9990, semestral:49990, anual:89990 };
 
 // Estado global
-let _talleres=[], _subs=[], _resenas=[], _nombres={}, _totalPro=0, _totalTalleres=0;
+let _talleres=[], _subs=[], _resenas=[], _nombres={}, _totalPro=0, _totalTalleres=0, _todosPro=[];
 
 async function login(){
   const email = document.getElementById('loginEmail').value.trim();
@@ -388,7 +388,7 @@ async function logout(){ await sb.auth.signOut(); location.reload(); }
 async function cargarDatos(){
   document.getElementById('lastUpdate').textContent = 'Actualizando...';
   try {
-    const [r1,r2,r3,r4,r5,r6,r7,r8,r9] = await Promise.all([
+    const [r1,r2,r3,r4,r5,r6,r7,r8,r9,r10] = await Promise.all([
       sb.from('mecanicos').select('id,name,city,spec,es_pro,review_count,rating,visit_count,email').order('created_at',{ascending:false}).limit(200),
       sb.from('mecanicos').select('*',{count:'exact',head:true}),
       sb.from('mecanicos').select('*',{count:'exact',head:true}).eq('es_pro',true),
@@ -397,12 +397,14 @@ async function cargarDatos(){
       sb.from('resenas').select('*').order('created_at',{ascending:false}).limit(20),
       sb.from('resenas').select('*',{count:'exact',head:true}),
       sb.from('mecanicos').select('city').not('city','is',null),
-      sb.rpc('ciudades_clientes_top')
+      sb.rpc('ciudades_clientes_top'),
+      sb.from('mecanicos').select('id,name,city,email').eq('es_pro',true)
     ]);
 
     _talleres = r1.data || [];
     _totalTalleres = r2.count || 0;
     _totalPro = r3.count || 0;
+    _todosPro = r10.data || [];
     let totalClientes = '—', totalConCuenta = '—';
     if(r4.data){ totalClientes = r4.data.clientes ?? '—'; totalConCuenta = r4.data.talleres_con_cuenta ?? '—'; }
     _subs = r5.data || [];
@@ -591,7 +593,7 @@ function abrirModal(tipo){
 
   else if(tipo==='pros'){
     title.textContent = '⭐ Talleres Pro Activos';
-    const pros = _talleres.filter(t=>t.es_pro);
+    const pros = _todosPro;
     const subsActivas = _subs.filter(s=>s.estado==='activo');
     body.innerHTML = `
       <div style="margin-bottom:16px;font-size:13px;color:var(--dim);">
