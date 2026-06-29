@@ -18,6 +18,43 @@
 <meta name="apple-mobile-web-app-title" content="PANNE">
 <style>
 /* ===== PANNE Design System ===== */
+/* ===== BANNER PATROCINADO ===== */
+.sponsor-banner{
+  background:linear-gradient(135deg,rgba(255,214,0,.06),rgba(255,214,0,.02));
+  border:1px solid rgba(255,214,0,.2);
+  border-radius:12px;
+  padding:14px 18px;
+  margin-bottom:16px;
+  display:flex;
+  align-items:center;
+  gap:14px;
+}
+.sponsor-tag{
+  font-family:'JetBrains Mono';
+  font-size:9px;
+  color:var(--yellow);
+  border:1px solid rgba(255,214,0,.3);
+  border-radius:4px;
+  padding:2px 6px;
+  white-space:nowrap;
+  flex-shrink:0;
+}
+.sponsor-content{flex:1;}
+.sponsor-title{font-size:13px;font-weight:700;color:var(--white);margin-bottom:2px;}
+.sponsor-desc{font-size:11px;color:var(--muted);}
+.sponsor-btn{
+  background:var(--yellow);
+  color:var(--black);
+  border:none;
+  border-radius:8px;
+  padding:8px 14px;
+  font-size:11px;
+  font-weight:700;
+  cursor:pointer;
+  white-space:nowrap;
+  flex-shrink:0;
+}
+
 :root {
   --red:      #E8192C;
   --red-dark: #B01020;
@@ -1216,34 +1253,42 @@ footer{
     <div class="search-hero">
       <h1 class="bebas">Encuentra tu taller<br><span>de confianza</span></h1>
       <p>El directorio de talleres mecánicos y vulcanizadoras más completo de Chile — de Arica a Punta Arenas.</p>
-      <!-- Banner Pro dentro del hero -->
-      <div id="proBannerWrap" style="display:none;margin-bottom:14px;">
-        <div id="proBanner" class="pro-banner" onclick="abrirTallerPro()" style="height:110px;border-radius:10px;"></div>
-        <div class="pro-dots" id="proDots" style="margin-top:6px;"></div>
-      </div>
+
+      <!-- Botón GPS prominente -->
+      <button onclick="usarUbicacion()" id="btnGpsHero" style="display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;border:none;border-radius:12px;padding:12px 20px;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:14px;width:100%;justify-content:center;box-shadow:0 4px 14px rgba(34,197,94,.3);">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3"/><circle cx="12" cy="12" r="9" stroke-dasharray="2 3"/></svg>
+        📍 Usar mi ubicación — encontrar talleres cercanos
+      </button>
 
       <div class="search-row">
         <input type="search" class="search-input" id="searchInput" placeholder="Buscar por nombre, especialidad o ciudad…" autocomplete="new-password" autocorrect="off" autocapitalize="off" spellcheck="false" name="panne-search-x" readonly onfocus="this.removeAttribute('readonly')">
         <button class="btn-search" onclick="applySearch()">Buscar</button>
       </div>
-      <!-- Stats dinámicas -->
-      <div class="hero-stats">
+
+      <!-- Stats dinámicas GRANDES -->
+      <div class="hero-stats" style="margin-top:16px;">
         <div class="hero-stat">
-          <div class="hero-stat-num" id="heroTalleres">475</div>
+          <div class="hero-stat-num" id="heroTalleres" style="font-size:32px;">2.274</div>
           <div class="hero-stat-label">Talleres registrados</div>
         </div>
         <div class="hero-stat">
-          <div class="hero-stat-num" id="heroCiudades">80+</div>
+          <div class="hero-stat-num" id="heroCiudades" style="font-size:32px;">194+</div>
           <div class="hero-stat-label">Ciudades cubiertas</div>
         </div>
         <div class="hero-stat">
-          <div class="hero-stat-num" id="heroUsuarios">110+</div>
+          <div class="hero-stat-num" id="heroUsuarios" style="font-size:32px;">110+</div>
           <div class="hero-stat-label">Usuarios registrados</div>
         </div>
         <div class="hero-stat">
-          <div class="hero-stat-num">🇨🇱</div>
+          <div class="hero-stat-num" style="font-size:32px;">🇨🇱</div>
           <div class="hero-stat-label">Cobertura nacional</div>
         </div>
+      </div>
+
+      <!-- Banner Pro debajo de las stats -->
+      <div id="proBannerWrap" style="display:none;margin-top:14px;">
+        <div id="proBanner" class="pro-banner" onclick="abrirTallerPro()" style="height:110px;border-radius:10px;"></div>
+        <div class="pro-dots" id="proDots" style="margin-top:6px;"></div>
       </div>
     </div>
 
@@ -1291,6 +1336,16 @@ footer{
         <div style="font-size:12px;color:var(--muted);margin-top:2px;">Regístrate gratis y llega a miles de conductores en Chile</div>
       </div>
       <button onclick="document.querySelector('[data-tab=\'perfil-mecanico\']').click()" style="background:var(--red);color:#fff;border:none;border-radius:8px;padding:9px 18px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;">Sumar mi taller →</button>
+    </div>
+
+    <!-- Banner Patrocinado -->
+    <div class="sponsor-banner" id="sponsorBanner" style="display:none;">
+      <span class="sponsor-tag">PUBLICIDAD</span>
+      <div class="sponsor-content">
+        <div class="sponsor-title" id="sponsorTitle">—</div>
+        <div class="sponsor-desc" id="sponsorDesc">—</div>
+      </div>
+      <button class="sponsor-btn" id="sponsorBtn" onclick="abrirSponsor()">Ver más →</button>
     </div>
 
     <!-- Filtro por ciudad y rating -->
@@ -2260,6 +2315,7 @@ function renderGrid(){
     setTimeout(async () => {
       if(mechanics.length === 0) {
         await loadMechanicsFromSupabase();
+  cargarSponsor();
       }
     }, 2000);
     return;
@@ -4305,6 +4361,58 @@ window.addEventListener('load', () => {
   const si = document.getElementById('searchInput');
   if(si){ si.value = ''; }
 });
+
+// ===== BOTÓN GPS HERO =====
+function usarUbicacion(){
+  const btn = document.getElementById('btnGpsHero');
+  if(btn){ btn.innerHTML = '⏳ Obteniendo ubicación...'; btn.disabled = true; }
+  if(!navigator.geolocation){
+    alert('Tu navegador no soporta geolocalización.');
+    if(btn){ btn.innerHTML = '📍 Usar mi ubicación — encontrar talleres cercanos'; btn.disabled = false; }
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(pos => {
+    userLat = pos.coords.latitude;
+    userLng = pos.coords.longitude;
+    mechanics.forEach(m => {
+      if(m.lat && m.lng){
+        const R = 6371;
+        const dLat = (m.lat - userLat) * Math.PI/180;
+        const dLng = (m.lng - userLng) * Math.PI/180;
+        const a = Math.sin(dLat/2)**2 + Math.cos(userLat*Math.PI/180)*Math.cos(m.lat*Math.PI/180)*Math.sin(dLng/2)**2;
+        m.dist = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      }
+    });
+    renderGrid();
+    if(btn){ btn.innerHTML = '✅ Mostrando talleres cercanos a ti'; btn.style.background = 'linear-gradient(135deg,#16a34a,#15803d)'; btn.disabled = false; }
+    // Scroll suave a los resultados
+    document.getElementById('grid')?.scrollIntoView({behavior:'smooth', block:'start'});
+  }, () => {
+    if(btn){ btn.innerHTML = '📍 Usar mi ubicación — encontrar talleres cercanos'; btn.disabled = false; }
+    alert('No pudimos obtener tu ubicación. Verifica que hayas dado permiso.');
+  });
+}
+
+// ===== BANNER PATROCINADO =====
+const SPONSORS = [
+  // Aquí puedes agregar sponsors reales
+  // { title: 'Lubricentro XYZ', desc: 'Cambio de aceite desde $12.990 — Sucursales en toda la RM', url: 'https://ejemplo.cl', activo: true },
+];
+
+function cargarSponsor(){
+  const activos = SPONSORS.filter(s => s.activo);
+  if(!activos.length) return;
+  const s = activos[Math.floor(Math.random() * activos.length)];
+  document.getElementById('sponsorTitle').textContent = s.title;
+  document.getElementById('sponsorDesc').textContent = s.desc;
+  document.getElementById('sponsorBanner').setAttribute('data-url', s.url);
+  document.getElementById('sponsorBanner').style.display = 'flex';
+}
+
+function abrirSponsor(){
+  const url = document.getElementById('sponsorBanner').getAttribute('data-url');
+  if(url) window.open(url, '_blank');
+}
 
 function closeLightbox(){
   const lb = document.getElementById('panne-lightbox');
