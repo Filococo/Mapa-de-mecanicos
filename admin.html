@@ -149,6 +149,23 @@
 
     <div class="section">
       <div class="sec-head">
+        <div class="sec-title">🏙 Ciudades con más actividad</div>
+        <span class="sec-badge" id="bCiudades">—</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;">
+        <div style="padding:16px 20px;border-right:1px solid rgba(255,255,255,.08);">
+          <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;">🔧 Talleres por ciudad</div>
+          <div id="ciudadesTalleres"></div>
+        </div>
+        <div style="padding:16px 20px;">
+          <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;">👤 Clientes por ciudad</div>
+          <div id="ciudadesClientes"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="sec-head">
         <div class="sec-title">⭐ Reseñas recientes</div>
         <span class="sec-badge" id="bResenas">—</span>
       </div>
@@ -195,14 +212,16 @@ async function cargarDatos(){
   document.getElementById('lastUpdate').textContent = 'Actualizando...';
   try {
     // Queries en paralelo
-    const [r1,r2,r3,r4,r5,r6,r7] = await Promise.all([
+    const [r1,r2,r3,r4,r5,r6,r7,r8,r9] = await Promise.all([
       sb.from('mecanicos').select('id,name,city,spec,es_pro,review_count,rating,visit_count').order('created_at',{ascending:false}).limit(100),
       sb.from('mecanicos').select('*',{count:'exact',head:true}),
       sb.from('mecanicos').select('*',{count:'exact',head:true}).eq('es_pro',true),
       sb.rpc('contar_clientes_vs_talleres'),
       sb.from('suscripciones').select('*').order('created_at',{ascending:false}),
       sb.from('resenas').select('*').order('created_at',{ascending:false}).limit(20),
-      sb.from('resenas').select('*',{count:'exact',head:true})
+      sb.from('resenas').select('*',{count:'exact',head:true}),
+      sb.from('mecanicos').select('city').not('city','is',null),
+      sb.rpc('ciudades_clientes_top')
     ]);
 
     const talleres = r1.data || [];
@@ -217,6 +236,16 @@ async function cargarDatos(){
     const subs = r5.data || [];
     const resenas = r6.data || [];
     const totalResenas = r7.count || 0;
+
+    // Ciudades con más talleres
+    const todasCiudades = r8.data || [];
+    const ciudadesCount = {};
+    todasCiudades.forEach(t => { ciudadesCount[t.city] = (ciudadesCount[t.city]||0)+1; });
+    const topCiudadesTalleres = Object.entries(ciudadesCount)
+      .sort((a,b)=>b[1]-a[1]).slice(0,10);
+
+    // Ciudades con más clientes (desde RPC)
+    const topCiudadesClientes = r9.data || [];
 
     // Mapa nombres
     const nombres = {};
@@ -251,6 +280,41 @@ async function cargarDatos(){
     document.getElementById('k10').textContent = totalConCuenta;
     document.getElementById('k5').textContent = totalResenas;
     document.getElementById('k6').textContent = ciudades.length;
+
+    // Render ranking ciudades talleres
+    const ctEl = document.getElementById('ciudadesTalleres');
+    const maxT = topCiudadesTalleres[0]?.[1] || 1;
+    if(ctEl) ctEl.innerHTML = topCiudadesTalleres.map(([city,count],i)=>`
+      <div style="margin-bottom:10px;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+          <span style="font-size:12px;font-weight:600;">${i+1}. ${city}</span>
+          <span style="font-size:12px;color:var(--red);font-weight:700;">${count}</span>
+        </div>
+        <div style="background:rgba(255,255,255,.06);border-radius:4px;height:4px;">
+          <div style="background:var(--red);height:4px;border-radius:4px;width:${Math.round(count/maxT*100)}%;"></div>
+        </div>
+      </div>`).join('');
+
+    // Render ranking ciudades clientes
+    const ccEl = document.getElementById('ciudadesClientes');
+    const maxC = topCiudadesClientes[0]?.total || 1;
+    if(ccEl) {
+      if(topCiudadesClientes.length) {
+        ccEl.innerHTML = topCiudadesClientes.map((r,i)=>`
+          <div style="margin-bottom:10px;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+              <span style="font-size:12px;font-weight:600;">${i+1}. ${r.city||'Sin ciudad'}</span>
+              <span style="font-size:12px;color:var(--blue);font-weight:700;">${r.total}</span>
+            </div>
+            <div style="background:rgba(255,255,255,.06);border-radius:4px;height:4px;">
+              <div style="background:var(--blue);height:4px;border-radius:4px;width:${Math.round(r.total/maxC*100)}%;"></div>
+            </div>
+          </div>`).join('');
+      } else {
+        ccEl.innerHTML = '<p style="color:var(--muted);font-size:12px;">Sin datos aún</p>';
+      }
+    }
+    document.getElementById('bCiudades').textContent = Object.keys(ciudadesCount).length + ' ciudades';
     document.getElementById('k7').textContent = v1.toLocaleString('es-CL');
     document.getElementById('k8').textContent = v2;
     document.getElementById('k9').textContent = visitasPerfiles.toLocaleString('es-CL');
