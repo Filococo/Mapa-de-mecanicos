@@ -1223,7 +1223,7 @@ footer{
       </div>
 
       <div class="search-row">
-        <input type="text" class="search-input" id="searchInput" placeholder="Buscar por nombre, especialidad o ciudad…" autocomplete="off">
+        <input type="search" class="search-input" id="searchInput" placeholder="Buscar por nombre, especialidad o ciudad…" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" name="panne-search">
         <button class="btn-search" onclick="applySearch()">Buscar</button>
       </div>
       <!-- Stats dinámicas -->
@@ -2210,7 +2210,7 @@ function clearAllFilters(){
   document.getElementById('cityFilter').value = '';
   document.getElementById('cityDropdownLabel').textContent = '🏙 Todas las ciudades';
   document.getElementById('ratingFilter').value = '';
-  document.getElementById('searchInput').value = '';
+  const si = document.getElementById('searchInput'); if(si){ si.value = ''; si.setAttribute('value',''); }
   currentFilter = 'todos';
   document.querySelectorAll('.chip').forEach(c => c.classList.toggle('active', c.dataset.filter === 'todos'));
   renderGrid();
@@ -4295,6 +4295,12 @@ function openLightbox(url){
   lb.classList.add('active');
   document.body.style.overflow = 'hidden';
 }
+// Limpiar buscador al cargar (evitar autocompletado del navegador)
+window.addEventListener('load', () => {
+  const si = document.getElementById('searchInput');
+  if(si){ si.value = ''; }
+});
+
 function closeLightbox(){
   const lb = document.getElementById('panne-lightbox');
   if(!lb) return;
