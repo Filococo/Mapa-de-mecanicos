@@ -101,7 +101,8 @@
       <div class="kpi r"><div class="kpi-lbl">Talleres</div><div class="kpi-val" id="k1">—</div><div class="kpi-sub">Registrados</div></div>
       <div class="kpi y"><div class="kpi-lbl">Talleres Pro</div><div class="kpi-val" id="k2">—</div><div class="kpi-sub">Plan activo ⭐</div></div>
       <div class="kpi g"><div class="kpi-lbl">Ingreso estimado</div><div class="kpi-val" id="k3">—</div><div class="kpi-sub">Suscripciones activas</div></div>
-      <div class="kpi b"><div class="kpi-lbl">Usuarios</div><div class="kpi-val" id="k4">—</div><div class="kpi-sub">Cuentas registradas</div></div>
+      <div class="kpi b"><div class="kpi-lbl">Clientes</div><div class="kpi-val" id="k4">—</div><div class="kpi-sub">Usuarios registrados</div></div>
+      <div class="kpi g"><div class="kpi-lbl">Talleres registrados</div><div class="kpi-val" id="k10">—</div><div class="kpi-sub">Con cuenta propia</div></div>
       <div class="kpi r"><div class="kpi-lbl">Reseñas</div><div class="kpi-val" id="k5">—</div><div class="kpi-sub">Publicadas</div></div>
       <div class="kpi y"><div class="kpi-lbl">Ciudades</div><div class="kpi-val" id="k6">—</div><div class="kpi-sub">Con cobertura</div></div>
       <div class="kpi b"><div class="kpi-lbl">Visitas al sitio</div><div class="kpi-val" id="k7">—</div><div class="kpi-sub">Total acumulado</div></div>
@@ -198,6 +199,7 @@ async function cargarDatos(){
       sb.from('mecanicos').select('id,name,city,spec,es_pro,review_count,rating,visit_count').order('created_at',{ascending:false}).limit(100),
       sb.from('mecanicos').select('*',{count:'exact',head:true}),
       sb.from('mecanicos').select('*',{count:'exact',head:true}).eq('es_pro',true),
+      sb.rpc('contar_clientes_vs_talleres'),
       sb.from('suscripciones').select('*').order('created_at',{ascending:false}),
       sb.from('resenas').select('*').order('created_at',{ascending:false}).limit(20),
       sb.from('resenas').select('*',{count:'exact',head:true})
@@ -206,6 +208,15 @@ async function cargarDatos(){
     const talleres = r1.data || [];
     const totalTalleres = r2.count || 0;
     const totalPro = r3.count || 0;
+    // Clientes vs talleres desde función RPC (fallback si no existe)
+    let totalClientes = 0, totalConCuenta = 0;
+    try {
+      const rCont = await sb.rpc('contar_clientes_vs_talleres');
+      if(rCont.data) { totalClientes = rCont.data.clientes || 0; totalConCuenta = rCont.data.talleres_con_cuenta || 0; }
+    } catch(e) {
+      // fallback: contar auth.users via admin no disponible en cliente
+      totalClientes = '—'; totalConCuenta = totalTalleres;
+    }
     const subs = r4.data || [];
     const resenas = r5.data || [];
     const totalResenas = r6.count || 0;
@@ -239,7 +250,8 @@ async function cargarDatos(){
     document.getElementById('k1').textContent = totalTalleres;
     document.getElementById('k2').textContent = totalPro;
     document.getElementById('k3').textContent = '$'+ingreso.toLocaleString('es-CL');
-    document.getElementById('k4').textContent = totalTalleres;
+    document.getElementById('k4').textContent = totalClientes;
+    document.getElementById('k10').textContent = totalConCuenta;
     document.getElementById('k5').textContent = totalResenas;
     document.getElementById('k6').textContent = ciudades.length;
     document.getElementById('k7').textContent = v1.toLocaleString('es-CL');
