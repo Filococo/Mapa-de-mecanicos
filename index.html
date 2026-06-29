@@ -102,14 +102,14 @@ body{
   flex-shrink:0;
 }
 .logo-mark{
-  width:36px;height:36px;
+  width:44px;height:44px;
   background:var(--red);
   transform:rotate(45deg);
   display:flex;align-items:center;justify-content:center;
   flex-shrink:0;
-  border-radius:4px;
+  border-radius:5px;
 }
-.logo-mark svg{transform:rotate(-45deg);width:18px;height:18px;}
+.logo-mark svg{transform:rotate(-45deg);width:22px;height:22px;}
 .logo-name{
   font-family:'Bebas Neue';font-size:26px;
   color:var(--white);letter-spacing:2px;line-height:1;
@@ -1182,14 +1182,11 @@ footer{
       </div>
     </a>
     <div class="topbar-right">
-      <button class="btn-icon" id="locBtn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-        <span id="locLabel">Ubicación</span>
-      </button>
+      <!-- Botón ubicación movido al hero -->
 
 
 
-      <button class="btn-icon primary" id="installBtn">
+      <button class="btn-icon" id="installBtn" style="background:#2a2a2a;border-color:#3a3a3a;color:#ccc;">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
         <span>Instalar</span>
       </button>
