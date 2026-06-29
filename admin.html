@@ -269,7 +269,7 @@ async function cargarDatos(){
     } catch(e){}
 
     const visitasPerfiles = talleres.reduce((s,t)=>s+(t.visit_count||0),0);
-    const ciudades = [...new Set(talleres.map(t=>t.city).filter(Boolean))];
+    const ciudades = [...new Set(todasCiudades.map(t=>t.city).filter(Boolean))];
     const ingreso = subs.filter(s=>s.estado==='activo').reduce((s,sub)=>s+(PRECIOS[sub.plan]||0),0);
 
     // KPIs
