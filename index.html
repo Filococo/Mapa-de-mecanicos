@@ -1977,7 +1977,11 @@ document.getElementById('authSubmit')?.addEventListener('click', async () => {
       email,
       password,
       options: {
-        emailRedirectTo: 'https://filococo.github.io/Mapa-de-mecanicos/'
+        emailRedirectTo: 'https://filococo.github.io/Mapa-de-mecanicos/',
+        data: {
+          role: authSelectedRole,
+          name: email.split('@')[0],
+        }
       }
     });
     if(error){
@@ -2003,17 +2007,7 @@ document.getElementById('authSubmit')?.addEventListener('click', async () => {
     }).catch(()=>{});
 
     if(authSelectedRole === 'mecanico'){
-      // Insertar registro mínimo en mecanicos para que sea reconocido como taller
-      const uid = data.session.user.id;
-      const nombreInicial = email.split('@')[0];
-      await sb.from('mecanicos').upsert({
-        id: uid,
-        name: nombreInicial,
-        email: email,
-        spec: 'Mecánica General',
-        es_pro: false,
-        address: 'Sin dirección',
-      }, { onConflict: 'id' });
+      // El trigger on_auth_user_created maneja la inserción en mecanicos
       alert('Cuenta creada. Ahora puedes completar tu ficha de mecánico — tienes 30 días de prueba gratis.');
       document.querySelector('[data-tab="perfil-mecanico"]').click();
       setTimeout(mostrarPanelMecanico, 100);
