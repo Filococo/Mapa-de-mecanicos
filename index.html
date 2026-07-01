@@ -1282,7 +1282,7 @@ footer{
           <div class="hero-stat-label">Talleres registrados</div>
         </div>
         <div class="hero-stat">
-          <div class="hero-stat-num" id="heroCiudades" style="font-size:32px;">194+</div>
+          <div class="hero-stat-num" id="heroCiudades" style="font-size:32px;">288+</div>
           <div class="hero-stat-label">Ciudades cubiertas</div>
         </div>
         <div class="hero-stat">
@@ -4113,7 +4113,7 @@ async function cargarEstadisticasHero(){
     const heroCiudades = document.getElementById('heroCiudades');
     const heroTalleres = document.getElementById('heroTalleres');
     if(statData){
-      if(heroCiudades) heroCiudades.textContent = statData.ciudades + '+';
+      if(heroCiudades) heroCiudades.textContent = Number(statData.ciudades).toLocaleString('es-CL') + '+';
       if(heroTalleres) heroTalleres.textContent = Number(statData.talleres).toLocaleString('es-CL');
     }
   } catch(e) {
