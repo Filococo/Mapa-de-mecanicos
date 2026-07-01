@@ -3811,6 +3811,108 @@ sb.from('mecanicos')
   });
 refreshSession();
 
+// ===== LIGHTBOX =====
+function openLightbox(url){
+  const lb = document.getElementById('panne-lightbox');
+  const img = document.getElementById('panne-lightbox-img');
+  if(!lb || !img) return;
+  img.src = url;
+  lb.classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+function closeLightbox(){
+  const lb = document.getElementById('panne-lightbox');
+  if(!lb) return;
+  lb.classList.remove('active');
+  document.getElementById('panne-lightbox-img').src = '';
+  document.body.style.overflow = '';
+}
+document.addEventListener('keydown', e => { if(e.key === 'Escape') closeLightbox(); });
+
+// Limpiar buscador al cargar
+window.addEventListener('load', () => {
+  const si = document.getElementById('searchInput');
+  if(si){ si.value = ''; }
+});
+
+// ===== RESEÑAS HOME =====
+async function cargarResenasHome(){
+  try {
+    const { data: resenas } = await sb
+      .from('resenas')
+      .select('comentario, rating, cliente_nombre, mecanico_id')
+      .gte('rating', 4)
+      .not('comentario', 'is', null)
+      .order('created_at', { ascending: false })
+      .limit(6);
+    if(!resenas || resenas.length === 0) return;
+    const wrap = document.getElementById('homeResenasWrap');
+    const list = document.getElementById('homeResenasList');
+    if(!wrap || !list) return;
+    list.innerHTML = resenas.map(r => {
+      const stars = '★'.repeat(r.rating) + '☆'.repeat(5 - r.rating);
+      const taller = mechanics.find(m => m.id === r.mecanico_id);
+      const tallerNombre = taller ? taller.name : 'Taller PANNE';
+      return `<div class="home-resena-card">
+        <div class="home-resena-stars">${stars}</div>
+        <div class="home-resena-texto">"${r.comentario}"</div>
+        <div class="home-resena-footer">
+          <span class="home-resena-autor">— ${r.cliente_nombre || 'Usuario verificado'}</span>
+          <span class="home-resena-taller" onclick="openProfile('${r.mecanico_id}')">${tallerNombre} →</span>
+        </div>
+      </div>`;
+    }).join('');
+    wrap.style.display = 'block';
+  } catch(e) { console.log('Sin reseñas home'); }
+}
+
+// ===== BOTÓN GPS HERO =====
+function usarUbicacion(){
+  const btn = document.getElementById('btnGpsHero');
+  if(btn){ btn.innerHTML = '⏳ Obteniendo ubicación...'; btn.disabled = true; }
+  if(!navigator.geolocation){
+    alert('Tu navegador no soporta geolocalización.');
+    if(btn){ btn.innerHTML = '📍 Usar mi ubicación — encontrar talleres cercanos'; btn.disabled = false; }
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(pos => {
+    userLat = pos.coords.latitude;
+    userLng = pos.coords.longitude;
+    mechanics.forEach(m => {
+      if(m.lat && m.lng){
+        const R = 6371;
+        const dLat = (m.lat - userLat) * Math.PI/180;
+        const dLng = (m.lng - userLng) * Math.PI/180;
+        const a = Math.sin(dLat/2)**2 + Math.cos(userLat*Math.PI/180)*Math.cos(m.lat*Math.PI/180)*Math.sin(dLng/2)**2;
+        m.dist = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      }
+    });
+    renderGrid();
+    if(btn){ btn.innerHTML = '✅ Mostrando talleres cercanos a ti'; btn.style.background = 'linear-gradient(135deg,#16a34a,#15803d)'; btn.disabled = false; }
+    document.getElementById('grid')?.scrollIntoView({behavior:'smooth', block:'start'});
+  }, (err) => {
+    if(btn){ btn.innerHTML = '📍 Usar mi ubicación — encontrar talleres cercanos'; btn.disabled = false; }
+    if(err.code === 1) alert('Permiso de ubicación denegado. Actívalo en configuración del navegador.');
+    else alert('No pudimos obtener tu ubicación. Intenta de nuevo.');
+  }, { timeout: 8000, maximumAge: 60000 });
+}
+
+// ===== BANNER PATROCINADO =====
+const SPONSORS = [];
+function cargarSponsor(){
+  const activos = SPONSORS.filter(s => s.activo);
+  if(!activos.length) return;
+  const s = activos[Math.floor(Math.random() * activos.length)];
+  document.getElementById('sponsorTitle').textContent = s.title;
+  document.getElementById('sponsorDesc').textContent = s.desc;
+  document.getElementById('sponsorBanner').setAttribute('data-url', s.url);
+  document.getElementById('sponsorBanner').style.display = 'flex';
+}
+function abrirSponsor(){
+  const url = document.getElementById('sponsorBanner').getAttribute('data-url');
+  if(url) window.open(url, '_blank');
+}
+
 // Registrar visita a la página
 (async function registrarVisita(){
   try {
@@ -4352,119 +4454,5 @@ function mostrarModalTienda(tipo){
   <img id="panne-lightbox-img" src="" alt="Foto taller">
 </div>
 
-<script>
-function openLightbox(url){
-  const lb = document.getElementById('panne-lightbox');
-  const img = document.getElementById('panne-lightbox-img');
-  if(!lb || !img) return;
-  img.src = url;
-  lb.classList.add('active');
-  document.body.style.overflow = 'hidden';
-}
-// Limpiar buscador al cargar (evitar autocompletado del navegador)
-window.addEventListener('load', () => {
-  const si = document.getElementById('searchInput');
-  if(si){ si.value = ''; }
-});
-
-// ===== RESEÑAS HOME =====
-async function cargarResenasHome(){
-  try {
-    const { data: resenas } = await sb
-      .from('resenas')
-      .select('comentario, rating, cliente_nombre, mecanico_id')
-      .gte('rating', 4)
-      .not('comentario', 'is', null)
-      .order('created_at', { ascending: false })
-      .limit(6);
-
-    if(!resenas || resenas.length === 0) return;
-
-    const wrap = document.getElementById('homeResenasWrap');
-    const list = document.getElementById('homeResenasList');
-    if(!wrap || !list) return;
-
-    list.innerHTML = resenas.map(r => {
-      const stars = '★'.repeat(r.rating) + '☆'.repeat(5 - r.rating);
-      const taller = mechanics.find(m => m.id === r.mecanico_id);
-      const tallerNombre = taller ? taller.name : 'Taller PANNE';
-      return `
-        <div class="home-resena-card">
-          <div class="home-resena-stars">${stars}</div>
-          <div class="home-resena-texto">"${r.comentario}"</div>
-          <div class="home-resena-footer">
-            <span class="home-resena-autor">— ${r.cliente_nombre || 'Usuario verificado'}</span>
-            <span class="home-resena-taller" onclick="openProfile('${r.mecanico_id}')">${tallerNombre} →</span>
-          </div>
-        </div>`;
-    }).join('');
-
-    wrap.style.display = 'block';
-  } catch(e) {
-    console.log('Sin reseñas para mostrar en home');
-  }
-}
-
-// ===== BOTÓN GPS HERO =====
-function usarUbicacion(){
-  const btn = document.getElementById('btnGpsHero');
-  if(btn){ btn.innerHTML = '⏳ Obteniendo ubicación...'; btn.disabled = true; }
-  if(!navigator.geolocation){
-    alert('Tu navegador no soporta geolocalización.');
-    if(btn){ btn.innerHTML = '📍 Usar mi ubicación — encontrar talleres cercanos'; btn.disabled = false; }
-    return;
-  }
-  navigator.geolocation.getCurrentPosition(pos => {
-    userLat = pos.coords.latitude;
-    userLng = pos.coords.longitude;
-    mechanics.forEach(m => {
-      if(m.lat && m.lng){
-        const R = 6371;
-        const dLat = (m.lat - userLat) * Math.PI/180;
-        const dLng = (m.lng - userLng) * Math.PI/180;
-        const a = Math.sin(dLat/2)**2 + Math.cos(userLat*Math.PI/180)*Math.cos(m.lat*Math.PI/180)*Math.sin(dLng/2)**2;
-        m.dist = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-      }
-    });
-    renderGrid();
-    if(btn){ btn.innerHTML = '✅ Mostrando talleres cercanos a ti'; btn.style.background = 'linear-gradient(135deg,#16a34a,#15803d)'; btn.disabled = false; }
-    document.getElementById('grid')?.scrollIntoView({behavior:'smooth', block:'start'});
-  }, (err) => {
-    if(btn){ btn.innerHTML = '📍 Usar mi ubicación — encontrar talleres cercanos'; btn.disabled = false; }
-    if(err.code === 1) alert('Permiso de ubicación denegado. Actívalo en la configuración de tu navegador.');
-    else alert('No pudimos obtener tu ubicación. Intenta de nuevo.');
-  }, { timeout: 8000, maximumAge: 60000 });
-}
-
-// ===== BANNER PATROCINADO =====
-const SPONSORS = [
-  // Aquí puedes agregar sponsors reales
-  // { title: 'Lubricentro XYZ', desc: 'Cambio de aceite desde $12.990 — Sucursales en toda la RM', url: 'https://ejemplo.cl', activo: true },
-];
-
-function cargarSponsor(){
-  const activos = SPONSORS.filter(s => s.activo);
-  if(!activos.length) return;
-  const s = activos[Math.floor(Math.random() * activos.length)];
-  document.getElementById('sponsorTitle').textContent = s.title;
-  document.getElementById('sponsorDesc').textContent = s.desc;
-  document.getElementById('sponsorBanner').setAttribute('data-url', s.url);
-  document.getElementById('sponsorBanner').style.display = 'flex';
-}
-
-function abrirSponsor(){
-  const url = document.getElementById('sponsorBanner').getAttribute('data-url');
-  if(url) window.open(url, '_blank');
-}
-
-function closeLightbox(){
-  const lb = document.getElementById('panne-lightbox');
-  if(!lb) return;
-  lb.classList.remove('active');
-  document.getElementById('panne-lightbox-img').src = '';
-  document.body.style.overflow = '';
-}
-document.addEventListener('keydown', e => { if(e.key === 'Escape') closeLightbox(); });
-</script>
 </body>
 </html>
