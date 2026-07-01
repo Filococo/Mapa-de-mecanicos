@@ -2120,6 +2120,7 @@ async function loadMechanicsFromSupabase(){
     const { data: mecanicosData, error } = await sb
       .from('mecanicos')
       .select('id, name, address, city, phone, lat, lng, spec, rating, review_count, sells_parts, trial_ends_at, cover_url, avatar_url, whatsapp, es_pro, oferta_texto, email')
+      .order('es_pro', {ascending: false})
       .limit(1000);
 
     if(error){
@@ -3778,7 +3779,8 @@ async function guardarFicha() {
 // Fetch directo sin función intermedia
 sb.from('mecanicos')
   .select('id, name, address, city, phone, lat, lng, spec, rating, review_count, sells_parts, trial_ends_at, cover_url, avatar_url, whatsapp, es_pro, oferta_texto, email')
-  .limit(500)
+  .order('es_pro', {ascending: false})
+  .limit(1000)
   .then(({ data, error }) => {
     if(error){ console.error('INIT error:', error.message); return; }
     if(!data || data.length === 0){ console.warn('INIT: sin datos'); return; }
