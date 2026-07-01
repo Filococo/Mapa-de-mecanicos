@@ -1,13 +1,13 @@
 {
-  "name": "Taller Cercano — Mecánicos de Rancagua",
-  "short_name": "Taller Cercano",
-  "description": "Encuentra mecánicos cerca de ti en Rancagua, con calificaciones reales y mapa.",
+  "name": "PANNE — Talleres & Vulcanizadoras",
+  "short_name": "PANNE",
+  "description": "El directorio de talleres mecánicos y vulcanizadoras más completo de Chile.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait-primary",
-  "background_color": "#f2ede1",
-  "theme_color": "#1a1a18",
+  "background_color": "#0a0a0a",
+  "theme_color": "#E8192C",
   "lang": "es-CL",
   "icons": [
     {
