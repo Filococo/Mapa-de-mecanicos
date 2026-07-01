@@ -2171,8 +2171,7 @@ async function loadMechanicsFromSupabase(){
     console.log('PANNE v2.1: ' + mechanics.length + ' negocios cargados');
     console.log('Iniciando banner Pro...');
     renderProBanner();
-    const heroT = document.getElementById('heroTalleres');
-    if(heroT) heroT.textContent = mechanics.length;
+    // heroTalleres se actualiza via panne_stats RPC
 
   } catch(err) {
     console.error('Error inesperado:', err.message);
@@ -3806,8 +3805,7 @@ sb.from('mecanicos')
     renderMapList();
     renderProBanner();
     cargarEstadisticasHero();
-    const heroT = document.getElementById('heroTalleres');
-    if(heroT) heroT.textContent = mechanics.length;
+    // heroTalleres se actualiza via panne_stats RPC
   });
 refreshSession();
 
@@ -4092,33 +4090,17 @@ document.addEventListener('DOMContentLoaded', () => {
 /* ===== CONTADORES DINÁMICOS HERO ===== */
 async function cargarEstadisticasHero(){
   try {
-    // Contar usuarios registrados en auth.users
-    const { count: userCount } = await sb
-      .from('mecanicos')
-      .select('id', { count: 'exact', head: true });
-    
-    // Contar usuarios en una tabla separada (usamos auth vía RPC o estimamos)
-    // Por ahora mostramos el conteo de mecánicos y actualizamos talleres
-    const heroTalleres = document.getElementById('heroTalleres');
-    if(heroTalleres && userCount) heroTalleres.textContent = userCount;
-
-    // Contar usuarios registrados (clientes + talleres) via resenas o tabla propia
-    const { count: resenasCount } = await sb
-      .from('resenas')
-      .select('cliente_id', { count: 'exact', head: true });
-    
-    // El contador de usuarios se gestiona manualmente
-
-    // Contar ciudades únicas via RPC
-    const { data: statData } = await sb.rpc('panne_stats');
-    const heroCiudades = document.getElementById('heroCiudades');
-    const heroTalleres = document.getElementById('heroTalleres');
+    // Traer stats reales desde RPC (sin límites)
+    const { data: statData, error } = await sb.rpc('panne_stats');
+    if(error) throw new Error(error.message);
     if(statData){
+      const heroCiudades = document.getElementById('heroCiudades');
+      const heroTalleres = document.getElementById('heroTalleres');
       if(heroCiudades) heroCiudades.textContent = Number(statData.ciudades).toLocaleString('es-CL') + '+';
       if(heroTalleres) heroTalleres.textContent = Number(statData.talleres).toLocaleString('es-CL');
     }
   } catch(e) {
-    console.log('Stats hero:', e.message);
+    console.log('Stats hero error:', e.message);
   }
 }
 
