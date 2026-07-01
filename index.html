@@ -4108,16 +4108,13 @@ async function cargarEstadisticasHero(){
     
     // El contador de usuarios se gestiona manualmente
 
-    // Contar ciudades únicas
-    const { data: ciudades } = await sb
-      .from('mecanicos')
-      .select('city')
-      .not('city', 'is', null);
-    
+    // Contar ciudades únicas via RPC
+    const { data: statData } = await sb.rpc('panne_stats');
     const heroCiudades = document.getElementById('heroCiudades');
-    if(heroCiudades && ciudades){
-      const uniqueCities = new Set(ciudades.map(c => c.city)).size;
-      heroCiudades.textContent = uniqueCities + '+';
+    const heroTalleres = document.getElementById('heroTalleres');
+    if(statData){
+      if(heroCiudades) heroCiudades.textContent = statData.ciudades + '+';
+      if(heroTalleres) heroTalleres.textContent = Number(statData.talleres).toLocaleString('es-CL');
     }
   } catch(e) {
     console.log('Stats hero:', e.message);
