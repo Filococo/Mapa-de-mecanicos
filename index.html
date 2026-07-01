@@ -3966,10 +3966,12 @@ function cerrarModalPago(){
 }
 
 /* ====================== PWA: Service Worker + Install Prompt ====================== */
-// Desregistrar cualquier service worker anterior para evitar caché agresivo
+// Registrar Service Worker para modo offline
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.getRegistrations().then(registrations => {
-    registrations.forEach(reg => reg.unregister());
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then(reg => console.log('SW registrado:', reg.scope))
+      .catch(err => console.log('SW error:', err));
   });
 }
 
