@@ -2109,6 +2109,7 @@ function traduceErrorAuth(msg){
 }
 
 /* ====================== DATA ====================== */
+let deferredInstallPrompt = null; // PWA install prompt
 let mechanics = []; // Se carga de forma asíncrona desde Supabase (tabla mecanicos + servicios)
 let panelPhotos = []; // URLs de fotos ya subidas en el panel del mecánico
 let editPanelLat = null;
@@ -2119,7 +2120,7 @@ async function loadMechanicsFromSupabase(){
     const { data: mecanicosData, error } = await sb
       .from('mecanicos')
       .select('id, name, address, city, phone, lat, lng, spec, rating, review_count, sells_parts, trial_ends_at, cover_url, avatar_url, whatsapp, es_pro, oferta_texto, email')
-      .limit(500);
+      .limit(1000);
 
     if(error){
       console.error('Supabase error:', error.message);
@@ -3870,7 +3871,7 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-let deferredInstallPrompt = null;
+// deferredInstallPrompt moved to top
 const installBtn = document.getElementById('installBtn');
 
 function isStandaloneMode(){
@@ -4443,12 +4444,12 @@ function usarUbicacion(){
     });
     renderGrid();
     if(btn){ btn.innerHTML = '✅ Mostrando talleres cercanos a ti'; btn.style.background = 'linear-gradient(135deg,#16a34a,#15803d)'; btn.disabled = false; }
-    // Scroll suave a los resultados
     document.getElementById('grid')?.scrollIntoView({behavior:'smooth', block:'start'});
-  }, () => {
+  }, (err) => {
     if(btn){ btn.innerHTML = '📍 Usar mi ubicación — encontrar talleres cercanos'; btn.disabled = false; }
-    alert('No pudimos obtener tu ubicación. Verifica que hayas dado permiso.');
-  });
+    if(err.code === 1) alert('Permiso de ubicación denegado. Actívalo en la configuración de tu navegador.');
+    else alert('No pudimos obtener tu ubicación. Intenta de nuevo.');
+  }, { timeout: 8000, maximumAge: 60000 });
 }
 
 // ===== BANNER PATROCINADO =====
