@@ -396,7 +396,7 @@ async function cargarDatos(){
       sb.from('suscripciones').select('*').order('created_at',{ascending:false}),
       sb.from('resenas').select('*').order('created_at',{ascending:false}).limit(20),
       sb.from('resenas').select('*',{count:'exact',head:true}),
-      sb.from('mecanicos').select('city').not('city','is',null),
+      sb.rpc('panne_stats'),
       sb.rpc('ciudades_clientes_top'),
       sb.from('mecanicos').select('id,name,city,email').eq('es_pro',true)
     ]);
@@ -410,7 +410,9 @@ async function cargarDatos(){
     _subs = r5.data || [];
     _resenas = r6.data || [];
     const totalResenas = r7.count || 0;
-    const todasCiudades = r8.data || [];
+    const statsData = r8.data || {};
+    const totalCiudades = statsData.ciudades || 0;
+    const todasCiudades = []; // Solo para ranking top10
     const topCiudadesClientes = r9.data || [];
 
     // Mapa nombres
@@ -431,11 +433,11 @@ async function cargarDatos(){
     } catch(e){}
 
     const visitasPerfiles = _talleres.reduce((s,t)=>s+(t.visit_count||0),0);
-    const ciudades = [...new Set(todasCiudades.map(t=>t.city).filter(Boolean))];
+    const ciudades = { length: totalCiudades };
     const ingreso = _subs.filter(s=>s.estado==='activo').reduce((s,sub)=>s+(PRECIOS[sub.plan]||0),0);
-    const ciudadesCount = {};
-    todasCiudades.forEach(t=>{ ciudadesCount[t.city]=(ciudadesCount[t.city]||0)+1; });
-    const topCiudadesTalleres = Object.entries(ciudadesCount).sort((a,b)=>b[1]-a[1]).slice(0,10);
+    // Top ciudades via RPC separada
+    const { data: topRaw } = await sb.rpc('ciudades_top_talleres');
+    const topCiudadesTalleres = (topRaw || []).map(r => [r.city, r.total]);
 
     // KPIs
     document.getElementById('k1').textContent = _totalTalleres.toLocaleString('es-CL');
@@ -472,7 +474,7 @@ async function cargarDatos(){
           </div>`).join('')
       : '<p style="color:var(--muted);font-size:12px;">Sin datos aún</p>';
 
-    document.getElementById('bCiudades').textContent = ciudades.length + ' ciudades';
+    document.getElementById('bCiudades').textContent = totalCiudades + ' ciudades';
 
     // Suscripciones
     const subsActivas = _subs.filter(s=>s.estado==='activo');
