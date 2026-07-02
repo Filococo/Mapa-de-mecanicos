@@ -272,6 +272,22 @@ tr:hover td{background:rgba(255,255,255,.025);}
       <div style="padding:20px;"><canvas id="graficoRegistros" height="80"></canvas></div>
     </div>
 
+    <!-- GRÁFICO VISITAS DIARIAS -->
+    <div class="section">
+      <div class="sec-head">
+        <div class="sec-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          Visitas diarias al sitio
+          <span style="font-size:11px;color:var(--muted);font-weight:400;" id="grafVisitasTotal"></span>
+        </div>
+        <div style="display:flex;gap:6px;">
+          <button class="graf-btn" data-pv="7d" onclick="cargarGraficoVisitas('7d')" style="background:var(--blue);color:#fff;border-color:var(--blue);">7 días</button>
+          <button class="graf-btn" data-pv="30d" onclick="cargarGraficoVisitas('30d')" style="background:rgba(255,255,255,.05);color:var(--dim);">30 días</button>
+        </div>
+      </div>
+      <div style="padding:20px;"><canvas id="graficoVisitas" height="80"></canvas></div>
+    </div>
+
     <!-- SUSCRIPCIONES -->
     <div class="section">
       <div class="sec-head">
@@ -381,6 +397,7 @@ function mostrarDashboard(email){
   document.getElementById('adminEmail').textContent = email;
   cargarDatos();
   cargarGrafico();
+  cargarGraficoVisitas();
 }
 
 async function logout(){ await sb.auth.signOut(); location.reload(); }
@@ -718,6 +735,74 @@ function cerrarModal(){ document.getElementById('modalOverlay').classList.remove
 document.addEventListener('keydown', e => { if(e.key==='Escape') cerrarModal(); });
 
 setInterval(cargarDatos, 5*60*1000);
+
+let chartVisitas=null, periodoVisitas='7d';
+async function cargarGraficoVisitas(periodo=periodoVisitas){
+  periodoVisitas=periodo;
+  document.querySelectorAll('.graf-btn[data-pv]').forEach(b=>{
+    const act = b.dataset.pv===periodo;
+    b.style.background = act?'var(--blue)':'rgba(255,255,255,.05)';
+    b.style.color = act?'#fff':'var(--dim)';
+    b.style.borderColor = act?'var(--blue)':'var(--border)';
+  });
+
+  const dias = periodo==='7d' ? 7 : 30;
+  const desde = new Date();
+  desde.setDate(desde.getDate()-(dias-1));
+  desde.setHours(0,0,0,0);
+
+  const { data } = await sb.from('visitas_pagina')
+    .select('created_at')
+    .gte('created_at', desde.toISOString())
+    .order('created_at', {ascending:true});
+
+  const conteo = {};
+  for(let i=0;i<dias;i++){
+    const d=new Date(desde);
+    d.setDate(d.getDate()+i);
+    conteo[`${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`]=0;
+  }
+  (data||[]).forEach(v=>{
+    const d=new Date(v.created_at);
+    const k=`${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`;
+    if(conteo[k]!==undefined) conteo[k]++;
+  });
+
+  const labels=Object.keys(conteo);
+  const valores=Object.values(conteo);
+  const total=valores.reduce((a,b)=>a+b,0);
+  document.getElementById('grafVisitasTotal').textContent=`· ${total} visitas`;
+
+  const ctx=document.getElementById('graficoVisitas').getContext('2d');
+  if(chartVisitas) chartVisitas.destroy();
+  chartVisitas=new Chart(ctx,{
+    type:'bar',
+    data:{labels,datasets:[{
+      label:'Visitas',
+      data:valores,
+      backgroundColor:'rgba(59,130,246,0.5)',
+      borderColor:'#3b82f6',
+      borderWidth:1,
+      borderRadius:5
+    }]},
+    options:{
+      responsive:true,
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          backgroundColor:'#1a1a2e',
+          titleColor:'#fff',
+          bodyColor:'#aaa',
+          callbacks:{label:c=>` ${c.parsed.y} visita${c.parsed.y!==1?'s':''}`}
+        }
+      },
+      scales:{
+        x:{ticks:{color:'#555',font:{size:9},maxRotation:45,autoSkip:true,maxTicksLimit:15},grid:{color:'rgba(255,255,255,.02)'}},
+        y:{ticks:{color:'#555',stepSize:1},grid:{color:'rgba(255,255,255,.04)'},beginAtZero:true}
+      }
+    }
+  });
+}
 
 let chartInstance=null, periodoActual='30d';
 async function cargarGrafico(periodo=periodoActual){
