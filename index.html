@@ -18,6 +18,9 @@
 <meta name="apple-mobile-web-app-title" content="PANNE">
 <style>
 /* ===== PANNE Design System ===== */
+/* ===== FAVORITOS ===== */
+.fav-btn-active{ border-color:rgba(232,25,44,.4)!important; background:rgba(232,25,44,.08)!important; }
+
 /* ===== RESEÑAS HOME ===== */
 .home-resena-card{
   background:var(--black2);
@@ -1253,6 +1256,7 @@ footer{
     <button class="tab active" data-tab="directorio">Directorio</button>
     <button class="tab" data-tab="mapa">Mapa</button>
     <button class="tab" data-tab="perfil-mecanico">Soy taller</button>
+    <button class="tab" data-tab="favoritos" onclick="abrirFavoritos()">❤️ Favoritos</button>
   </div>
 </nav>
 
@@ -1417,6 +1421,23 @@ footer{
     <div class="map-wrap"><div id="leafletMap"></div></div>
     <div class="map-list" id="mapList"></div>
   </section>
+
+  <!-- FAVORITOS -->
+  <div data-view="favoritos" style="display:none;padding:16px;">
+    <div style="font-family:'Bebas Neue';font-size:22px;letter-spacing:1px;margin-bottom:16px;">❤️ Mis Talleres Favoritos</div>
+    <div id="favoritosGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;"></div>
+    <div id="favoritosEmpty" style="display:none;text-align:center;padding:40px 20px;">
+      <div style="font-size:48px;margin-bottom:12px;">❤️</div>
+      <div style="font-size:16px;font-weight:700;color:var(--white);margin-bottom:8px;">Aún no tienes favoritos</div>
+      <p style="color:var(--muted);font-size:13px;">Presiona el corazón en cualquier taller para guardarlo aquí</p>
+    </div>
+    <div id="favoritosLogin" style="display:none;text-align:center;padding:40px 20px;">
+      <div style="font-size:48px;margin-bottom:12px;">🔐</div>
+      <div style="font-size:16px;font-weight:700;color:var(--white);margin-bottom:8px;">Inicia sesión para ver tus favoritos</div>
+      <p style="color:var(--muted);font-size:13px;margin-bottom:20px;">Crea una cuenta gratis para guardar tus talleres favoritos</p>
+      <button onclick="openAuthModal()" style="background:var(--red);color:#fff;border:none;border-radius:10px;padding:12px 28px;font-size:14px;font-weight:700;cursor:pointer;">Crear cuenta gratis →</button>
+    </div>
+  </div>
 
   <!-- SOY TALLER -->
   <section id="view-soy-mecanico" class="hidden">
@@ -2339,6 +2360,7 @@ function renderGrid(){
       if(mechanics.length === 0) {
         await loadMechanicsFromSupabase();
   cargarSponsor();
+  cargarFavoritos();
   cargarResenasHome();
       }
     }, 2000);
@@ -2383,7 +2405,10 @@ function renderGrid(){
         </div>
         <div class="card-footer">
           <span class="price-txt">${m.priceFrom ? `Desde <b>${fmtCLP(m.priceFrom)}</b>` : 'Consultar'}</span>
-          <button class="btn-card" onclick="event.stopPropagation();openProfile('${m.id}')">Ver ficha →</button>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <button onclick="event.stopPropagation();toggleFavorito('${m.id}')" id="fav-btn-${m.id}" style="background:none;border:1px solid var(--border);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:16px;transition:.2s;" title="Guardar favorito">${isFavorito('${m.id}') ? '❤️' : '🤍'}</button>
+            <button class="btn-card" onclick="event.stopPropagation();openProfile('${m.id}')">Ver ficha →</button>
+          </div>
         </div>
       </div>
     </div>`;
@@ -3834,6 +3859,107 @@ window.addEventListener('load', () => {
   const si = document.getElementById('searchInput');
   if(si){ si.value = ''; }
 });
+
+// ===== FAVORITOS =====
+let favoritosCache = new Set();
+
+function isFavorito(id){ return favoritosCache.has(id); }
+
+async function cargarFavoritos(){
+  const { data: { session } } = await sb.auth.getSession();
+  if(!session) return;
+  const { data } = await sb.from('favoritos').select('mecanico_id').eq('user_id', session.user.id);
+  if(data) data.forEach(f => favoritosCache.add(f.mecanico_id));
+}
+
+async function toggleFavorito(mecanicoId){
+  const { data: { session } } = await sb.auth.getSession();
+  if(!session){
+    if(confirm('¿Quieres guardar este taller como favorito? Crea una cuenta gratis para hacerlo.')) openAuthModal();
+    return;
+  }
+  const userId = session.user.id;
+  const btn = document.getElementById('fav-btn-' + mecanicoId);
+  if(favoritosCache.has(mecanicoId)){
+    // Quitar favorito
+    await sb.from('favoritos').delete().eq('user_id', userId).eq('mecanico_id', mecanicoId);
+    favoritosCache.delete(mecanicoId);
+    if(btn){ btn.textContent = '🤍'; btn.classList.remove('fav-btn-active'); }
+  } else {
+    // Agregar favorito
+    await sb.from('favoritos').upsert({ user_id: userId, mecanico_id: mecanicoId });
+    favoritosCache.add(mecanicoId);
+    if(btn){ btn.textContent = '❤️'; btn.classList.add('fav-btn-active'); }
+  }
+}
+
+async function abrirFavoritos(){
+  // Ocultar todas las vistas y mostrar favoritos
+  document.querySelectorAll('[data-view]').forEach(v => v.style.display = 'none');
+  document.querySelector('[data-view="favoritos"]').style.display = 'block';
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelector('[data-tab="favoritos"]').classList.add('active');
+
+  const { data: { session } } = await sb.auth.getSession();
+  const grid = document.getElementById('favoritosGrid');
+  const empty = document.getElementById('favoritosEmpty');
+  const login = document.getElementById('favoritosLogin');
+
+  if(!session){
+    grid.style.display = 'none';
+    empty.style.display = 'none';
+    login.style.display = 'block';
+    return;
+  }
+
+  login.style.display = 'none';
+  const { data: favs } = await sb.from('favoritos').select('mecanico_id').eq('user_id', session.user.id);
+  if(!favs || favs.length === 0){
+    grid.style.display = 'none';
+    empty.style.display = 'block';
+    return;
+  }
+
+  empty.style.display = 'none';
+  grid.style.display = 'grid';
+  const ids = favs.map(f => f.mecanico_id);
+  const talleresFav = mechanics.filter(m => ids.includes(m.id));
+
+  if(talleresFav.length === 0){
+    // Buscar en Supabase los que no están en cache local
+    const { data: extra } = await sb.from('mecanicos')
+      .select('id,name,city,spec,es_pro,rating,review_count,phone,whatsapp,cover_url,avatar_url')
+      .in('id', ids);
+    if(extra) extra.forEach(m => { if(!mechanics.find(x=>x.id===m.id)) mechanics.push(m); });
+  }
+
+  const favTalleres = mechanics.filter(m => ids.includes(m.id));
+  grid.innerHTML = favTalleres.map(m => {
+    const initial = (m.name||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    return `<div class="card" onclick="openProfile('${m.id}')">
+      <div class="card-cover">
+        <div class="card-cover-pattern"></div>
+        <div class="card-cover-initial">${initial}</div>
+        ${m.cover_url ? `<img src="${m.cover_url}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.7;" loading="lazy" onerror="this.style.display='none'">` : ''}
+        <div class="card-spec-badge">${(m.spec||'').toUpperCase()}</div>
+        ${m.es_pro ? '<div style="position:absolute;top:8px;right:8px;background:#FFD600;color:#0a0a0a;font-size:9px;font-weight:700;padding:3px 7px;border-radius:4px;">⭐ PRO</div>' : ''}
+      </div>
+      <div class="card-body">
+        <div class="card-avatar-row">
+          <div class="avatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:55%;height:55%;opacity:.4;"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div>
+          <div>
+            <div class="card-name">${m.name}</div>
+            <div class="card-meta">${m.city||''}</div>
+          </div>
+        </div>
+        <div class="card-footer">
+          <button onclick="event.stopPropagation();toggleFavorito('${m.id}')" style="background:none;border:1px solid rgba(232,25,44,.4);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:16px;">❤️</button>
+          <button class="btn-card" onclick="event.stopPropagation();openProfile('${m.id}')">Ver ficha →</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
 
 // ===== RESEÑAS HOME =====
 async function cargarResenasHome(){
