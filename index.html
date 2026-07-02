@@ -1202,6 +1202,9 @@ footer{
       <a href="https://www.instagram.com/panne.chile" target="_blank" rel="noopener" class="btn-icon" style="background:#2a2a2a;border-color:#3a3a3a;color:#E1306C;text-decoration:none;">
         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
       </a>
+      <a href="https://vt.tiktok.com/ZSCxnXFJb/" target="_blank" rel="noopener" class="btn-icon" style="background:#2a2a2a;border-color:#3a3a3a;color:#fff;text-decoration:none;">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.18 8.18 0 0 0 4.78 1.52V6.75a4.85 4.85 0 0 1-1.02-.06z"/></svg>
+      </a>
       <button class="btn-icon" id="installBtn" style="background:#2a2a2a;border-color:#3a3a3a;color:#ccc;">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
         <span>Instalar</span>
@@ -1862,10 +1865,17 @@ footer{
 <footer>
   PANNE © 2026 — Directorio de talleres y vulcanizadoras en Chile
   <br><a href="mailto:contacto@panne.cl" style="color:var(--red);text-decoration:none;letter-spacing:0;font-size:10px;">contacto@panne.cl</a>
-  <br><a href="https://www.instagram.com/panne.chile" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:5px;color:#E1306C;text-decoration:none;font-size:11px;margin-top:6px;font-weight:600;">
-    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
-    @panne.chile
-  </a>
+  <br>
+  <div style="display:inline-flex;gap:16px;margin-top:8px;align-items:center;">
+    <a href="https://www.instagram.com/panne.chile" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:5px;color:#E1306C;text-decoration:none;font-size:11px;font-weight:600;">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+      @panne.chile
+    </a>
+    <a href="https://vt.tiktok.com/ZSCxnXFJb/" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:5px;color:#fff;text-decoration:none;font-size:11px;font-weight:600;">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.18 8.18 0 0 0 4.78 1.52V6.75a4.85 4.85 0 0 1-1.02-.06z"/></svg>
+      @panne.chile
+    </a>
+  </div>
 </footer>
 
 
@@ -2472,7 +2482,6 @@ async function openProfile(id){
         <div class="profile-avatar" id="profileAvatar">${initial}</div>
         <div class="profile-badge">${m.spec.toUpperCase()}</div>
         <div class="profile-actions">
-          ${currentSession ? `
           <button class="btn-wa" onclick="contactWhatsAppById('${m.id}')">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M11.93 0C5.33 0 0 5.33 0 11.93c0 2.1.546 4.066 1.5 5.773L0 24l6.447-1.478A11.863 11.863 0 0 0 11.93 23.86C18.53 23.86 24 18.53 24 11.93 24 5.33 18.53 0 11.93 0zm0 21.78a9.793 9.793 0 0 1-5.043-1.395l-.36-.214-3.829.88.896-3.712-.234-.381a9.792 9.792 0 0 1-1.503-5.245C1.857 6.524 6.524 1.857 11.93 1.857c2.585 0 5.012 1.006 6.84 2.833a9.623 9.623 0 0 1 2.832 6.84c0 5.406-4.667 10.073-9.672 10.25z"/></svg>
             WhatsApp
@@ -2484,10 +2493,7 @@ async function openProfile(id){
           <button class="btn-directions" onclick="viewOnMap('${m.id}')">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
             Ver mapa
-          </button>` : `
-          <button onclick="openAuthModal('cliente')" style="background:var(--steel);color:var(--dim);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;">
-            🔒 Inicia sesión para contactar
-          </button>`}
+          </button>
         </div>
       </div>
       <div class="profile-name-block">
@@ -2495,18 +2501,14 @@ async function openProfile(id){
         <div class="profile-spec">${m.spec} · ${m.years} años de experiencia</div>
       </div>
       <div class="profile-meta-row">
-        <span class="profile-meta-item" style="cursor:pointer;" ${currentSession && currentUserRole !== 'mecanico' ? `onclick="openDirectionsById('${m.id}')"` : currentSession && currentUserRole === 'mecanico' ? '' : `onclick="openAuthModal('cliente')"`}>
+        <span class="profile-meta-item" style="cursor:pointer;" onclick="openDirectionsById('${m.id}')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-          ${currentSession && currentUserRole !== 'mecanico' ? `<a>${m.address}</a>` : currentSession && currentUserRole === 'mecanico' ? `<span style="color:var(--muted);">${m.address}</span>` : `<span style="color:var(--muted);font-style:italic;">🔒 Ver dirección</span>`}
+          <a>${m.address}</a>
         </span>
-        ${m.phone ? (currentSession && currentUserRole !== 'mecanico' ? `<div style="display:flex;gap:8px;margin-top:8px;margin-bottom:4px;">
+        ${m.phone ? `<div style="display:flex;gap:8px;margin-top:8px;margin-bottom:4px;">
           <a href="tel:${m.phone}" style="flex:1;background:var(--red);color:#fff;border-radius:8px;padding:10px 0;font-size:13px;font-weight:700;text-align:center;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:6px;">📞 Llamar</a>
           <a href="https://wa.me/${(m.whatsapp||m.phone).replace(/[^0-9]/g,'')}" target="_blank" style="flex:1;background:#25D366;color:#fff;border-radius:8px;padding:10px 0;font-size:13px;font-weight:700;text-align:center;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:6px;">💬 WhatsApp</a>
-        </div>` : currentSession && currentUserRole === 'mecanico' ? `<div style="display:flex;gap:8px;margin-top:8px;margin-bottom:4px;">
-          <div style="flex:1;background:var(--steel);color:var(--muted);border:1px solid var(--border);border-radius:8px;padding:10px 0;font-size:12px;text-align:center;">🔧 Solo clientes pueden contactar talleres</div>
-        </div>` : `<div style="display:flex;gap:8px;margin-top:8px;margin-bottom:4px;">
-          <button onclick="openAuthModal('cliente')" style="flex:1;background:var(--steel);color:var(--dim);border:1px solid var(--border);border-radius:8px;padding:10px 0;font-size:12px;font-weight:600;cursor:pointer;">🔒 Inicia sesión para llamar</button>
-        </div>`) : ''}
+        </div>` : ''}
         <span class="profile-meta-item">
 
         </span>
