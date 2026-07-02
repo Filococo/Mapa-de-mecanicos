@@ -259,10 +259,17 @@ tr:hover td{background:rgba(255,255,255,.025);}
       <div class="sec-head">
         <div class="sec-title">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-          Nuevos registros
+          <span id="grafTitulo">Nuevos registros</span>
           <span style="font-size:11px;color:var(--muted);font-weight:400;" id="grafTotal"></span>
         </div>
-        <div style="display:flex;gap:6px;">
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <!-- Selector de métrica -->
+          <select id="grafMetrica" onchange="cambiarMetrica(this.value)" style="background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--white);border-radius:7px;padding:5px 10px;font-size:11px;cursor:pointer;outline:none;">
+            <option value="registros">📋 Registros</option>
+            <option value="visitas">👁 Visitas al sitio</option>
+            <option value="ambos">📊 Ambos</option>
+          </select>
+          <!-- Selector de período -->
           <button class="graf-btn" data-p="7d" onclick="cargarGrafico('7d')" style="background:rgba(255,255,255,.05);color:var(--dim);">7 días</button>
           <button class="graf-btn" data-p="30d" onclick="cargarGrafico('30d')" style="background:var(--red);color:#fff;border-color:var(--red);">30 días</button>
           <button class="graf-btn" data-p="6m" onclick="cargarGrafico('6m')" style="background:rgba(255,255,255,.05);color:var(--dim);">6 meses</button>
@@ -270,22 +277,6 @@ tr:hover td{background:rgba(255,255,255,.025);}
         </div>
       </div>
       <div style="padding:20px;"><canvas id="graficoRegistros" height="80"></canvas></div>
-    </div>
-
-    <!-- GRÁFICO VISITAS DIARIAS -->
-    <div class="section">
-      <div class="sec-head">
-        <div class="sec-title">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-          Visitas diarias al sitio
-          <span style="font-size:11px;color:var(--muted);font-weight:400;" id="grafVisitasTotal"></span>
-        </div>
-        <div style="display:flex;gap:6px;">
-          <button class="graf-btn" data-pv="7d" onclick="cargarGraficoVisitas('7d')" style="background:var(--blue);color:#fff;border-color:var(--blue);">7 días</button>
-          <button class="graf-btn" data-pv="30d" onclick="cargarGraficoVisitas('30d')" style="background:rgba(255,255,255,.05);color:var(--dim);">30 días</button>
-        </div>
-      </div>
-      <div style="padding:20px;"><canvas id="graficoVisitas" height="80"></canvas></div>
     </div>
 
     <!-- SUSCRIPCIONES -->
@@ -397,7 +388,6 @@ function mostrarDashboard(email){
   document.getElementById('adminEmail').textContent = email;
   cargarDatos();
   cargarGrafico();
-  cargarGraficoVisitas();
 }
 
 async function logout(){ await sb.auth.signOut(); location.reload(); }
@@ -736,104 +726,96 @@ document.addEventListener('keydown', e => { if(e.key==='Escape') cerrarModal(); 
 
 setInterval(cargarDatos, 5*60*1000);
 
-let chartVisitas=null, periodoVisitas='7d';
-async function cargarGraficoVisitas(periodo=periodoVisitas){
-  periodoVisitas=periodo;
-  document.querySelectorAll('.graf-btn[data-pv]').forEach(b=>{
-    const act = b.dataset.pv===periodo;
-    b.style.background = act?'var(--blue)':'rgba(255,255,255,.05)';
-    b.style.color = act?'#fff':'var(--dim)';
-    b.style.borderColor = act?'var(--blue)':'var(--border)';
-  });
 
-  const dias = periodo==='7d' ? 7 : 30;
-  const desde = new Date();
-  desde.setDate(desde.getDate()-(dias-1));
-  desde.setHours(0,0,0,0);
+let chartInstance=null, periodoActual='30d', metricaActual='registros';
 
-  const { data } = await sb.from('visitas_pagina')
-    .select('created_at')
-    .gte('created_at', desde.toISOString())
-    .order('created_at', {ascending:true});
-
-  const conteo = {};
-  for(let i=0;i<dias;i++){
-    const d=new Date(desde);
-    d.setDate(d.getDate()+i);
-    conteo[`${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`]=0;
-  }
-  (data||[]).forEach(v=>{
-    const d=new Date(v.created_at);
-    const k=`${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`;
-    if(conteo[k]!==undefined) conteo[k]++;
-  });
-
-  const labels=Object.keys(conteo);
-  const valores=Object.values(conteo);
-  const total=valores.reduce((a,b)=>a+b,0);
-  document.getElementById('grafVisitasTotal').textContent=`· ${total} visitas`;
-
-  const ctx=document.getElementById('graficoVisitas').getContext('2d');
-  if(chartVisitas) chartVisitas.destroy();
-  chartVisitas=new Chart(ctx,{
-    type:'bar',
-    data:{labels,datasets:[{
-      label:'Visitas',
-      data:valores,
-      backgroundColor:'rgba(59,130,246,0.5)',
-      borderColor:'#3b82f6',
-      borderWidth:1,
-      borderRadius:5
-    }]},
-    options:{
-      responsive:true,
-      plugins:{
-        legend:{display:false},
-        tooltip:{
-          backgroundColor:'#1a1a2e',
-          titleColor:'#fff',
-          bodyColor:'#aaa',
-          callbacks:{label:c=>` ${c.parsed.y} visita${c.parsed.y!==1?'s':''}`}
-        }
-      },
-      scales:{
-        x:{ticks:{color:'#555',font:{size:9},maxRotation:45,autoSkip:true,maxTicksLimit:15},grid:{color:'rgba(255,255,255,.02)'}},
-        y:{ticks:{color:'#555',stepSize:1},grid:{color:'rgba(255,255,255,.04)'},beginAtZero:true}
-      }
-    }
-  });
+function cambiarMetrica(val){
+  metricaActual = val;
+  const titulo = document.getElementById('grafTitulo');
+  if(val==='registros') titulo.textContent='Nuevos registros';
+  else if(val==='visitas') titulo.textContent='Visitas al sitio';
+  else titulo.textContent='Registros y visitas';
+  cargarGrafico(periodoActual);
 }
 
-let chartInstance=null, periodoActual='30d';
 async function cargarGrafico(periodo=periodoActual){
   periodoActual=periodo;
-  document.querySelectorAll('.graf-btn').forEach(b=>{
+  document.querySelectorAll('.graf-btn[data-p]').forEach(b=>{
     const act = b.dataset.p===periodo;
     b.style.background = act?'var(--red)':'rgba(255,255,255,.05)';
     b.style.color = act?'#fff':'var(--dim)';
     b.style.borderColor = act?'var(--red)':'var(--border)';
   });
+
   let dias, agrupar;
   if(periodo==='7d'){dias=7;agrupar='dia';}
   if(periodo==='30d'){dias=30;agrupar='dia';}
   if(periodo==='6m'){dias=180;agrupar='mes';}
   if(periodo==='1a'){dias=365;agrupar='mes';}
+
   const desde=new Date(); desde.setDate(desde.getDate()-(dias-1)); desde.setHours(0,0,0,0);
-  const {data}=await sb.from('mecanicos').select('created_at').gte('created_at',desde.toISOString()).order('created_at',{ascending:true});
-  const conteo={};
+  const meses=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+
+  // Generar labels
+  const conteoReg={}, conteoVis={};
   if(agrupar==='dia'){
-    for(let i=0;i<dias;i++){const d=new Date(desde);d.setDate(d.getDate()+i);conteo[`${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`]=0;}
-    (data||[]).forEach(m=>{const d=new Date(m.created_at);const k=`${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`;if(conteo[k]!==undefined)conteo[k]++;});
+    for(let i=0;i<dias;i++){
+      const d=new Date(desde);d.setDate(d.getDate()+i);
+      const k=`${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`;
+      conteoReg[k]=0; conteoVis[k]=0;
+    }
   } else {
-    const meses=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-    for(let i=0;i<dias;i++){const d=new Date(desde);d.setDate(d.getDate()+i);conteo[`${meses[d.getMonth()]} ${d.getFullYear()}`]=0;}
-    (data||[]).forEach(m=>{const d=new Date(m.created_at);const k=`${meses[d.getMonth()]} ${d.getFullYear()}`;if(conteo[k]!==undefined)conteo[k]++;});
+    for(let i=0;i<dias;i++){
+      const d=new Date(desde);d.setDate(d.getDate()+i);
+      const k=`${meses[d.getMonth()]} ${d.getFullYear()}`;
+      conteoReg[k]=0; conteoVis[k]=0;
+    }
   }
-  const labels=Object.keys(conteo), valores=Object.values(conteo);
-  document.getElementById('grafTotal').textContent=`· ${valores.reduce((a,b)=>a+b,0)} registros`;
+
+  // Cargar registros
+  if(metricaActual==='registros'||metricaActual==='ambos'){
+    const {data:dReg}=await sb.from('mecanicos').select('created_at').gte('created_at',desde.toISOString()).order('created_at',{ascending:true});
+    (dReg||[]).forEach(m=>{
+      const d=new Date(m.created_at);
+      const k=agrupar==='dia'?`${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`:`${meses[d.getMonth()]} ${d.getFullYear()}`;
+      if(conteoReg[k]!==undefined)conteoReg[k]++;
+    });
+  }
+
+  // Cargar visitas
+  if(metricaActual==='visitas'||metricaActual==='ambos'){
+    try {
+      const {data:dVis}=await sb.from('visitas_pagina').select('created_at').gte('created_at',desde.toISOString()).order('created_at',{ascending:true});
+      (dVis||[]).forEach(v=>{
+        const d=new Date(v.created_at);
+        const k=agrupar==='dia'?`${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`:`${meses[d.getMonth()]} ${d.getFullYear()}`;
+        if(conteoVis[k]!==undefined)conteoVis[k]++;
+      });
+    } catch(e){}
+  }
+
+  const labels=Object.keys(conteoReg);
+  const datasets=[];
+
+  if(metricaActual==='registros'||metricaActual==='ambos'){
+    const vals=Object.values(conteoReg);
+    datasets.push({label:'Registros',data:vals,backgroundColor:'rgba(232,25,44,0.5)',borderColor:'#E8192C',borderWidth:1,borderRadius:5});
+    if(metricaActual==='registros') document.getElementById('grafTotal').textContent=`· ${vals.reduce((a,b)=>a+b,0)} registros`;
+  }
+  if(metricaActual==='visitas'||metricaActual==='ambos'){
+    const vals=Object.values(conteoVis);
+    datasets.push({label:'Visitas',data:vals,backgroundColor:'rgba(59,130,246,0.5)',borderColor:'#3b82f6',borderWidth:1,borderRadius:5});
+    if(metricaActual==='visitas') document.getElementById('grafTotal').textContent=`· ${vals.reduce((a,b)=>a+b,0)} visitas`;
+  }
+  if(metricaActual==='ambos'){
+    const totR=Object.values(conteoReg).reduce((a,b)=>a+b,0);
+    const totV=Object.values(conteoVis).reduce((a,b)=>a+b,0);
+    document.getElementById('grafTotal').textContent=`· ${totR} registros · ${totV} visitas`;
+  }
+
   const ctx=document.getElementById('graficoRegistros').getContext('2d');
   if(chartInstance)chartInstance.destroy();
-  chartInstance=new Chart(ctx,{type:'bar',data:{labels,datasets:[{label:'Registros',data:valores,backgroundColor:'rgba(232,25,44,0.5)',borderColor:'#E8192C',borderWidth:1,borderRadius:5}]},options:{responsive:true,plugins:{legend:{display:false},tooltip:{backgroundColor:'#1a1a2e',titleColor:'#fff',bodyColor:'#aaa',callbacks:{label:c=>` ${c.parsed.y} registro${c.parsed.y!==1?'s':''}`}}},scales:{x:{ticks:{color:'#555',font:{size:9},maxRotation:45,autoSkip:true,maxTicksLimit:dias<=30?15:12},grid:{color:'rgba(255,255,255,.02)'}},y:{ticks:{color:'#555',stepSize:1},grid:{color:'rgba(255,255,255,.04)'},beginAtZero:true}}}});
+  chartInstance=new Chart(ctx,{type:'bar',data:{labels,datasets},options:{responsive:true,plugins:{legend:{display:metricaActual==='ambos'},tooltip:{backgroundColor:'#1a1a2e',titleColor:'#fff',bodyColor:'#aaa'}},scales:{x:{ticks:{color:'#555',font:{size:9},maxRotation:45,autoSkip:true,maxTicksLimit:dias<=30?15:12},grid:{color:'rgba(255,255,255,.02)'}},y:{ticks:{color:'#555',stepSize:1},grid:{color:'rgba(255,255,255,.04)'},beginAtZero:true}}}});
 }
 
 (async()=>{ const {data:{session}}=await sb.auth.getSession(); if(session?.user?.email===ADMIN)mostrarDashboard(session.user.email); })();
