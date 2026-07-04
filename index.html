@@ -2243,6 +2243,10 @@ async function loadMechanicsFromSupabase(){
     renderGrid();
     renderMapList();
     cargarEstadisticasHero();
+    cargarSponsor();
+    cargarFavoritos();
+    cargarResenasHome();
+    mostrarPopupBienvenida();
     console.log('PANNE v2.1: ' + mechanics.length + ' negocios cargados');
     console.log('Iniciando banner Pro...');
     renderProBanner();
