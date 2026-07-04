@@ -2488,6 +2488,8 @@ async function openProfile(id){
   const m = mechanics.find(x => x.id === id);
   if(!m) return;
   selectedStars = 0;
+  // Agregar entrada al historial para que "atrás" cierre el perfil
+  history.pushState({ perfil: id }, '', '#taller-' + id);
 
   // Asegurar que el rol esté detectado antes de renderizar
   if(currentSession){
@@ -4169,6 +4171,21 @@ if ('serviceWorker' in navigator) {
       .catch(err => console.log('SW error:', err));
   });
 }
+
+// Manejar botón atrás del celular
+window.addEventListener('popstate', (e) => {
+  const perfilView = document.getElementById('view-perfil');
+  const dirView = document.getElementById('view-directorio');
+  // Si el perfil está visible, cerrarlo y volver al directorio
+  if(perfilView && !perfilView.classList.contains('hidden')){
+    perfilView.classList.add('hidden');
+    if(dirView) dirView.classList.remove('hidden');
+    // Activar tab directorio
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    const tabDir = document.querySelector('[data-tab="directorio"]');
+    if(tabDir) tabDir.classList.add('active');
+  }
+});
 
 // Mostrar popup bienvenida independiente del flujo de carga
 window.addEventListener('load', () => {
