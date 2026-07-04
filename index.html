@@ -18,6 +18,49 @@
 <meta name="apple-mobile-web-app-title" content="PANNE">
 <style>
 /* ===== PANNE Design System ===== */
+/* ===== POPUP BIENVENIDA ===== */
+#popupBienvenida{
+  display:none;position:fixed;inset:0;z-index:9998;
+  background:rgba(0,0,0,.85);backdrop-filter:blur(6px);
+  align-items:center;justify-content:center;padding:16px;
+}
+#popupBienvenida.active{display:flex;}
+.popup-box{
+  background:#13131f;border:1px solid rgba(255,255,255,.1);
+  border-radius:20px;width:100%;max-width:480px;
+  max-height:90vh;overflow-y:auto;
+  box-shadow:0 24px 64px rgba(0,0,0,.6);
+}
+.popup-header{
+  background:linear-gradient(135deg,#1a0a0e,#2a0a10);
+  border-radius:20px 20px 0 0;padding:28px 24px 20px;text-align:center;
+  border-bottom:1px solid rgba(232,25,44,.2);
+}
+.popup-logo{
+  width:70px;height:70px;background:#E8192C;border-radius:16px;
+  transform:rotate(45deg);display:flex;align-items:center;justify-content:center;
+  margin:0 auto 16px;box-shadow:0 8px 24px rgba(232,25,44,.4);
+}
+.popup-logo svg{transform:rotate(-45deg);width:32px;height:32px;}
+.popup-title{font-family:'Bebas Neue';font-size:32px;letter-spacing:2px;color:#fff;margin-bottom:6px;}
+.popup-sub{font-size:13px;color:#aaa;font-weight:500;}
+.popup-body{padding:20px 24px;}
+.popup-section{margin-bottom:18px;}
+.popup-section-title{font-size:11px;text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:10px;}
+.popup-card{border-radius:12px;padding:14px 16px;margin-bottom:10px;}
+.popup-card-free{background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);}
+.popup-card-pro{background:rgba(240,192,64,.08);border:1px solid rgba(240,192,64,.25);}
+.popup-plan{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.popup-plan-name{font-size:14px;font-weight:700;}
+.popup-plan-price{font-family:'JetBrains Mono';font-size:14px;font-weight:700;}
+.popup-benefit{display:flex;align-items:center;gap:8px;font-size:12px;color:#ccc;margin-bottom:5px;}
+.popup-cta{display:block;text-align:center;background:var(--red);color:#fff;border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:800;cursor:pointer;width:100%;margin-top:4px;text-decoration:none;}
+.popup-cta-free{background:rgba(34,197,94,.15);color:#22c55e;border:1px solid rgba(34,197,94,.3);margin-top:8px;}
+.popup-close{position:absolute;top:12px;right:12px;background:rgba(255,255,255,.1);border:none;color:#fff;border-radius:50%;width:32px;height:32px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.popup-close:hover{background:rgba(232,25,44,.3);}
+.popup-skip{text-align:center;margin-top:12px;}
+.popup-skip a{color:var(--muted);font-size:12px;cursor:pointer;text-decoration:underline;}
+
 /* ===== FAVORITOS ===== */
 .fav-btn-active{ border-color:rgba(232,25,44,.4)!important; background:rgba(232,25,44,.08)!important; }
 
@@ -2370,6 +2413,7 @@ function renderGrid(){
       if(mechanics.length === 0) {
         await loadMechanicsFromSupabase();
   cargarSponsor();
+  mostrarPopupBienvenida();
   cargarFavoritos();
   cargarResenasHome();
       }
@@ -3839,6 +3883,30 @@ sb.from('mecanicos')
 refreshSession();
 
 // ===== LIGHTBOX =====
+// ===== POPUP BIENVENIDA =====
+function mostrarPopupBienvenida(){
+  const visto = localStorage.getItem('panne_popup_visto');
+  const ahora = Date.now();
+  // Mostrar si nunca lo vio o si han pasado más de 7 días
+  if(!visto || (ahora - parseInt(visto)) > 7*24*60*60*1000){
+    setTimeout(() => {
+      document.getElementById('popupBienvenida').classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }, 1500);
+  }
+}
+
+function cerrarPopup(){
+  document.getElementById('popupBienvenida').classList.remove('active');
+  document.body.style.overflow = '';
+  localStorage.setItem('panne_popup_visto', Date.now().toString());
+}
+
+// Cerrar al hacer clic fuera
+document.getElementById('popupBienvenida')?.addEventListener('click', function(e){
+  if(e.target === this) cerrarPopup();
+});
+
 function openLightbox(url){
   const lb = document.getElementById('panne-lightbox');
   const img = document.getElementById('panne-lightbox-img');
@@ -4575,6 +4643,59 @@ function mostrarModalTienda(tipo){
       </div>
     </div>
 
+  </div>
+</div>
+
+<!-- POPUP BIENVENIDA -->
+<div id="popupBienvenida">
+  <div class="popup-box" style="position:relative;">
+    <button class="popup-close" onclick="cerrarPopup()">✕</button>
+    <div class="popup-header">
+      <div class="popup-logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+      </div>
+      <div class="popup-title">Bienvenido a PANNE</div>
+      <div class="popup-sub">El directorio de talleres más grande de Chile 🇨🇱</div>
+    </div>
+    <div class="popup-body">
+
+      <!-- CLIENTES -->
+      <div class="popup-section">
+        <div class="popup-section-title" style="color:#22c55e;">👤 ¿Eres conductor?</div>
+        <div class="popup-card popup-card-free">
+          <div class="popup-plan">
+            <span class="popup-plan-name" style="color:#22c55e;">Para clientes</span>
+            <span class="popup-plan-price" style="color:#22c55e;">GRATIS</span>
+          </div>
+          <div class="popup-benefit">✅ Busca talleres cercanos con GPS</div>
+          <div class="popup-benefit">✅ Compara reseñas verificadas</div>
+          <div class="popup-benefit">✅ Contacta directo por WhatsApp</div>
+          <div class="popup-benefit">✅ Guarda tus talleres favoritos</div>
+        </div>
+      </div>
+
+      <!-- TALLERES -->
+      <div class="popup-section">
+        <div class="popup-section-title" style="color:#f0c040;">🔧 ¿Tienes un taller o vulcanización?</div>
+
+        <div class="popup-card popup-card-pro">
+          <div class="popup-plan">
+            <span class="popup-plan-name" style="color:#f0c040;">⭐ Plan Mensual</span>
+            <span class="popup-plan-price" style="color:#f0c040;">$9.990/mes</span>
+          </div>
+          <div class="popup-benefit">✅ Sello PRO visible en el directorio</div>
+          <div class="popup-benefit">✅ Apareces primero ante los clientes</div>
+          <div class="popup-benefit">✅ Recibe reseñas verificadas</div>
+          <div class="popup-benefit">✅ Fotos, servicios y precios en tu ficha</div>
+          <div class="popup-benefit">⭐ Semestral $49.990 · Anual $89.990</div>
+          <button class="popup-cta" onclick="cerrarPopup();document.querySelector('[data-tab=\'perfil-mecanico\']').click();">Registrar mi taller gratis →</button>
+        </div>
+      </div>
+
+      <div class="popup-skip">
+        <a onclick="cerrarPopup()">Solo quiero buscar talleres →</a>
+      </div>
+    </div>
   </div>
 </div>
 
