@@ -4175,6 +4175,19 @@ if ('serviceWorker' in navigator) {
   });
 }
 
+// Mostrar popup bienvenida independiente del flujo de carga
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    const visto = localStorage.getItem('panne_popup_visto');
+    const ahora = Date.now();
+    if(!visto || (ahora - parseInt(visto)) > 7*24*60*60*1000){
+      const popup = document.getElementById('popupBienvenida');
+      if(popup){ popup.classList.add('active'); document.body.style.overflow='hidden'; }
+      localStorage.setItem('panne_popup_visto', ahora.toString());
+    }
+  }, 1500);
+});
+
 // deferredInstallPrompt moved to top
 const installBtn = document.getElementById('installBtn');
 
