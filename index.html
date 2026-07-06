@@ -4102,53 +4102,100 @@ function usarUbicacion(){
   }, { timeout: 8000, maximumAge: 60000 });
 }
 
-// ===== BANNER PATROCINADO =====
-// Agrega aquí los patrocinadores activos. Ejemplo:
-// { activo:true, title:'Repuestos XYZ', desc:'20% dcto en tu primera compra', url:'https://...' }
-const SPONSORS = [];
+// ===== BANNER PATROCINADO (dinámico, desde Supabase) =====
+// Los patrocinadores se administran en la tabla `patrocinadores` de Supabase:
+// title, descripcion, url, activo, orden. No hace falta tocar el código para
+// agregar, pausar o quitar un patrocinador: solo se edita esa tabla.
+let SPONSORS = [];
 
 let sponsorRotationIndex = 0;
 let sponsorRotationTimer = null;
 
 function pintarSponsor(s){
   document.getElementById('sponsorTitle').textContent = s.title;
-  document.getElementById('sponsorDesc').textContent = s.desc;
+  document.getElementById('sponsorDesc').textContent = s.descripcion || '';
   document.getElementById('sponsorBanner').setAttribute('data-url', s.url);
   document.getElementById('sponsorBanner').style.display = 'flex';
 }
 
-function cargarSponsor(){
-  const activos = SPONSORS.filter(s => s.activo);
-  if(!activos.length){
+async function cargarSponsor(){
+  try {
+    const { data, error } = await sb
+      .from('patrocinadores')
+      .select('id, title, descripcion, url, activo, orden')
+      .eq('activo', true)
+      .order('orden', { ascending: true });
+    if(error) throw error;
+    SPONSORS = data || [];
+  } catch(e){
+    console.log('No se pudieron cargar patrocinadores:', e);
+    SPONSORS = [];
+  }
+
+  if(!SPONSORS.length){
     document.getElementById('sponsorBanner').style.display = 'none';
     if(sponsorRotationTimer){ clearInterval(sponsorRotationTimer); sponsorRotationTimer = null; }
     return;
   }
 
-  sponsorRotationIndex = Math.floor(Math.random() * activos.length);
-  pintarSponsor(activos[sponsorRotationIndex]);
+  sponsorRotationIndex = Math.floor(Math.random() * SPONSORS.length);
+  pintarSponsor(SPONSORS[sponsorRotationIndex]);
 
   // Si hay más de un patrocinador activo, rota entre ellos automáticamente
   if(sponsorRotationTimer){ clearInterval(sponsorRotationTimer); sponsorRotationTimer = null; }
-  if(activos.length > 1){
+  if(SPONSORS.length > 1){
     sponsorRotationTimer = setInterval(() => {
       const banner = document.getElementById('sponsorBanner');
       if(!banner || banner.style.display === 'none') return;
       banner.classList.add('fading');
       setTimeout(() => {
-        const activosNow = SPONSORS.filter(s => s.activo);
-        if(!activosNow.length) return;
-        sponsorRotationIndex = (sponsorRotationIndex + 1) % activosNow.length;
-        pintarSponsor(activosNow[sponsorRotationIndex]);
+        if(!SPONSORS.length) return;
+        sponsorRotationIndex = (sponsorRotationIndex + 1) % SPONSORS.length;
+        pintarSponsor(SPONSORS[sponsorRotationIndex]);
         banner.classList.remove('fading');
       }, 250);
     }, 8000); // rota cada 8 segundos
   }
 }
 
+// Al tocar el banner se muestran TODAS las opciones activas (no solo la que
+// estaba visible en ese momento), para que el usuario elija cuál abrir.
 function abrirSponsor(){
-  const url = document.getElementById('sponsorBanner').getAttribute('data-url');
-  if(url) window.open(url, '_blank', 'noopener');
+  if(!SPONSORS.length) return;
+
+  if(SPONSORS.length === 1){
+    window.open(SPONSORS[0].url, '_blank', 'noopener');
+    return;
+  }
+
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.innerHTML = `
+    <div class="modal" style="max-width:380px;">
+      <div class="modal-head">
+        <span class="modal-title">Patrocinadores</span>
+        <button class="modal-close" id="sponsorModalClose">✕</button>
+      </div>
+      <div class="modal-body" style="display:flex;flex-direction:column;gap:10px;">
+        ${SPONSORS.map(s => `
+          <button class="sponsor-option" data-url="${s.url}" style="display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;width:100%;background:var(--black2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;cursor:pointer;">
+            <span style="font-size:13.5px;font-weight:700;color:var(--white);">${s.title}</span>
+            <span style="font-size:12px;color:var(--muted);">${s.descripcion || ''}</span>
+          </button>
+        `).join('')}
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+
+  const cerrar = () => overlay.remove();
+  overlay.querySelector('#sponsorModalClose').addEventListener('click', cerrar);
+  overlay.addEventListener('click', (e) => { if(e.target === overlay) cerrar(); });
+  overlay.querySelectorAll('.sponsor-option').forEach(btn => {
+    btn.addEventListener('click', () => {
+      window.open(btn.getAttribute('data-url'), '_blank', 'noopener');
+      cerrar();
+    });
+  });
 }
 
 // Registrar visita a la página
