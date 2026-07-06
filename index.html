@@ -4647,7 +4647,7 @@ function renderProBanner(){
   const dotsEl = document.getElementById('proDots');
   if(dotsEl && talleresPro.length > 1){
     dotsEl.innerHTML = talleresPro.map((_,i) =>
-      `<div class="pro-dot ${i===0?'active':''}" id="proDot${i}"></div>`
+      `<div class="pro-dot ${i===0?'active':''}" id="proDot${i}" onclick="event.stopPropagation(); irASlideProBanner(${i})" style="cursor:pointer;"></div>`
     ).join('');
   }
 
@@ -4717,10 +4717,54 @@ function mostrarProBanner(idx){
   });
 }
 
-function abrirTallerPro(){
+function manejarClickProBanner(){
   const t = talleresPro[proBannerIndex];
-  if(t) openProfile(t.id);
+  if(!t) return;
+  if(t.tipo === 'promo'){
+    // Ejecuta la misma acción que el botón del slide (ej: ir a "Registrar mi taller")
+    try { new Function(t.accion)(); } catch(e){ console.log('Error abriendo promo:', e); }
+  } else {
+    openProfile(t.id);
+  }
 }
+
+// Se mantiene el nombre anterior por compatibilidad con el atributo onclick del HTML.
+function abrirTallerPro(){
+  manejarClickProBanner();
+}
+
+// Permitir saltar directo a un slide tocando su punto (dot)
+function irASlideProBanner(idx){
+  proBannerIndex = idx;
+  mostrarProBanner(idx);
+  // Reinicia el temporizador de rotación para no cortar la vista recién elegida
+  if(talleresPro.length > 1){
+    if(proBannerInterval) clearInterval(proBannerInterval);
+    proBannerInterval = setInterval(() => {
+      proBannerIndex = (proBannerIndex + 1) % talleresPro.length;
+      mostrarProBanner(proBannerIndex);
+    }, 5000);
+  }
+}
+
+// Deslizar con el dedo (o mouse en desktop) para cambiar de slide manualmente
+(function habilitarSwipeProBanner(){
+  const banner = document.getElementById('proBanner');
+  if(!banner) return;
+  let startX = null;
+
+  banner.addEventListener('touchstart', (e) => { startX = e.touches[0].clientX; }, { passive:true });
+  banner.addEventListener('touchend', (e) => {
+    if(startX === null) return;
+    const deltaX = e.changedTouches[0].clientX - startX;
+    if(Math.abs(deltaX) > 40 && talleresPro.length > 1){
+      const dir = deltaX < 0 ? 1 : -1; // izquierda = siguiente, derecha = anterior
+      const nuevo = (proBannerIndex + dir + talleresPro.length) % talleresPro.length;
+      irASlideProBanner(nuevo);
+    }
+    startX = null;
+  }, { passive:true });
+})();
 
 
 /* ===== MODAL TIENDAS ===== */
