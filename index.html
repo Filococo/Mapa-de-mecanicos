@@ -82,7 +82,11 @@
   display:flex;
   align-items:center;
   gap:14px;
+  cursor:pointer;
+  transition:opacity .25s ease, transform .15s ease;
 }
+.sponsor-banner:active{ transform:scale(0.98); }
+.sponsor-banner.fading{ opacity:0; }
 .sponsor-tag{
   font-family:'JetBrains Mono';
   font-size:9px;
@@ -1402,13 +1406,13 @@ footer{
     </div>
 
     <!-- Banner Patrocinado -->
-    <div class="sponsor-banner" id="sponsorBanner" style="display:none;">
+    <div class="sponsor-banner" id="sponsorBanner" style="display:none;" onclick="abrirSponsor()">
       <span class="sponsor-tag">PUBLICIDAD</span>
       <div class="sponsor-content">
         <div class="sponsor-title" id="sponsorTitle">—</div>
         <div class="sponsor-desc" id="sponsorDesc">—</div>
       </div>
-      <button class="sponsor-btn" id="sponsorBtn" onclick="abrirSponsor()">Ver más →</button>
+      <button class="sponsor-btn" id="sponsorBtn" onclick="event.stopPropagation(); abrirSponsor()">Ver más →</button>
     </div>
 
     <!-- Filtro por ciudad y rating -->
@@ -4099,19 +4103,52 @@ function usarUbicacion(){
 }
 
 // ===== BANNER PATROCINADO =====
+// Agrega aquí los patrocinadores activos. Ejemplo:
+// { activo:true, title:'Repuestos XYZ', desc:'20% dcto en tu primera compra', url:'https://...' }
 const SPONSORS = [];
-function cargarSponsor(){
-  const activos = SPONSORS.filter(s => s.activo);
-  if(!activos.length) return;
-  const s = activos[Math.floor(Math.random() * activos.length)];
+
+let sponsorRotationIndex = 0;
+let sponsorRotationTimer = null;
+
+function pintarSponsor(s){
   document.getElementById('sponsorTitle').textContent = s.title;
   document.getElementById('sponsorDesc').textContent = s.desc;
   document.getElementById('sponsorBanner').setAttribute('data-url', s.url);
   document.getElementById('sponsorBanner').style.display = 'flex';
 }
+
+function cargarSponsor(){
+  const activos = SPONSORS.filter(s => s.activo);
+  if(!activos.length){
+    document.getElementById('sponsorBanner').style.display = 'none';
+    if(sponsorRotationTimer){ clearInterval(sponsorRotationTimer); sponsorRotationTimer = null; }
+    return;
+  }
+
+  sponsorRotationIndex = Math.floor(Math.random() * activos.length);
+  pintarSponsor(activos[sponsorRotationIndex]);
+
+  // Si hay más de un patrocinador activo, rota entre ellos automáticamente
+  if(sponsorRotationTimer){ clearInterval(sponsorRotationTimer); sponsorRotationTimer = null; }
+  if(activos.length > 1){
+    sponsorRotationTimer = setInterval(() => {
+      const banner = document.getElementById('sponsorBanner');
+      if(!banner || banner.style.display === 'none') return;
+      banner.classList.add('fading');
+      setTimeout(() => {
+        const activosNow = SPONSORS.filter(s => s.activo);
+        if(!activosNow.length) return;
+        sponsorRotationIndex = (sponsorRotationIndex + 1) % activosNow.length;
+        pintarSponsor(activosNow[sponsorRotationIndex]);
+        banner.classList.remove('fading');
+      }, 250);
+    }, 8000); // rota cada 8 segundos
+  }
+}
+
 function abrirSponsor(){
   const url = document.getElementById('sponsorBanner').getAttribute('data-url');
-  if(url) window.open(url, '_blank');
+  if(url) window.open(url, '_blank', 'noopener');
 }
 
 // Registrar visita a la página
