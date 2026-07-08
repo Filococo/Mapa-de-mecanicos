@@ -1881,6 +1881,33 @@ footer{
   </div>
 </div>
 
+<!-- CLAIM MODAL (Reclamar mi taller) -->
+<div id="claimOverlay" class="modal-overlay hidden">
+  <div class="modal">
+    <div class="modal-head">
+      <span class="modal-title">Reclama tu taller</span>
+      <button class="modal-close" id="claimClose">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:12px;color:var(--muted);margin-bottom:16px;">Este taller fue agregado a partir de datos públicos. Si eres el dueño, verifica tu teléfono para tomar control gratis de esta ficha: podrás responder reseñas, subir fotos, editar servicios y activar tu plan PRO.</p>
+      <div class="form-stack">
+        <label class="form-label">Teléfono registrado en la ficha
+          <input type="tel" class="form-input" id="claim-phone" placeholder="+56 9 1234 5678">
+        </label>
+        <label class="form-label">Tu correo electrónico
+          <input type="email" class="form-input" id="claim-email" placeholder="tucorreo@ejemplo.com">
+        </label>
+        <label class="form-label">Crea una contraseña
+          <input type="password" class="form-input" id="claim-password" placeholder="Mínimo 6 caracteres">
+        </label>
+        <div class="auth-error" id="claimError"></div>
+        <button type="button" class="btn-auth" id="claimSubmit">Verificar y reclamar mi taller</button>
+        <div class="trial-note">✓ Gratis · Verificamos que el teléfono coincida con el registrado en la ficha</div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- INSTALL MODAL -->
 <div id="installOverlay" class="modal-overlay hidden">
   <div class="modal">
@@ -2064,6 +2091,84 @@ function cerrarSesionDesdeDropdown(){
   });
 }
 
+/* ===== RECLAMAR TALLER ===== */
+let claimTallerId = null;
+
+function openClaimModal(mecanicoId){
+  claimTallerId = mecanicoId;
+  document.getElementById('claim-phone').value = '';
+  document.getElementById('claim-email').value = '';
+  document.getElementById('claim-password').value = '';
+  document.getElementById('claimError').textContent = '';
+  document.getElementById('claimOverlay').classList.remove('hidden');
+}
+
+function closeClaimModal(){
+  document.getElementById('claimOverlay').classList.add('hidden');
+  claimTallerId = null;
+}
+
+document.getElementById('claimClose')?.addEventListener('click', closeClaimModal);
+document.getElementById('claimOverlay')?.addEventListener('click', (e) => {
+  if(e.target.id === 'claimOverlay') closeClaimModal();
+});
+
+document.getElementById('claimSubmit')?.addEventListener('click', async () => {
+  const errorEl = document.getElementById('claimError');
+  errorEl.textContent = '';
+
+  const phone = document.getElementById('claim-phone').value.trim();
+  const email = document.getElementById('claim-email').value.trim();
+  const password = document.getElementById('claim-password').value;
+
+  if(!phone || !email || !password){
+    errorEl.textContent = 'Completa todos los campos.';
+    return;
+  }
+  if(password.length < 6){
+    errorEl.textContent = 'La contraseña debe tener al menos 6 caracteres.';
+    return;
+  }
+
+  const btn = document.getElementById('claimSubmit');
+  const originalText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Verificando…';
+
+  const { data, error } = await sb.rpc('reclamar_taller', {
+    p_mecanico_id: claimTallerId,
+    p_telefono: phone,
+    p_email: email,
+    p_password: password
+  });
+
+  if(error){
+    errorEl.textContent = error.message || 'No pudimos verificar tu taller. Revisa el teléfono e inténtalo de nuevo.';
+    btn.disabled = false;
+    btn.textContent = originalText;
+    return;
+  }
+
+  // Iniciar sesión automáticamente con las nuevas credenciales
+  const { data: loginData, error: loginError } = await sb.auth.signInWithPassword({ email, password });
+  btn.disabled = false;
+  btn.textContent = originalText;
+
+  if(loginError){
+    alert('¡Tu taller fue verificado! Ahora inicia sesión con tu nuevo correo y contraseña.');
+    closeClaimModal();
+    openAuthModal('mecanico');
+    return;
+  }
+
+  currentSession = loginData.session;
+  currentUserRole = 'mecanico';
+  closeClaimModal();
+  alert('¡Listo! Tomaste el control de tu taller en PANNE. Ya puedes editar tu ficha, subir fotos y responder reseñas.');
+  await updateAccountUI();
+  document.querySelector('[data-tab="perfil-mecanico"]')?.click();
+});
+
 function openAuthModal(preselectRole){
   document.getElementById('authOverlay').classList.remove('hidden');
   authSelectedRole = preselectRole || 'cliente';
@@ -2192,7 +2297,7 @@ async function loadMechanicsFromSupabase(){
   try {
     const { data: mecanicosData, error } = await sb
       .from('mecanicos')
-      .select('id, name, address, city, phone, lat, lng, spec, rating, review_count, sells_parts, trial_ends_at, cover_url, avatar_url, whatsapp, es_pro, oferta_texto, email')
+      .select('id, name, address, city, phone, lat, lng, spec, rating, review_count, sells_parts, trial_ends_at, cover_url, avatar_url, whatsapp, es_pro, oferta_texto, email, claimed_at')
       .order('es_pro', {ascending: false})
       .limit(1000);
 
@@ -2223,6 +2328,7 @@ async function loadMechanicsFromSupabase(){
       avatar_url: m.avatar_url || null,
       whatsapp: m.whatsapp || null,
       es_pro: m.es_pro === true || m.es_pro === 'true' || m.es_pro === 1,
+      claimed: !!m.claimed_at,
       oferta_texto: m.oferta_texto || null,
       email: m.email || null,
       priceFrom: null,
@@ -2569,6 +2675,11 @@ async function openProfile(id){
         ${m.email && currentSession && currentUserRole !== 'mecanico' ? `<span class="profile-meta-item">✉️ <a href="mailto:${m.email}" style="color:var(--dim);text-decoration:none;">${m.email}</a></span>` : ''}
         ${distTxt ? `<span class="profile-meta-item">📍 ${distTxt}</span>` : ''}
       </div>
+      ${!m.claimed && (!currentSession || currentSession.user.id !== m.id) ? `
+      <div style="margin-top:10px;background:rgba(255,214,0,.08);border:1px solid rgba(255,214,0,.35);border-radius:8px;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+        <span style="font-size:12px;color:var(--muted);">¿Eres el dueño de este taller? Esta ficha aún no ha sido reclamada.</span>
+        <button onclick="openClaimModal('${m.id}')" style="background:#FFD600;color:#0a0a0a;border:none;border-radius:6px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;">Reclamar gratis →</button>
+      </div>` : ''}
       <div class="profile-rating-block">
         <div>
           <div class="rating-big">${ratingDisplay}</div>
@@ -3858,7 +3969,7 @@ async function guardarFicha() {
 /* ====================== INIT ====================== */
 // Fetch directo sin función intermedia
 sb.from('mecanicos')
-  .select('id, name, address, city, phone, lat, lng, spec, rating, review_count, sells_parts, trial_ends_at, cover_url, avatar_url, whatsapp, es_pro, oferta_texto, email')
+  .select('id, name, address, city, phone, lat, lng, spec, rating, review_count, sells_parts, trial_ends_at, cover_url, avatar_url, whatsapp, es_pro, oferta_texto, email, claimed_at')
   .order('es_pro', {ascending: false})
   .limit(1000)
   .then(({ data, error }) => {
@@ -3879,6 +3990,7 @@ sb.from('mecanicos')
       avatar_url: m.avatar_url || null,
       whatsapp: m.whatsapp || null,
       es_pro: m.es_pro === true || m.es_pro === 'true' || m.es_pro === 1,
+      claimed: !!m.claimed_at,
       oferta_texto: m.oferta_texto || null
     }));
     console.log('INIT: ' + mechanics.length + ' negocios');
