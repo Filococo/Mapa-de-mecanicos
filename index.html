@@ -4,6 +4,25 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>PANNE — Encuentra talleres y vulcanizadoras en Chile</title>
+<meta name="description" content="Directorio de talleres mecánicos y vulcanizadoras en Chile. Busca, compara y contacta gratis — de Arica a Punta Arenas.">
+<link rel="canonical" href="https://panne.cl/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="PANNE">
+<meta property="og:title" content="PANNE — Encuentra talleres y vulcanizadoras en Chile">
+<meta property="og:description" content="Directorio de talleres mecánicos y vulcanizadoras en Chile. Busca, compara y contacta gratis — de Arica a Punta Arenas.">
+<meta property="og:url" content="https://panne.cl/">
+<meta property="og:image" content="https://panne.cl/icon-192.png">
+<meta name="twitter:card" content="summary">
+<!-- Google Search Console: reemplaza XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX por tu código real de verificación (Search Console > Agregar propiedad > Etiqueta HTML). Si prefieres, verifica por DNS en Cloudflare y borra esta línea. -->
+<meta name="google-site-verification" content="XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX">
+<!-- Google Analytics 4: reemplaza G-XXXXXXXXXX por tu Measurement ID real (analytics.google.com > Admin > Flujos de datos) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-XXXXXXXXXX');
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
@@ -2298,8 +2317,8 @@ async function loadMechanicsFromSupabase(){
     const { data: mecanicosData, error } = await sb
       .from('mecanicos')
       .select('id, name, address, city, phone, lat, lng, spec, rating, review_count, sells_parts, trial_ends_at, cover_url, avatar_url, whatsapp, es_pro, oferta_texto, email, claimed_at')
-      .order('es_pro', {ascending: false})
-      .limit(1000);
+      .order('es_pro', {ascending: false}).order('name', {ascending: true})
+      .limit(8000);
 
     if(error){
       console.error('Supabase error:', error.message);
@@ -2598,12 +2617,51 @@ document.getElementById('filterBar')?.addEventListener('click', (e)=>{
 /* ====================== PROFILE RENDER ====================== */
 let selectedStars = 0;
 
+function slugify(text){
+  return (text||'')
+    .toString()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g,'-')
+    .replace(/(^-|-$)/g,'');
+}
+
+function updateProfileMeta(m){
+  const title = `${m.name} — ${m.spec} en ${m.city || 'Chile'} | PANNE`;
+  const desc = `${m.name}: ${m.spec} en ${m.city || 'Chile'}. ${m.rating > 0 ? 'Calificación ' + m.rating.toFixed(1) + '/5. ' : ''}Dirección, teléfono, WhatsApp y reseñas verificadas en PANNE.`;
+  document.title = title;
+  let metaDesc = document.querySelector('meta[name="description"]');
+  if(!metaDesc){
+    metaDesc = document.createElement('meta');
+    metaDesc.setAttribute('name','description');
+    document.head.appendChild(metaDesc);
+  }
+  metaDesc.setAttribute('content', desc);
+  ['og:title','og:description'].forEach(prop => {
+    let tag = document.querySelector(`meta[property="${prop}"]`);
+    if(!tag){
+      tag = document.createElement('meta');
+      tag.setAttribute('property', prop);
+      document.head.appendChild(tag);
+    }
+    tag.setAttribute('content', prop === 'og:title' ? title : desc);
+  });
+}
+
+function resetDefaultMeta(){
+  document.title = 'PANNE — Encuentra talleres y vulcanizadoras en Chile';
+  const metaDesc = document.querySelector('meta[name="description"]');
+  if(metaDesc) metaDesc.setAttribute('content','Directorio de talleres mecánicos y vulcanizadoras en Chile. Busca, compara y contacta gratis — de Arica a Punta Arenas.');
+}
+
 async function openProfile(id){
   const m = mechanics.find(x => x.id === id);
   if(!m) return;
   selectedStars = 0;
-  // Agregar entrada al historial para que "atrás" cierre el perfil
-  history.pushState({ perfil: id }, '', '#taller-' + id);
+  // Agregar entrada al historial con URL limpia y rastreable (mejor para SEO y para compartir)
+  const slug = slugify(m.name) || 'taller';
+  history.pushState({ perfil: id }, '', '/taller/' + id + '/' + slug);
+  updateProfileMeta(m);
 
   // Asegurar que el rol esté detectado antes de renderizar
   if(currentSession){
@@ -3970,8 +4028,8 @@ async function guardarFicha() {
 // Fetch directo sin función intermedia
 sb.from('mecanicos')
   .select('id, name, address, city, phone, lat, lng, spec, rating, review_count, sells_parts, trial_ends_at, cover_url, avatar_url, whatsapp, es_pro, oferta_texto, email, claimed_at')
-  .order('es_pro', {ascending: false})
-  .limit(1000)
+  .order('es_pro', {ascending: false}).order('name', {ascending: true})
+  .limit(8000)
   .then(({ data, error }) => {
     if(error){ console.error('INIT error:', error.message); return; }
     if(!data || data.length === 0){ console.warn('INIT: sin datos'); return; }
@@ -4000,6 +4058,15 @@ sb.from('mecanicos')
     renderProBanner();
     cargarEstadisticasHero();
     // heroTalleres se actualiza via panne_stats RPC
+
+    // Deep link: si la URL apunta directo a /taller/{id}/..., abrir esa ficha
+    const tallerMatch = window.location.pathname.match(/^\/taller\/([a-f0-9-]{36})/i);
+    if(tallerMatch){
+      const idFromUrl = tallerMatch[1];
+      if(mechanics.find(x => x.id === idFromUrl)){
+        openProfile(idFromUrl);
+      }
+    }
   });
 refreshSession();
 
@@ -4380,6 +4447,7 @@ window.addEventListener('popstate', (e) => {
   if(perfilView && !perfilView.classList.contains('hidden')){
     perfilView.classList.add('hidden');
     if(dirView) dirView.classList.remove('hidden');
+    resetDefaultMeta();
     // Activar tab directorio
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     const tabDir = document.querySelector('[data-tab="directorio"]');
