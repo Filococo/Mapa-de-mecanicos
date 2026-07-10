@@ -2184,7 +2184,17 @@ document.getElementById('claimSubmit')?.addEventListener('click', async () => {
   currentSession = loginData.session;
   currentUserRole = 'mecanico';
   closeClaimModal();
-  alert('¡Listo! Tomaste el control de tu taller en PANNE. Ya puedes editar tu ficha, subir fotos y responder reseñas.');
+
+  // Intentar activar la promo 50% (primeros 100 talleres) — si no hay cupo, sigue normal sin error visible
+  let mensajeExito = '¡Listo! Tomaste el control de tu taller en PANNE. Ya puedes editar tu ficha, subir fotos y responder reseñas.';
+  try {
+    const { data: promoData } = await sb.rpc('activar_promo_50', { p_mecanico_id: claimTallerId });
+    if(promoData?.activada && !promoData?.ya_tenia){
+      mensajeExito += '\n\n🔥 Además, quedaste dentro de los primeros 100 talleres: tienes 50% de descuento en el Plan Mensual PRO por los próximos 3 meses ($4.995/mes en vez de $9.990).';
+    }
+  } catch(e){ console.warn('No se pudo evaluar promo', e); }
+
+  alert(mensajeExito);
   await updateAccountUI();
   document.querySelector('[data-tab="perfil-mecanico"]')?.click();
 });
@@ -3452,6 +3462,13 @@ async function submitMecanicoForm(){
     await sb.from('servicios').insert(servicesPayload);
   }
 
+  // 3. Intentar activar promo 50% (primeros 100 talleres registrados)
+  let promoActivadaRegistro = false;
+  try {
+    const { data: promoData } = await sb.rpc('activar_promo_50', { p_mecanico_id: currentSession.user.id });
+    promoActivadaRegistro = !!(promoData?.activada && !promoData?.ya_tenia);
+  } catch(e){ console.warn('No se pudo evaluar promo', e); }
+
   submitBtn.disabled = false;
   submitBtn.textContent = 'Crear mi ficha ✓';
 
@@ -3463,6 +3480,7 @@ async function submitMecanicoForm(){
     <div style="font-family:'JetBrains Mono'; font-size:11px; color:var(--safety-orange); margin-bottom:10px;">${spec.toUpperCase()} · ${years} AÑOS</div>
     <div><b>Teléfono:</b> ${phone}</div>
     <div><b>Dirección:</b> ${address}</div>
+    ${promoActivadaRegistro ? `<div style="margin-top:10px;padding:10px 12px;background:rgba(255,214,0,.1);border:1px solid rgba(255,214,0,.4);border-radius:8px;color:#FFD600;font-weight:700;font-size:12px;">🔥 ¡Quedaste dentro de los primeros 100! 50% de descuento en el Plan Mensual PRO por 3 meses ($4.995/mes).</div>` : ''}
     <div><b>Ubicación GPS:</b> ${formTallerLocation ? 'capturada ✓' : 'no capturada'}</div>
     <div style="margin-top:8px;"><b>Servicios:</b><br>${services.length ? services.map(s=>`${s.name}: ${s.price}`).join('<br>') : 'No se agregaron servicios'}</div>
     <div style="margin-top:8px;"><b>Vende repuestos:</b> ${sellsParts ? 'Sí' : 'No'}${partsNote ? ' — ' + partsNote : ''}</div>
@@ -3570,7 +3588,7 @@ async function mostrarPanelMecanico() {
             </div>
             <div style="font-size:12px;color:var(--muted);margin-bottom:16px;">Tu prueba vence el <b style="color:var(--dim);">${trialEnd.toLocaleDateString('es-CL', {day:'numeric',month:'long',year:'numeric'})}</b>. Al vencer, tu perfil se pausará hasta que actives un plan.</div>
             <div style="font-size:12px;color:var(--muted);">¿Listo para seguir? Elige tu plan:</div>
-            ${renderPlanes(false)}
+            ${renderPlanes(false, mec)}
           </div>`;
       } else {
         trialEl.innerHTML = 'Prueba vencida';
@@ -3580,7 +3598,7 @@ async function mostrarPanelMecanico() {
           <div style="background:var(--card);border:1px solid rgba(232,25,44,.3);border-radius:12px;padding:20px;">
             <div style="font-weight:700;color:var(--red);font-size:15px;margin-bottom:8px;">⚠ Período de prueba vencido</div>
             <div style="font-size:13px;color:var(--muted);margin-bottom:20px;">Tu perfil está pausado y no aparece en el directorio. Activa un plan para volver a figurar.</div>
-            ${renderPlanes(true)}
+            ${renderPlanes(true, mec)}
           </div>`;
       }
     }
@@ -3637,22 +3655,25 @@ document.querySelectorAll('.panel-tab').forEach(btn => {
 });
 
 /* ====================== FOTOS DEL PANEL ====================== */
-function renderPlanes(destacar) {
+function renderPlanes(destacar, mec) {
+  const tienePromo = mec?.promo50_hasta && new Date(mec.promo50_hasta) > new Date();
   const planes = [
-    { id:'mensual', label:'Mensual', precio:'$9.990', periodo:'/mes', ahorro:'', desc:'Sin compromiso. Cancela cuando quieras.' },
+    { id:'mensual', label:'Mensual', precio: tienePromo ? '$4.995' : '$9.990', precioTachado: tienePromo ? '$9.990' : null, periodo:'/mes', ahorro: tienePromo ? '🔥 50% OFF (promo 3 meses)' : '', desc:'Sin compromiso. Cancela cuando quieras.' },
     { id:'semestral', label:'Semestral', precio:'$49.990', periodo:'/6 meses', ahorro:'Ahorras $9.950', desc:'Equivale a $8.332/mes.' },
     { id:'anual', label:'Anual', precio:'$89.990', periodo:'/año', ahorro:'Ahorras $29.890', desc:'Equivale a $7.499/mes. El mejor valor.' },
   ];
   return `
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px;">
       ${planes.map((p,i) => `
-        <div style="border:${i===2?'2px solid var(--red)':'1px solid var(--border)'};border-radius:10px;padding:14px;text-align:center;position:relative;background:${i===2?'rgba(232,25,44,.06)':'var(--black3)'};">
+        <div style="border:${i===2?'2px solid var(--red)':(p.precioTachado?'2px solid #FFD600':'1px solid var(--border)')};border-radius:10px;padding:14px;text-align:center;position:relative;background:${i===2?'rgba(232,25,44,.06)':(p.precioTachado?'rgba(255,214,0,.06)':'var(--black3)')};">
           ${i===2 ? '<div style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;white-space:nowrap;">MEJOR VALOR</div>' : ''}
+          ${p.precioTachado ? '<div style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:#FFD600;color:#0a0a0a;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;white-space:nowrap;">50% OFF</div>' : ''}
           <div style="font-family:\'Bebas Neue\';font-size:13px;color:var(--muted);letter-spacing:1px;margin-bottom:6px;">${p.label}</div>
-          <div style="font-family:\'Bebas Neue\';font-size:24px;color:#fff;line-height:1;">${p.precio}</div>
+          ${p.precioTachado ? `<div style="font-size:12px;color:var(--muted);text-decoration:line-through;">${p.precioTachado}</div>` : ''}
+          <div style="font-family:\'Bebas Neue\';font-size:24px;color:${p.precioTachado?'#FFD600':'#fff'};line-height:1;">${p.precio}</div>
           <div style="font-size:10px;color:var(--muted);margin-bottom:6px;">${p.periodo}</div>
-          ${p.ahorro ? `<div style="font-size:10px;color:var(--ok-green);margin-bottom:8px;">${p.ahorro}</div>` : '<div style="margin-bottom:18px;"></div>'}
-          <button onclick="iniciarPago('${p.id}')" style="width:100%;background:${i===2?'var(--red)':'var(--card)'};color:#fff;border:${i===2?'none':'1px solid var(--border)'};border-radius:8px;padding:8px 0;font-size:12px;font-weight:600;cursor:pointer;">
+          ${p.ahorro ? `<div style="font-size:10px;color:${p.precioTachado?'#FFD600':'var(--ok-green)'};margin-bottom:8px;">${p.ahorro}</div>` : '<div style="margin-bottom:18px;"></div>'}
+          <button onclick="iniciarPago('${p.id}')" style="width:100%;background:${i===2?'var(--red)':(p.precioTachado?'#FFD600':'var(--card)')};color:${p.precioTachado?'#0a0a0a':'#fff'};border:${i===2||p.precioTachado?'none':'1px solid var(--border)'};border-radius:8px;padding:8px 0;font-size:12px;font-weight:600;cursor:pointer;">
             Contratar
           </button>
         </div>
@@ -3663,11 +3684,19 @@ function renderPlanes(destacar) {
 }
 
 async function iniciarPago(plan) {
-  const info = {
+  const uidPromo = currentSession?.user?.id;
+  let precioMostrar = {
     mensual:   '$9.990/mes',
     semestral: '$49.990 por 6 meses',
     anual:     '$89.990 por 1 año'
   };
+  if(plan === 'mensual' && uidPromo){
+    const { data: mecPromo } = await sb.from('mecanicos').select('promo50_hasta').eq('id', uidPromo).maybeSingle();
+    if(mecPromo?.promo50_hasta && new Date(mecPromo.promo50_hasta) > new Date()){
+      precioMostrar.mensual = '$4.995/mes (50% OFF promo)';
+    }
+  }
+  const info = precioMostrar;
 
   const user = sb.auth.getUser ? (await sb.auth.getUser()).data?.user : null;
   if (!user) {
@@ -4783,11 +4812,32 @@ let proBannerInterval = null;
 let proBannerIndex = 0;
 let talleresPro = [];
 
-function renderProBanner(){
+async function renderProBanner(){
   talleresPro = mechanics.filter(m => m.es_pro);
-  
+
+  // Cupos restantes de la promo 50% (primeros 100 talleres)
+  let cuposPromo = null;
+  try {
+    const { data } = await sb.rpc('promo_50_cupos_restantes');
+    cuposPromo = typeof data === 'number' ? data : null;
+  } catch(e){ console.warn('No se pudo obtener cupos promo', e); }
+
   // Slides promocionales de PANNE (siempre aparecen)
-  const slidesPromo = [
+  const slidesPromo = [];
+
+  if(cuposPromo === null || cuposPromo > 0){
+    slidesPromo.push({
+      tipo: 'promo',
+      titulo: '🔥 50% OFF para los primeros 100 talleres',
+      texto: 'Reclama o registra tu ficha ahora y paga solo $4.995/mes (en vez de $9.990) durante tus primeros 3 meses PRO.',
+      sub: cuposPromo !== null ? `Quedan ${cuposPromo} de 100 cupos` : 'Cupos limitados',
+      color: 'linear-gradient(135deg, #1a1400, #3d2f00)',
+      btn: 'Quiero mi 50% OFF →',
+      accion: "document.querySelector('[data-tab=\'perfil-mecanico\']').click()"
+    });
+  }
+
+  slidesPromo.push(
     {
       tipo: 'promo',
       titulo: '🔧 ¿Eres taller mecánico?',
@@ -4815,7 +4865,7 @@ function renderProBanner(){
       btn: 'Contratar ahora →',
       accion: "document.querySelector('[data-tab=\'perfil-mecanico\']').click()"
     }
-  ];
+  );
 
   // Combinar slides promo + talleres Pro
   const todosLosSlides = [...slidesPromo, ...talleresPro];
