@@ -51,6 +51,14 @@ body{background:var(--bg);color:var(--white);font-family:'Inter',system-ui,sans-
 
 /* KPI GRID */
 .kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px;margin-bottom:28px;}
+.kpi-group-lbl{grid-column:1/-1;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-top:4px;}
+
+/* HERO METRICS (negocio) */
+.hero-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-bottom:24px;}
+.hero-card{background:linear-gradient(160deg,var(--bg4),var(--bg3));border:1px solid var(--border);border-radius:16px;padding:22px;}
+.hero-mrr{border-color:rgba(34,197,94,.3);background:linear-gradient(160deg,rgba(34,197,94,.1),var(--bg3));}
+.hero-val{font-size:34px;font-weight:900;line-height:1.1;margin:8px 0 6px;color:var(--white);}
+.hero-mrr .hero-val{color:var(--green);}
 .kpi{background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:20px;position:relative;overflow:hidden;cursor:pointer;transition:.2s;}
 .kpi:hover{border-color:rgba(255,255,255,.18);transform:translateY(-1px);box-shadow:0 8px 24px rgba(0,0,0,.3);}
 .kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:14px 14px 0 0;}
@@ -183,8 +191,28 @@ tr:hover td{background:rgba(255,255,255,.025);}
       </button>
     </div>
 
+    <!-- MÉTRICAS DE NEGOCIO (hero) -->
+    <div class="hero-grid">
+      <div class="hero-card hero-mrr">
+        <div class="kpi-lbl">💰 MRR real</div>
+        <div class="hero-val" id="hMrr">—</div>
+        <div class="kpi-sub">Ingreso mensual normalizado (planes semestral/anual prorrateados)</div>
+      </div>
+      <div class="hero-card">
+        <div class="kpi-lbl">📈 Conversión prueba → pago</div>
+        <div class="hero-val" id="hConversion">—</div>
+        <div class="kpi-sub" id="hConversionSub">—</div>
+      </div>
+      <div class="hero-card">
+        <div class="kpi-lbl">📉 Churn (30 días)</div>
+        <div class="hero-val" id="hChurn">—</div>
+        <div class="kpi-sub" id="hChurnSub">—</div>
+      </div>
+    </div>
+
     <!-- KPIs CLICKEABLES -->
     <div class="kpi-grid">
+      <div class="kpi-group-lbl">Producto y uso</div>
       <div class="kpi r" onclick="abrirModal('talleres')">
         <div class="kpi-icon">🔧</div>
         <div class="kpi-lbl">Talleres</div>
@@ -197,13 +225,6 @@ tr:hover td{background:rgba(255,255,255,.025);}
         <div class="kpi-lbl">Talleres Pro</div>
         <div class="kpi-val" id="k2">—</div>
         <div class="kpi-sub">Plan activo</div>
-        <span class="kpi-arrow">→</span>
-      </div>
-      <div class="kpi g" onclick="abrirModal('subs')">
-        <div class="kpi-icon">💰</div>
-        <div class="kpi-lbl">Ingreso estimado</div>
-        <div class="kpi-val" id="k3">—</div>
-        <div class="kpi-sub">Suscripciones activas</div>
         <span class="kpi-arrow">→</span>
       </div>
       <div class="kpi b" onclick="abrirModal('clientes')">
@@ -252,6 +273,15 @@ tr:hover td{background:rgba(255,255,255,.025);}
         <div class="kpi-lbl">Clics en perfiles</div>
         <div class="kpi-val" id="k9">—</div>
         <div class="kpi-sub">Visitas a talleres</div>
+      </div>
+
+      <div class="kpi-group-lbl">Ingresos</div>
+      <div class="kpi g" onclick="abrirModal('subs')">
+        <div class="kpi-icon">💰</div>
+        <div class="kpi-lbl">Ingreso del mes (bruto)</div>
+        <div class="kpi-val" id="k3">—</div>
+        <div class="kpi-sub">Suma de planes activos — ver MRR real arriba</div>
+        <span class="kpi-arrow">→</span>
       </div>
     </div>
 
@@ -351,6 +381,7 @@ tr:hover td{background:rgba(255,255,255,.025);}
           <span class="sec-badge" id="bEventos">—</span>
         </div>
       </div>
+      <div id="funnelCuentas" style="display:flex;gap:24px;flex-wrap:wrap;padding:14px 22px;border-bottom:1px solid var(--border);font-size:12px;color:var(--dim);"></div>
       <div style="overflow-x:auto;">
         <table><thead><tr><th>Fecha</th><th>Tipo</th><th>Email</th><th>Taller</th><th>Resultado</th><th>Detalle</th></tr></thead>
         <tbody id="tEventos"><tr><td colspan="6" class="empty">Cargando...</td></tr></tbody></table>
@@ -414,7 +445,7 @@ const ADMIN = 'contacto@panne.cl';
 const PRECIOS = { mensual:9990, semestral:49990, anual:89990 };
 
 // Estado global
-let _talleres=[], _subs=[], _resenas=[], _nombres={}, _totalPro=0, _totalTalleres=0, _todosPro=[], _perfiles=[], _eventosCuenta=[];
+let _talleres=[], _subs=[], _resenas=[], _nombres={}, _totalPro=0, _totalTalleres=0, _todosPro=[], _perfiles=[], _eventosCuenta=[], _metricas={};
 
 async function login(){
   const email = document.getElementById('loginEmail').value.trim();
@@ -440,7 +471,7 @@ async function logout(){ await sb.auth.signOut(); location.reload(); }
 async function cargarDatos(){
   document.getElementById('lastUpdate').textContent = 'Actualizando...';
   try {
-    const [r1,r2,r3,r4,r5,r6,r7,r8,r9,r10,r11,r12] = await Promise.all([
+    const [r1,r2,r3,r4,r5,r6,r7,r8,r9,r10,r11,r12,r13] = await Promise.all([
       sb.from('mecanicos').select('id,name,city,spec,es_pro,review_count,rating,visit_count,email').order('created_at',{ascending:false}).limit(200),
       sb.from('mecanicos').select('*',{count:'exact',head:true}),
       sb.from('mecanicos').select('*',{count:'exact',head:true}).eq('es_pro',true),
@@ -451,8 +482,9 @@ async function cargarDatos(){
       sb.rpc('panne_stats'),
       sb.rpc('ciudades_clientes_top'),
       sb.from('mecanicos').select('id,name,city,email').eq('es_pro',true),
-      sb.from('panel_admin_talleres').select('*').order('perfil_completo',{ascending:true}).range(0,9999),
-      sb.from('eventos_cuenta').select('*').order('created_at',{ascending:false}).limit(300)
+      sb.rpc('obtener_panel_admin_talleres').order('perfil_completo',{ascending:true}).range(0,9999),
+      sb.from('eventos_cuenta').select('*').order('created_at',{ascending:false}).limit(300),
+      sb.rpc('admin_metricas_negocio')
     ]);
 
     _talleres = r1.data || [];
@@ -461,6 +493,7 @@ async function cargarDatos(){
     _todosPro = r10.data || [];
     _perfiles = r11.data || [];
     _eventosCuenta = r12.data || [];
+    _metricas = r13.data || {};
     let totalClientes = '—', totalConCuenta = '—';
     if(r4.data){ totalClientes = r4.data.clientes ?? '—'; totalConCuenta = r4.data.talleres_con_cuenta ?? '—'; }
     _subs = r5.data || [];
@@ -488,16 +521,9 @@ async function cargarDatos(){
       v2 = (await sb.from('visitas_pagina').select('*',{count:'exact',head:true}).gte('created_at',hoy.toISOString())).count || 0;
     } catch(e){}
 
-    // Clics en perfiles: SUM(visit_count) sobre TODA la tabla mecanicos, no solo
-    // los 200 talleres más recientes de _talleres (esos casi siempre tienen 0 clics
-    // por ser los últimos creados, lo que hacía ver la tarjeta en 0).
-    let visitasPerfiles = 0;
-    try {
-      const { data: vcRows } = await sb.from('mecanicos').select('visit_count').range(0, 9999);
-      visitasPerfiles = (vcRows||[]).reduce((s,r)=>s+(r.visit_count||0),0);
-    } catch(e){
-      visitasPerfiles = _talleres.reduce((s,t)=>s+(t.visit_count||0),0);
-    }
+    // Clics en perfiles: ahora viene calculado en el servidor (admin_metricas_negocio),
+    // ya no se traen miles de filas al navegador solo para sumarlas.
+    const visitasPerfiles = _metricas.clics_totales || 0;
     const ciudades = { length: totalCiudades };
     const ingreso = _subs.filter(s=>s.estado==='activo').reduce((s,sub)=>s+(PRECIOS[sub.plan]||0),0);
     // Top ciudades via RPC separada
@@ -515,6 +541,23 @@ async function cargarDatos(){
     document.getElementById('k7').textContent = v1.toLocaleString('es-CL');
     document.getElementById('k8').textContent = v2;
     document.getElementById('k9').textContent = visitasPerfiles.toLocaleString('es-CL');
+
+    // Métricas de negocio (hero)
+    document.getElementById('hMrr').textContent = '$'+(_metricas.mrr||0).toLocaleString('es-CL');
+    if(_metricas.conversion_trial_pct !== null && _metricas.conversion_trial_pct !== undefined){
+      document.getElementById('hConversion').textContent = _metricas.conversion_trial_pct + '%';
+      document.getElementById('hConversionSub').textContent = `${_metricas.trial_convertidos||0} de ${_metricas.trial_terminados||0} pruebas vencidas`;
+    } else {
+      document.getElementById('hConversion').textContent = '—';
+      document.getElementById('hConversionSub').textContent = 'Aún no hay pruebas vencidas';
+    }
+    if(_metricas.churn_pct_30d !== null && _metricas.churn_pct_30d !== undefined){
+      document.getElementById('hChurn').textContent = _metricas.churn_pct_30d + '%';
+      document.getElementById('hChurnSub').textContent = `${_metricas.churn_cancelados_30d||0} de ${_metricas.churn_base_30d||0} suscripciones (30d)`;
+    } else {
+      document.getElementById('hChurn').textContent = '—';
+      document.getElementById('hChurnSub').textContent = 'Sin movimiento en 30 días';
+    }
 
     // Ciudades
     const maxT = topCiudadesTalleres[0]?.[1]||1;
@@ -555,6 +598,7 @@ async function cargarDatos(){
 
     // Intentos de registro y reclamo
     filtrarEventos('');
+    renderFunnelCuentas();
 
     // Reseñas
     document.getElementById('bResenas').textContent = totalResenas + ' reseñas';
@@ -610,6 +654,17 @@ function renderResenas(lista){
   </tr>`).join('') : '<tr><td colspan="5" class="empty">Sin reseñas aún</td></tr>';
 }
 
+function renderFunnelCuentas(){
+  const m = _metricas;
+  const pctSignup = m.signup_total ? Math.round((m.signup_exitosos/m.signup_total)*100) : null;
+  const pctReclamo = m.reclamo_total ? Math.round((m.reclamo_exitosos/m.reclamo_total)*100) : null;
+  document.getElementById('funnelCuentas').innerHTML = `
+    <span>📝 Registros: <b style="color:var(--white);">${m.signup_exitosos||0}</b> de ${m.signup_total||0} intentos ${pctSignup!==null?`(<span style="color:${pctSignup>=70?'var(--green)':'var(--gold)'};">${pctSignup}%</span>)`:''}</span>
+    <span>🔑 Reclamos: <b style="color:var(--white);">${m.reclamo_exitosos||0}</b> de ${m.reclamo_total||0} intentos ${pctReclamo!==null?`(<span style="color:${pctReclamo>=70?'var(--green)':'var(--gold)'};">${pctReclamo}%</span>)`:''}</span>
+    <span style="color:var(--muted);">Histórico completo — la tabla de abajo muestra los últimos 300</span>
+  `;
+}
+
 function renderEventos(lista){
   const total = _eventosCuenta.length;
   const problemas = _eventosCuenta.filter(e=>!e.exito).length;
@@ -642,8 +697,8 @@ function renderPerfiles(lista){
   const incompletos = _perfiles.filter(p=>!p.perfil_completo).length;
   document.getElementById('bPerfiles').textContent = incompletos + ' de ' + total + ' incompletos';
   document.getElementById('tPerfiles').innerHTML = lista.length ? lista.map(p=>`<tr>
-    <td style="font-weight:600;">${p.name||'—'}</td>
-    <td style="color:var(--dim);">${p.city||'—'}</td>
+    <td style="font-weight:600;">${p.nombre||'—'}</td>
+    <td style="color:var(--dim);">${p.ciudad||'—'}</td>
     <td>${p.perfil_completo?'<span class="badge ba">✓ Completo</span>':'<span class="badge br">Incompleto</span>'}</td>
     <td style="font-size:12px;color:var(--muted);">${p.perfil_completo?'—':(p.falta||'—')}</td>
   </tr>`).join('') : '<tr><td colspan="4" class="empty">Sin resultados</td></tr>';
@@ -654,7 +709,7 @@ function filtrarPerfiles(q){
   const soloIncompletos = document.getElementById('soloIncompletos').checked;
   let lista = _perfiles;
   if(soloIncompletos) lista = lista.filter(p=>!p.perfil_completo);
-  if(f) lista = lista.filter(p=>(p.name||'').toLowerCase().includes(f)||(p.city||'').toLowerCase().includes(f));
+  if(f) lista = lista.filter(p=>(p.nombre||'').toLowerCase().includes(f)||(p.ciudad||'').toLowerCase().includes(f));
   renderPerfiles(lista);
 }
 
