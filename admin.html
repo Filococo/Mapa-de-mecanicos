@@ -459,6 +459,24 @@ tr:hover td{background:var(--bg3);}
         <tbody id="tResenas"><tr><td colspan="5" class="empty">Cargando...</td></tr></tbody></table>
       </div>
     </div>
+
+    <!-- ERRORES DE LA APP -->
+    <div class="section" id="sec-errores">
+      <div class="sec-head">
+        <div class="sec-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--coral)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          Errores de la app
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <input type="text" class="tbl-search" id="erroresSearch" placeholder="Buscar mensaje..." oninput="filtrarErrores(this.value)">
+          <span class="sec-badge" id="bErrores">—</span>
+        </div>
+      </div>
+      <div style="overflow-x:auto;">
+        <table><thead><tr><th>Fecha</th><th>Tipo</th><th>Mensaje</th><th>Página</th></tr></thead>
+        <tbody id="tErrores"><tr><td colspan="4" class="empty">Cargando...</td></tr></tbody></table>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -481,7 +499,7 @@ const ADMIN = 'contacto@panne.cl';
 const PRECIOS = { mensual:9990, semestral:49990, anual:89990 };
 
 // Estado global
-let _talleres=[], _subs=[], _resenas=[], _nombres={}, _totalPro=0, _totalTalleres=0, _todosPro=[], _perfiles=[], _eventosCuenta=[], _metricas={};
+let _talleres=[], _subs=[], _resenas=[], _nombres={}, _totalPro=0, _totalTalleres=0, _todosPro=[], _perfiles=[], _eventosCuenta=[], _metricas={}, _errores=[];
 
 async function login(){
   const email = document.getElementById('loginEmail').value.trim();
@@ -523,7 +541,7 @@ async function logout(){ await sb.auth.signOut(); location.reload(); }
 async function cargarDatos(){
   document.getElementById('lastUpdate').textContent = 'Actualizando...';
   try {
-    const [r1,r2,r3,r4,r5,r6,r7,r8,r9,r10,r11,r12,r13] = await Promise.all([
+    const [r1,r2,r3,r4,r5,r6,r7,r8,r9,r10,r11,r12,r13,r14] = await Promise.all([
       sb.from('mecanicos').select('id,name,city,spec,es_pro,review_count,rating,visit_count,email').order('created_at',{ascending:false}).limit(200),
       sb.from('mecanicos').select('*',{count:'exact',head:true}),
       sb.from('mecanicos').select('*',{count:'exact',head:true}).eq('es_pro',true),
@@ -536,7 +554,8 @@ async function cargarDatos(){
       sb.from('mecanicos').select('id,name,city,email').eq('es_pro',true),
       sb.rpc('obtener_panel_admin_talleres').order('perfil_completo',{ascending:true}).range(0,9999),
       sb.from('eventos_cuenta').select('*').order('created_at',{ascending:false}).limit(300),
-      sb.rpc('admin_metricas_negocio')
+      sb.rpc('admin_metricas_negocio'),
+      sb.from('errores_cliente').select('*').order('created_at',{ascending:false}).limit(200)
     ]);
 
     _talleres = r1.data || [];
@@ -546,6 +565,7 @@ async function cargarDatos(){
     _perfiles = r11.data || [];
     _eventosCuenta = r12.data || [];
     _metricas = r13.data || {};
+    _errores = r14.data || [];
     let totalClientes = '—', totalConCuenta = '—';
     if(r4.data){ totalClientes = r4.data.clientes ?? '—'; totalConCuenta = r4.data.talleres_con_cuenta ?? '—'; }
     _subs = r5.data || [];
@@ -652,6 +672,9 @@ async function cargarDatos(){
     filtrarEventos('');
     renderFunnelCuentas();
 
+    // Errores de la app
+    filtrarErrores('');
+
     // Reseñas
     document.getElementById('bResenas').textContent = totalResenas + ' reseñas';
     renderResenas(_resenas);
@@ -704,6 +727,29 @@ function renderResenas(lista){
     <td style="color:var(--dim);font-size:12px;max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${r.texto||'—'}</td>
     <td style="font-size:12px;color:var(--muted);">${r.created_at?new Date(r.created_at).toLocaleDateString('es-CL'):'—'}</td>
   </tr>`).join('') : '<tr><td colspan="5" class="empty">Sin reseñas aún</td></tr>';
+}
+
+function renderErrores(lista){
+  document.getElementById('bErrores').textContent = _errores.length + ' registrados';
+  document.getElementById('tErrores').innerHTML = lista.length ? lista.map(e=>{
+    const fecha = e.created_at ? new Date(e.created_at).toLocaleString('es-CL',{dateStyle:'short',timeStyle:'short'}) : '—';
+    const tipoLbl = e.contexto === 'unhandled_rejection' ? 'Promesa' : 'JS';
+    let pagina = '—';
+    try { pagina = new URL(e.url).pathname; } catch(err){ pagina = e.url || '—'; }
+    return `<tr>
+      <td style="color:var(--dim);font-size:12px;" class="num">${fecha}</td>
+      <td><span class="badge bv">${tipoLbl}</span></td>
+      <td style="font-size:12px;max-width:320px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${(e.stack||e.mensaje||'').replace(/"/g,'&quot;')}">${e.mensaje||'—'}</td>
+      <td style="color:var(--muted);font-size:12px;">${pagina}</td>
+    </tr>`;
+  }).join('') : '<tr><td colspan="4" class="empty">Sin errores registrados</td></tr>';
+}
+
+function filtrarErrores(q){
+  const f = (q||'').toLowerCase();
+  let lista = _errores;
+  if(f) lista = lista.filter(e=>(e.mensaje||'').toLowerCase().includes(f));
+  renderErrores(lista);
 }
 
 function renderFunnelCuentas(){

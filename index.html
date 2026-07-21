@@ -1999,6 +1999,43 @@ const SUPABASE_URL = 'https://vdkvbwlzjrqcmegkxslp.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_afbIDXILgu4oM1v3GUuzDQ_jWZnds9v';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+// Monitoreo de errores: captura errores JS y promesas no manejadas y las
+// reporta a Supabase para poder revisarlas en el panel admin. Con límite
+// por sesión para no inundar la tabla si algo falla en loop.
+(function(){
+  const MAX_ERRORES_POR_SESION = 8;
+  let contador = 0;
+  const vistos = new Set();
+
+  async function reportarError(mensaje, stack, contexto){
+    try {
+      if(contador >= MAX_ERRORES_POR_SESION) return;
+      const clave = (mensaje||'') + '|' + contexto;
+      if(vistos.has(clave)) return;
+      vistos.add(clave);
+      contador++;
+      let userId = null;
+      try { const { data } = await sb.auth.getSession(); userId = data?.session?.user?.id || null; } catch(e){}
+      await sb.from('errores_cliente').insert({
+        mensaje: (mensaje||'').toString().slice(0, 500),
+        stack: (stack||'').toString().slice(0, 2000),
+        url: location.href,
+        contexto,
+        user_agent: navigator.userAgent,
+        user_id: userId
+      });
+    } catch(e) { /* nunca debe romper la app por fallar el reporte */ }
+  }
+
+  window.addEventListener('error', (e)=>{
+    reportarError(e.message, e.error?.stack, 'js_error');
+  });
+  window.addEventListener('unhandledrejection', (e)=>{
+    const reason = e.reason;
+    reportarError(reason?.message || String(reason), reason?.stack, 'unhandled_rejection');
+  });
+})();
+
 let currentSession = null;
 let currentUserRole = null; // 'cliente' | 'mecanico'
 let authMode = 'login'; // 'login' | 'signup'
