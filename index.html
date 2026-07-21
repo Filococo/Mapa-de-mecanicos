@@ -2843,8 +2843,20 @@ function resetDefaultMeta(){
 }
 
 async function openProfile(id){
-  const m = mechanics.find(x => x.id === id);
-  if(!m) return;
+ try {
+  let m = mechanics.find(x => x.id === id);
+  if(!m){
+    // No estaba en la caché local (ej: se agregó/reclamó después de cargar la página).
+    // Se busca directo en Supabase antes de rendirse.
+    const { data: fresh, error: freshErr } = await sb.from('mecanicos').select('*').eq('id', id).maybeSingle();
+    if(freshErr || !fresh){
+      alert('No pudimos cargar esta ficha. Intenta de nuevo en unos segundos.');
+      try { await sb.from('errores_cliente').insert({ mensaje: 'openProfile: taller no encontrado ni en caché ni en Supabase (id='+id+')', url: location.href, contexto: 'openProfile_not_found' }); } catch(e){}
+      return;
+    }
+    m = mapMecanicoRow(fresh);
+    mechanics.push(m);
+  }
   selectedStars = 0;
   // Agregar entrada al historial con URL limpia y rastreable (mejor para SEO y para compartir)
   const slug = slugify(m.name) || 'taller';
@@ -3091,6 +3103,11 @@ async function openProfile(id){
   document.getElementById('view-perfil').classList.remove('hidden');
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   window.scrollTo({top:0,behavior:'smooth'});
+ } catch(err){
+  console.error('Error abriendo ficha:', err);
+  alert('Ocurrió un error al abrir esta ficha. Ya quedó registrado para revisarlo.');
+  try { await sb.from('errores_cliente').insert({ mensaje: (err.message||String(err)).slice(0,500), stack: (err.stack||'').slice(0,2000), url: location.href, contexto: 'openProfile_error' }); } catch(e){}
+ }
 }
 
 async function submitReview(mecanicoId){
