@@ -90,6 +90,7 @@ tr:hover td{background:rgba(255,255,255,.025);}
 .bp{background:rgba(240,192,64,.12);color:var(--gold);border:1px solid rgba(240,192,64,.25);}
 .ba{background:rgba(34,197,94,.12);color:var(--green);border:1px solid rgba(34,197,94,.25);}
 .bv{background:rgba(255,255,255,.05);color:var(--muted);border:1px solid var(--border);}
+.br{background:rgba(232,25,44,.1);color:var(--red);border:1px solid rgba(232,25,44,.25);}
 .bm{background:rgba(59,130,246,.12);color:var(--blue);border:1px solid rgba(59,130,246,.25);}
 .bs{background:rgba(168,85,247,.12);color:#a855f7;border:1px solid rgba(168,85,247,.25);}
 .ban{background:rgba(240,192,64,.12);color:var(--gold);border:1px solid rgba(240,192,64,.25);}
@@ -312,6 +313,28 @@ tr:hover td{background:rgba(255,255,255,.025);}
       </div>
     </div>
 
+    <!-- PERFILES INCOMPLETOS -->
+    <div class="section">
+      <div class="sec-head">
+        <div class="sec-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          Perfiles de talleres
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <input type="text" class="tbl-search" id="perfilesSearch" placeholder="Buscar taller..." oninput="filtrarPerfiles(this.value)">
+          <label style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--dim);cursor:pointer;">
+            <input type="checkbox" id="soloIncompletos" checked onchange="filtrarPerfiles(document.getElementById('perfilesSearch').value)">
+            Solo incompletos
+          </label>
+          <span class="sec-badge" id="bPerfiles">—</span>
+        </div>
+      </div>
+      <div style="overflow-x:auto;">
+        <table><thead><tr><th>Taller</th><th>Ciudad</th><th>Estado</th><th>Qué falta</th></tr></thead>
+        <tbody id="tPerfiles"><tr><td colspan="4" class="empty">Cargando...</td></tr></tbody></table>
+      </div>
+    </div>
+
     <!-- CIUDADES -->
     <div class="section">
       <div class="sec-head">
@@ -369,7 +392,7 @@ const ADMIN = 'contacto@panne.cl';
 const PRECIOS = { mensual:9990, semestral:49990, anual:89990 };
 
 // Estado global
-let _talleres=[], _subs=[], _resenas=[], _nombres={}, _totalPro=0, _totalTalleres=0, _todosPro=[];
+let _talleres=[], _subs=[], _resenas=[], _nombres={}, _totalPro=0, _totalTalleres=0, _todosPro=[], _perfiles=[];
 
 async function login(){
   const email = document.getElementById('loginEmail').value.trim();
@@ -395,7 +418,7 @@ async function logout(){ await sb.auth.signOut(); location.reload(); }
 async function cargarDatos(){
   document.getElementById('lastUpdate').textContent = 'Actualizando...';
   try {
-    const [r1,r2,r3,r4,r5,r6,r7,r8,r9,r10] = await Promise.all([
+    const [r1,r2,r3,r4,r5,r6,r7,r8,r9,r10,r11] = await Promise.all([
       sb.from('mecanicos').select('id,name,city,spec,es_pro,review_count,rating,visit_count,email').order('created_at',{ascending:false}).limit(200),
       sb.from('mecanicos').select('*',{count:'exact',head:true}),
       sb.from('mecanicos').select('*',{count:'exact',head:true}).eq('es_pro',true),
@@ -405,13 +428,15 @@ async function cargarDatos(){
       sb.from('resenas').select('*',{count:'exact',head:true}),
       sb.rpc('panne_stats'),
       sb.rpc('ciudades_clientes_top'),
-      sb.from('mecanicos').select('id,name,city,email').eq('es_pro',true)
+      sb.from('mecanicos').select('id,name,city,email').eq('es_pro',true),
+      sb.from('panel_admin_talleres').select('*').order('perfil_completo',{ascending:true}).range(0,9999)
     ]);
 
     _talleres = r1.data || [];
     _totalTalleres = r2.count || 0;
     _totalPro = r3.count || 0;
     _todosPro = r10.data || [];
+    _perfiles = r11.data || [];
     let totalClientes = '—', totalConCuenta = '—';
     if(r4.data){ totalClientes = r4.data.clientes ?? '—'; totalConCuenta = r4.data.talleres_con_cuenta ?? '—'; }
     _subs = r5.data || [];
@@ -439,7 +464,16 @@ async function cargarDatos(){
       v2 = (await sb.from('visitas_pagina').select('*',{count:'exact',head:true}).gte('created_at',hoy.toISOString())).count || 0;
     } catch(e){}
 
-    const visitasPerfiles = _talleres.reduce((s,t)=>s+(t.visit_count||0),0);
+    // Clics en perfiles: SUM(visit_count) sobre TODA la tabla mecanicos, no solo
+    // los 200 talleres más recientes de _talleres (esos casi siempre tienen 0 clics
+    // por ser los últimos creados, lo que hacía ver la tarjeta en 0).
+    let visitasPerfiles = 0;
+    try {
+      const { data: vcRows } = await sb.from('mecanicos').select('visit_count').range(0, 9999);
+      visitasPerfiles = (vcRows||[]).reduce((s,r)=>s+(r.visit_count||0),0);
+    } catch(e){
+      visitasPerfiles = _talleres.reduce((s,t)=>s+(t.visit_count||0),0);
+    }
     const ciudades = { length: totalCiudades };
     const ingreso = _subs.filter(s=>s.estado==='activo').reduce((s,sub)=>s+(PRECIOS[sub.plan]||0),0);
     // Top ciudades via RPC separada
@@ -491,6 +525,9 @@ async function cargarDatos(){
     // Talleres
     document.getElementById('bTalleres').textContent = _totalTalleres.toLocaleString('es-CL') + ' talleres';
     renderTalleres(_talleres);
+
+    // Perfiles incompletos
+    filtrarPerfiles('');
 
     // Reseñas
     document.getElementById('bResenas').textContent = totalResenas + ' reseñas';
@@ -544,6 +581,27 @@ function renderResenas(lista){
     <td style="color:var(--dim);font-size:12px;max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${r.texto||'—'}</td>
     <td style="font-size:12px;color:var(--muted);">${r.created_at?new Date(r.created_at).toLocaleDateString('es-CL'):'—'}</td>
   </tr>`).join('') : '<tr><td colspan="5" class="empty">Sin reseñas aún</td></tr>';
+}
+
+function renderPerfiles(lista){
+  const total = _perfiles.length;
+  const incompletos = _perfiles.filter(p=>!p.perfil_completo).length;
+  document.getElementById('bPerfiles').textContent = incompletos + ' de ' + total + ' incompletos';
+  document.getElementById('tPerfiles').innerHTML = lista.length ? lista.map(p=>`<tr>
+    <td style="font-weight:600;">${p.name||'—'}</td>
+    <td style="color:var(--dim);">${p.city||'—'}</td>
+    <td>${p.perfil_completo?'<span class="badge ba">✓ Completo</span>':'<span class="badge br">Incompleto</span>'}</td>
+    <td style="font-size:12px;color:var(--muted);">${p.perfil_completo?'—':(p.falta||'—')}</td>
+  </tr>`).join('') : '<tr><td colspan="4" class="empty">Sin resultados</td></tr>';
+}
+
+function filtrarPerfiles(q){
+  const f = (q||'').toLowerCase();
+  const soloIncompletos = document.getElementById('soloIncompletos').checked;
+  let lista = _perfiles;
+  if(soloIncompletos) lista = lista.filter(p=>!p.perfil_completo);
+  if(f) lista = lista.filter(p=>(p.name||'').toLowerCase().includes(f)||(p.city||'').toLowerCase().includes(f));
+  renderPerfiles(lista);
 }
 
 function filtrarTalleres(q){
