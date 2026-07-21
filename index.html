@@ -1339,7 +1339,7 @@ footer{
       </button>
 
       <div class="search-row">
-        <input type="search" class="search-input" id="searchInput" placeholder="Buscar por nombre, especialidad o ciudad…" autocomplete="new-password" autocorrect="off" autocapitalize="off" spellcheck="false" name="panne-search-x" readonly onfocus="this.removeAttribute('readonly')">
+        <input type="search" class="search-input" id="searchInput" placeholder="Buscar por nombre, especialidad o ciudad…" autocomplete="new-password" autocorrect="off" autocapitalize="off" spellcheck="false" name="panne-search-x" readonly onfocus="this.removeAttribute('readonly')" onkeydown="if(event.key==='Enter')applySearch()" oninput="if(!this.value.trim())applySearch()">
         <button class="btn-search" onclick="applySearch()">Buscar</button>
       </div>
 
@@ -2463,9 +2463,42 @@ function traduceErrorAuth(msg){
 /* ====================== DATA ====================== */
 let deferredInstallPrompt = null; // PWA install prompt
 let mechanics = []; // Se carga de forma asíncrona desde Supabase (tabla mecanicos + servicios)
+let searchResultsRemote = null; // { termino, items } — resultado de buscar_talleres_por_nombre() cuando hay búsqueda por texto activa
 let panelPhotos = []; // URLs de fotos ya subidas en el panel del mecánico
 let editPanelLat = null;
 let editPanelLng = null;
+
+function mapMecanicoRow(m){
+  return {
+    id: m.id,
+    name: m.name || 'Sin nombre',
+    initials: (m.name||'').split(' ').filter(Boolean).slice(0,2).map(w=>w[0]).join('').toUpperCase()||'?',
+    spec: m.spec || 'Mecánica General',
+    dist: (m.lat && m.lng && USER_LOCATION) ? haversineKm(USER_LOCATION.lat, USER_LOCATION.lng, m.lat, m.lng) : null,
+    lat: m.lat || null,
+    lng: m.lng || null,
+    rating: m.rating || 0,
+    reviews: m.review_count || 0,
+    parts: !!m.sells_parts,
+    cover_url: m.cover_url || null,
+    avatar_url: m.avatar_url || null,
+    whatsapp: m.whatsapp || null,
+    es_pro: m.es_pro === true || m.es_pro === 'true' || m.es_pro === 1,
+    claimed: !!m.claimed_at,
+    oferta_texto: m.oferta_texto || null,
+    email: m.email || null,
+    priceFrom: null,
+    status: 'open',
+    address: m.address || '',
+    city: m.city || '',
+    phone: m.phone || null,
+    years: m.years || 0,
+    tags: [],
+    services: [],
+    partsNote: 'Sin información sobre repuestos.',
+    reviews_list: []
+  };
+}
 
 async function loadMechanicsFromSupabase(){
   try {
@@ -2487,35 +2520,7 @@ async function loadMechanicsFromSupabase(){
       return;
     }
 
-    mechanics = mecanicosData.map(m => ({
-      id: m.id,
-      name: m.name || 'Sin nombre',
-      initials: (m.name||'').split(' ').filter(Boolean).slice(0,2).map(w=>w[0]).join('').toUpperCase()||'?',
-      spec: m.spec || 'Mecánica General',
-      dist: (m.lat && m.lng && USER_LOCATION) ? haversineKm(USER_LOCATION.lat, USER_LOCATION.lng, m.lat, m.lng) : null,
-      lat: m.lat || null,
-      lng: m.lng || null,
-      rating: m.rating || 0,
-      reviews: m.review_count || 0,
-      parts: !!m.sells_parts,
-      cover_url: m.cover_url || null,
-      avatar_url: m.avatar_url || null,
-      whatsapp: m.whatsapp || null,
-      es_pro: m.es_pro === true || m.es_pro === 'true' || m.es_pro === 1,
-      claimed: !!m.claimed_at,
-      oferta_texto: m.oferta_texto || null,
-      email: m.email || null,
-      priceFrom: null,
-      status: 'open',
-      address: m.address || '',
-      city: m.city || '',
-      phone: m.phone || null,
-      years: 0,
-      tags: [],
-      services: [],
-      partsNote: 'Sin información sobre repuestos.',
-      reviews_list: []
-    }));
+    mechanics = mecanicosData.map(mapMecanicoRow);
 
     if(USER_LOCATION) recalcDistances();
     populateCityFilter();
@@ -2662,8 +2667,12 @@ function renderGrid(){
   const cityVal = document.getElementById('cityFilter')?.value || '';
   const ratingVal = parseFloat(document.getElementById('ratingFilter')?.value || '0');
 
-  let filtered = currentFilter === 'todos' ? mechanics : mechanics.filter(m => m.spec === currentFilter);
-  if(searchVal){
+  const usandoBusquedaRemota = !!(searchResultsRemote && searchResultsRemote.termino.toLowerCase() === searchVal);
+  const fuente = usandoBusquedaRemota ? searchResultsRemote.items : mechanics;
+
+  let filtered = currentFilter === 'todos' ? fuente : fuente.filter(m => m.spec === currentFilter);
+  if(searchVal && !usandoBusquedaRemota){
+    // Respaldo local mientras llega la respuesta de buscar_talleres_por_nombre(), o si falló la llamada
     filtered = filtered.filter(m =>
       m.name.toLowerCase().includes(searchVal) ||
       m.spec.toLowerCase().includes(searchVal) ||
@@ -2674,16 +2683,22 @@ function renderGrid(){
   if(cityVal) filtered = filtered.filter(m => m.city === cityVal);
   if(ratingVal > 0) filtered = filtered.filter(m => m.rating >= ratingVal);
 
-  const PRO_BOOST_RADIUS_KM = 10;
-  filtered = filtered.slice().sort((a,b) => {
-    // Pro solo tiene prioridad si está dentro del radio de boost (10 km).
-    // Fuera de ese radio, se ordena estrictamente por distancia.
-    const aBoosted = a.es_pro && (a.dist ?? Infinity) <= PRO_BOOST_RADIUS_KM;
-    const bBoosted = b.es_pro && (b.dist ?? Infinity) <= PRO_BOOST_RADIUS_KM;
-    if(aBoosted && !bBoosted) return -1;
-    if(!aBoosted && bBoosted) return 1;
-    return (a.dist??Infinity)-(b.dist??Infinity);
-  });
+  if(usandoBusquedaRemota){
+    // buscar_talleres_por_nombre() ya viene ordenado por similitud de nombre — se respeta ese orden,
+    // solo se antepone Pro a igualdad de relevancia.
+    filtered = filtered.slice().sort((a,b) => (b.es_pro?1:0) - (a.es_pro?1:0));
+  } else {
+    const PRO_BOOST_RADIUS_KM = 10;
+    filtered = filtered.slice().sort((a,b) => {
+      // Pro solo tiene prioridad si está dentro del radio de boost (10 km).
+      // Fuera de ese radio, se ordena estrictamente por distancia.
+      const aBoosted = a.es_pro && (a.dist ?? Infinity) <= PRO_BOOST_RADIUS_KM;
+      const bBoosted = b.es_pro && (b.dist ?? Infinity) <= PRO_BOOST_RADIUS_KM;
+      if(aBoosted && !bBoosted) return -1;
+      if(!aBoosted && bBoosted) return 1;
+      return (a.dist??Infinity)-(b.dist??Infinity);
+    });
+  }
 
   // Mostrar/ocultar botón limpiar
   const hasFilters = searchVal || cityVal || ratingVal > 0 || currentFilter !== 'todos';
@@ -2756,7 +2771,25 @@ function renderGrid(){
   }).join('');
 }
 
-function applySearch(){
+async function buscarPorNombreSupabase(termino){
+  try {
+    const { data, error } = await sb.rpc('buscar_talleres_por_nombre', { termino });
+    if(error || !data) return null;
+    return data.map(mapMecanicoRow);
+  } catch(e){
+    console.warn('buscar_talleres_por_nombre falló, uso filtro local de respaldo:', e);
+    return null;
+  }
+}
+
+async function applySearch(){
+  const searchVal = (document.getElementById('searchInput')?.value || '').trim();
+  if(searchVal.length >= 2){
+    const items = await buscarPorNombreSupabase(searchVal);
+    searchResultsRemote = items ? { termino: searchVal, items } : null;
+  } else {
+    searchResultsRemote = null;
+  }
   renderGrid();
 }
 
