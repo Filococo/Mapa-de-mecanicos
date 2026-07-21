@@ -2002,6 +2002,17 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 let currentSession = null;
 let currentUserRole = null; // 'cliente' | 'mecanico'
 let authMode = 'login'; // 'login' | 'signup'
+
+// Registra intentos de creación de cuenta y reclamo de taller (éxito o error)
+// para poder revisarlos luego en el panel de admin. Nunca debe interrumpir el flujo del usuario.
+async function logEventoCuenta({ tipo, email, exito, mensaje = null, tallerId = null, tallerNombre = null, rol = null }){
+  try {
+    await sb.from('eventos_cuenta').insert({
+      tipo, email: email || null, exito, mensaje,
+      taller_id: tallerId, taller_nombre: tallerNombre, rol
+    });
+  } catch(e) { /* no bloquear la UX si falla el log */ }
+}
 let authSelectedRole = 'cliente';
 
 async function refreshSession(){
@@ -2196,9 +2207,11 @@ document.getElementById('optOutSubmit')?.addEventListener('click', async () => {
 
 /* ===== RECLAMAR TALLER ===== */
 let claimTallerId = null;
+let claimTallerNombre = null;
 
-function openClaimModal(mecanicoId){
+function openClaimModal(mecanicoId, nombre){
   claimTallerId = mecanicoId;
+  claimTallerNombre = nombre || null;
   document.getElementById('claim-phone').value = '';
   document.getElementById('claim-email').value = '';
   document.getElementById('claim-password').value = '';
@@ -2249,8 +2262,11 @@ document.getElementById('claimSubmit')?.addEventListener('click', async () => {
     errorEl.textContent = error.message || 'No pudimos verificar tu taller. Revisa el teléfono e inténtalo de nuevo.';
     btn.disabled = false;
     btn.textContent = originalText;
+    logEventoCuenta({ tipo:'reclamo', email, exito:false, mensaje:error.message, tallerId:claimTallerId, tallerNombre:claimTallerNombre });
     return;
   }
+
+  logEventoCuenta({ tipo:'reclamo', email, exito:true, tallerId:claimTallerId, tallerNombre:claimTallerNombre });
 
   // Iniciar sesión automáticamente con las nuevas credenciales
   const { data: loginData, error: loginError } = await sb.auth.signInWithPassword({ email, password });
@@ -2359,17 +2375,20 @@ document.getElementById('authSubmit')?.addEventListener('click', async () => {
     });
     if(error){
       errorBox.textContent = traduceErrorAuth(error.message);
+      logEventoCuenta({ tipo:'signup', email, exito:false, mensaje:error.message, rol:authSelectedRole });
       return;
     }
     if(!data.session){
       errorBox.style.color = 'var(--ok-green)';
       errorBox.textContent = 'Cuenta creada. Si tu proyecto exige confirmación, revisa tu correo antes de iniciar sesión.';
+      logEventoCuenta({ tipo:'signup', email, exito:true, rol:authSelectedRole });
       return;
     }
     currentSession = data.session;
     currentUserRole = authSelectedRole;
     updateAccountUI();
     document.getElementById('authOverlay').classList.add('hidden');
+    logEventoCuenta({ tipo:'signup', email, exito:true, rol:authSelectedRole });
 
     // Email de bienvenida
     const nombreBienvenida = email.split('@')[0];
@@ -2835,7 +2854,7 @@ async function openProfile(id){
       ${!m.claimed && (!currentSession || currentSession.user.id !== m.id) ? `
       <div style="margin-top:10px;background:rgba(255,214,0,.08);border:1px solid rgba(255,214,0,.35);border-radius:8px;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
         <span style="font-size:12px;color:var(--muted);">¿Eres el dueño de este taller? Esta ficha aún no ha sido reclamada.</span>
-        <button onclick="openClaimModal('${m.id}')" style="background:#FFD600;color:#0a0a0a;border:none;border-radius:6px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;">Reclamar gratis →</button>
+        <button onclick="openClaimModal('${m.id}','${(m.name||'').replace(/'/g,"\\'")}')" style="background:#FFD600;color:#0a0a0a;border:none;border-radius:6px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;">Reclamar gratis →</button>
       </div>
       <div style="margin-top:6px;text-align:right;">
         <a href="#" onclick="event.preventDefault();openOptOutModal('${m.id}');" style="font-size:10px;color:var(--dim);text-decoration:underline;">¿Esta información es incorrecta o quieres que la retiremos?</a>
