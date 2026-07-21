@@ -2502,16 +2502,32 @@ function mapMecanicoRow(m){
 
 async function loadMechanicsFromSupabase(){
   try {
-    const { data: mecanicosData, error } = await sb
-      .from('mecanicos')
-      .select('id, name, address, city, phone, lat, lng, spec, rating, review_count, sells_parts, trial_ends_at, cover_url, avatar_url, whatsapp, es_pro, oferta_texto, email, claimed_at')
-      .order('es_pro', {ascending: false}).order('name', {ascending: true})
-      .limit(8000);
+    // Se pagina en vez de pedir todo con un solo .limit(), porque el proyecto
+    // de Supabase tiene un tope de 1000 filas por consulta a nivel de servidor
+    // (Max Rows en Settings > API) que ignora silenciosamente cualquier .limit()
+    // más alto pedido desde el cliente. Sin paginar, solo cargaban los primeros
+    // 1000 talleres y el resto no se podía abrir ni encontrar en el directorio.
+    const PAGE_SIZE = 1000;
+    let mecanicosData = [];
+    let pagina = 0;
+    while(true){
+      const desde = pagina * PAGE_SIZE;
+      const hasta = desde + PAGE_SIZE - 1;
+      const { data: pageData, error } = await sb
+        .from('mecanicos')
+        .select('id, name, address, city, phone, lat, lng, spec, rating, review_count, sells_parts, trial_ends_at, cover_url, avatar_url, whatsapp, es_pro, oferta_texto, email, claimed_at')
+        .order('es_pro', {ascending: false}).order('name', {ascending: true})
+        .range(desde, hasta);
 
-    if(error){
-      console.error('Supabase error:', error.message);
-      showGridError('Error de conexión: ' + error.message);
-      return;
+      if(error){
+        console.error('Supabase error:', error.message);
+        showGridError('Error de conexión: ' + error.message);
+        return;
+      }
+      mecanicosData = mecanicosData.concat(pageData || []);
+      if(!pageData || pageData.length < PAGE_SIZE) break; // última página
+      pagina++;
+      if(pagina > 20) break; // salvavidas: no más de 20.000 filas
     }
 
     if(!mecanicosData || mecanicosData.length === 0){
