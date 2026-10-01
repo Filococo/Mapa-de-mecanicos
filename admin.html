@@ -396,6 +396,7 @@ tr:hover td{background:var(--bg3);}
           <label class="f-lbl">Enlace de destino * (https://…)<input class="f-in" id="pUrl" placeholder="https://"></label>
           <label class="f-lbl">Texto corto<input class="f-in" id="pDesc" maxlength="140" placeholder="Ej: 15% de descuento este mes"></label>
           <label class="f-lbl">Texto del botón<input class="f-in" id="pBoton" maxlength="24" value="Ver más"></label>
+          <label class="f-lbl">Etiqueta del aviso (opcional)<input class="f-in" id="pEtiqueta" maxlength="20" placeholder="Publicidad, Auspiciador…"></label>
           <label class="f-lbl">Dónde se muestra
             <select class="f-in" id="pSlot">
               <option value="ambos">Banner principal + tarjeta entre resultados</option>
@@ -965,6 +966,7 @@ async function crearAnuncio(){
       anunciante: val('pAnunciante') || null,
       descripcion: val('pDesc') || null,
       texto_boton: val('pBoton') || 'Ver más',
+      etiqueta: val('pEtiqueta') || null,
       slot: document.getElementById('pSlot').value,
       categoria: document.getElementById('pCat').value || null,
       ciudad: val('pCiudad') || null,
@@ -976,7 +978,7 @@ async function crearAnuncio(){
     };
     const { error } = await sb.from('patrocinadores').insert(fila);
     if(error) throw error;
-    ['pTitle','pAnunciante','pUrl','pDesc','pCiudad','pInicio','pFin','pImg','pImgMov'].forEach(id => document.getElementById(id).value = '');
+    ['pTitle','pAnunciante','pUrl','pDesc','pCiudad','pInicio','pFin','pImg','pImgMov','pEtiqueta'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('pBoton').value = 'Ver más';
     document.getElementById('pCat').value = '';
     msg.style.color = 'var(--green)'; msg.textContent = 'Anuncio guardado' + (fila.activo ? ' y publicado.' : ' (pausado).');

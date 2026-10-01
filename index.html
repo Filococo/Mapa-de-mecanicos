@@ -4654,7 +4654,7 @@ function adBannerHTML(s, slot, extraClase){
   const attrs = adAtributos(s, slot);
   const propio = adEsPropio(s);
   const clase = 'ad-banner' + (extraClase ? ' ' + extraClase : '') + (propio ? ' ad-propio' : '');
-  const etiqueta = propio ? 'PANNE' : 'PUBLICIDAD';
+  const etiqueta = propio ? 'PANNE' : adEsc(String(s.etiqueta || 'PUBLICIDAD').toUpperCase());
   if(s.imagen_url){
     const mov = s.imagen_movil_url ? `<source media="(max-width:600px)" srcset="${adEsc(adUrl(s.imagen_movil_url))}">` : '';
     return `<a class="${clase}" ${attrs} aria-label="${adEsc(s.title)}"><picture>${mov}<img src="${adEsc(adUrl(s.imagen_url))}" alt="${adEsc(s.title)}" loading="eager" decoding="async"></picture><span class="ad-tag">${etiqueta}</span></a>`;
@@ -4673,7 +4673,7 @@ function adTarjetaHTML(s){
   const cuerpo = String(s.descripcion || '').split('\n')[0];
   return `
     <a class="card ad-card" ${attrs}>
-      <div class="card-cover">${portada}<span class="ad-tag"${propio ? ' style="background:var(--red);border-color:var(--red);"' : ''}>${propio ? 'PANNE' : 'PUBLICIDAD'}</span></div>
+      <div class="card-cover">${portada}<span class="ad-tag"${propio ? ' style="background:var(--red);border-color:var(--red);"' : ''}>${propio ? 'PANNE' : adEsc(String(s.etiqueta || 'PUBLICIDAD').toUpperCase())}</span></div>
       <div class="card-body">
         <div class="card-name" style="margin-bottom:6px;font-size:18px;">${adEsc(s.title)}</div>
         <div class="rating-row"><span class="rating-count" style="color:var(--dim);">${adEsc(cuerpo)}</span></div>
@@ -4745,7 +4745,7 @@ async function cargarSponsor(){
   try {
     const { data, error } = await sb
       .from('patrocinadores')
-      .select('id, title, descripcion, url, orden, anunciante, imagen_url, imagen_movil_url, texto_boton, slot, categoria, ciudad, fecha_inicio, fecha_fin')
+      .select('id, title, descripcion, url, orden, anunciante, etiqueta, imagen_url, imagen_movil_url, texto_boton, slot, categoria, ciudad, fecha_inicio, fecha_fin')
       .eq('activo', true)
       .order('orden', { ascending: true });
     if(error) throw error;
