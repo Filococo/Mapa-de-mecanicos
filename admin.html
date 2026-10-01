@@ -919,8 +919,14 @@ async function alternarAnuncio(id, activar){
 
 async function borrarAnuncio(id){
   if(!confirm('¿Eliminar este anuncio y sus estadísticas? Esta acción no se puede deshacer.')) return;
+  // Se anotan las imágenes antes de borrar la fila, para no dejar archivos huérfanos en el almacenamiento
+  const { data: fila } = await sb.from('patrocinadores').select('imagen_url, imagen_movil_url').eq('id', id).maybeSingle();
   const { error } = await sb.from('patrocinadores').delete().eq('id', id);
   if(error){ alert('No se pudo eliminar: ' + error.message); return; }
+  const rutas = [fila?.imagen_url, fila?.imagen_movil_url]
+    .filter(u => u && u.includes('/publicidad/'))
+    .map(u => decodeURIComponent(u.split('/publicidad/')[1].split('?')[0]));
+  if(rutas.length){ try { await sb.storage.from('publicidad').remove(rutas); } catch(e){ console.warn('No se pudieron borrar las imágenes', e); } }
   cargarPublicidad();
 }
 
