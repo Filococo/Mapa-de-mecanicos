@@ -293,6 +293,13 @@ main{max-width:1200px;margin:0 auto;padding:20px 16px 100px;width:100%;}
 .ad-dot.on{background:var(--yellow);transform:scale(1.25);}
 .ad-anuncia{font-size:11px;color:var(--muted);text-align:right;margin-top:8px;}
 .ad-anuncia a{color:var(--dim);}
+.ad-propio.ad-banner-text{border-color:rgba(232,25,44,.55);background:linear-gradient(135deg,rgba(232,25,44,.34),rgba(232,25,44,.07) 62%,var(--black2));}
+.ad-propio.ad-banner-text:hover{box-shadow:0 0 0 2px rgba(232,25,44,.55), 0 10px 32px rgba(232,25,44,.18);}
+.ad-propio .ad-btn{background:var(--red);color:#fff;}
+.ad-propio .ad-tag{background:var(--red);border-color:var(--red);}
+.ad-benef{list-style:none;margin:14px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:8px 22px;}
+.ad-benef li{font-size:15px;color:var(--white);}
+.ad-benef li::before{content:'✓';color:#4ade80;font-weight:800;margin-right:8px;}
 .ad-strip{border-radius:12px;}
 .ad-strip img{aspect-ratio:10/1;}
 .ad-strip .ad-banner-text{min-height:96px;padding:28px 28px 20px;gap:18px;}
@@ -322,6 +329,8 @@ main{max-width:1200px;margin:0 auto;padding:20px 16px 100px;width:100%;}
   .ad-title{font-size:38px;}
   .ad-house .ad-title{font-size:42px;}
   .ad-desc{font-size:15px;}
+  .ad-benef{flex-direction:column;gap:6px;margin-top:10px;}
+  .ad-benef li{font-size:14px;}
   .ad-btn{width:100%;padding:15px 20px;}
   .ad-strip .ad-banner-text{min-height:0;padding:34px 16px 16px;}
   .ad-strip .ad-title{font-size:26px;}
@@ -4570,6 +4579,25 @@ function adUrl(u){
   try { const x = new URL(u, location.href); return (x.protocol === 'https:' || x.protocol === 'http:') ? x.href : '#'; }
   catch(e){ return '#'; }
 }
+// Avisos propios de PANNE: la URL puede ser una acción interna (#ubicacion, #soy-taller) en vez de un sitio externo.
+function adEsInterno(u){ return typeof u === 'string' && /^#[a-z-]+$/.test(u); }
+function adAccion(nombre){
+  if(nombre === '#ubicacion'){ if(typeof usarUbicacion === 'function') usarUbicacion(); }
+  else if(nombre === '#soy-taller'){ document.querySelector("[data-tab='perfil-mecanico']")?.click(); }
+}
+function adAtributos(s, slot){
+  const reg = `adRegistrar('${adEsc(s.id)}','clic','${slot}')`;
+  if(adEsInterno(s.url)) return `href="#" data-ad-id="${adEsc(s.id)}" onclick="${reg};adAccion('${adEsc(s.url)}');return false;"`;
+  return `href="${adEsc(adUrl(s.url))}" target="_blank" rel="noopener sponsored" data-ad-id="${adEsc(s.id)}" onclick="${reg}"`;
+}
+function adEsPropio(s){ return s.anunciante === 'PANNE'; }
+// Descripción: la primera línea es el texto principal; las siguientes son beneficios con visto bueno.
+function adDescripcionHTML(txt){
+  const lineas = String(txt || '').split('\n').map(l => l.trim()).filter(Boolean);
+  if(!lineas.length) return '';
+  const lista = lineas.slice(1).map(l => `<li>${adEsc(l.replace(/^✓\s*/, ''))}</li>`).join('');
+  return `<div class="ad-desc">${adEsc(lineas[0])}</div>` + (lista ? `<ul class="ad-benef">${lista}</ul>` : '');
+}
 function adVigente(s){
   const ahora = Date.now();
   if(s.fecha_inicio && new Date(s.fecha_inicio).getTime() > ahora) return false;
@@ -4623,29 +4651,35 @@ function adCasaHTML(){
     <div class="ad-anuncia">¿Quieres anunciar tu marca aquí? <a href="mailto:contacto@panne.cl?subject=Quiero%20anunciar%20en%20PANNE">Escríbenos</a></div>`;
 }
 function adBannerHTML(s, slot, extraClase){
-  const attrs = `href="${adEsc(adUrl(s.url))}" target="_blank" rel="noopener sponsored" data-ad-id="${adEsc(s.id)}" onclick="adRegistrar('${adEsc(s.id)}','clic','${slot}')"`;
-  const clase = 'ad-banner' + (extraClase ? ' ' + extraClase : '');
+  const attrs = adAtributos(s, slot);
+  const propio = adEsPropio(s);
+  const clase = 'ad-banner' + (extraClase ? ' ' + extraClase : '') + (propio ? ' ad-propio' : '');
+  const etiqueta = propio ? 'PANNE' : 'PUBLICIDAD';
   if(s.imagen_url){
     const mov = s.imagen_movil_url ? `<source media="(max-width:600px)" srcset="${adEsc(adUrl(s.imagen_movil_url))}">` : '';
-    return `<a class="${clase}" ${attrs} aria-label="${adEsc(s.title)}"><picture>${mov}<img src="${adEsc(adUrl(s.imagen_url))}" alt="${adEsc(s.title)}" loading="eager" decoding="async"></picture><span class="ad-tag">PUBLICIDAD</span></a>`;
+    return `<a class="${clase}" ${attrs} aria-label="${adEsc(s.title)}"><picture>${mov}<img src="${adEsc(adUrl(s.imagen_url))}" alt="${adEsc(s.title)}" loading="eager" decoding="async"></picture><span class="ad-tag">${etiqueta}</span></a>`;
   }
-  return `<a class="${clase} ad-banner-text" ${attrs}><span class="ad-tag">PUBLICIDAD</span><div class="ad-text"><div class="ad-title">${adEsc(s.title)}</div><div class="ad-desc">${adEsc(s.descripcion || '')}</div></div><span class="ad-btn">${adEsc(s.texto_boton || 'Ver más')} →</span></a>`;
+  return `<a class="${clase} ad-banner-text" ${attrs} aria-label="${adEsc(s.title)}"><span class="ad-tag">${etiqueta}</span><div class="ad-text"><div class="ad-title">${adEsc(s.title)}</div>${adDescripcionHTML(s.descripcion)}</div><span class="ad-btn">${adEsc(s.texto_boton || 'Ver más')} →</span></a>`;
 }
 function adTarjetaHTML(s){
-  const attrs = `href="${adEsc(adUrl(s.url))}" target="_blank" rel="noopener sponsored" data-ad-id="${adEsc(s.id)}" onclick="adRegistrar('${adEsc(s.id)}','clic','resultados')"`;
+  const attrs = adAtributos(s, 'resultados');
+  const propio = adEsPropio(s);
   const ini = (s.title || '?').split(' ').filter(Boolean).slice(0,2).map(w => w[0]).join('').toUpperCase();
   const portada = s.imagen_url
     ? `<img src="${adEsc(adUrl(s.imagen_url))}" alt="${adEsc(s.title)}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" loading="lazy">`
-    : `<div class="card-cover-pattern"></div><div class="card-cover-initial" style="font-size:64px;">${adEsc(ini)}</div>`;
+    : (propio
+        ? `<div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(232,25,44,.55),rgba(232,25,44,.12) 70%,#0e0e0e);display:flex;align-items:center;justify-content:center;"><img src="/logo-email.png" alt="PANNE" style="height:78%;max-height:170px;border-radius:50%;" loading="lazy"></div>`
+        : `<div class="card-cover-pattern"></div><div class="card-cover-initial" style="font-size:64px;">${adEsc(ini)}</div>`);
+  const cuerpo = String(s.descripcion || '').split('\n')[0];
   return `
     <a class="card ad-card" ${attrs}>
-      <div class="card-cover">${portada}<span class="ad-tag">PUBLICIDAD</span></div>
+      <div class="card-cover">${portada}<span class="ad-tag"${propio ? ' style="background:var(--red);border-color:var(--red);"' : ''}>${propio ? 'PANNE' : 'PUBLICIDAD'}</span></div>
       <div class="card-body">
         <div class="card-name" style="margin-bottom:6px;font-size:18px;">${adEsc(s.title)}</div>
-        <div class="rating-row"><span class="rating-count" style="color:var(--dim);">${adEsc(s.descripcion || '')}</span></div>
+        <div class="rating-row"><span class="rating-count" style="color:var(--dim);">${adEsc(cuerpo)}</span></div>
         <div class="card-footer">
-          <span class="price-txt">${adEsc(s.anunciante || 'Anunciante')}</span>
-          <span class="btn-card" style="background:var(--yellow);color:#0a0a0a;">${adEsc(s.texto_boton || 'Ver más')} →</span>
+          <span class="price-txt">${propio ? '' : adEsc(s.anunciante || 'Anunciante')}</span>
+          <span class="btn-card" style="background:${propio ? 'var(--red);color:#fff' : 'var(--yellow);color:#0a0a0a'};">${adEsc(s.texto_boton || 'Ver más')} →</span>
         </div>
       </div>
     </a>`;
