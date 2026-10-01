@@ -282,6 +282,12 @@ main{max-width:1200px;margin:0 auto;padding:20px 16px 100px;width:100%;}
 .ad-house .ad-title{font-size:64px;}
 .ad-house .ad-btn{background:var(--red);color:#fff;}
 .ad-house-kicker{font-family:'JetBrains Mono';font-size:11px;letter-spacing:2px;color:#ff6b78;margin-bottom:10px;}
+.ad-stage{position:relative;}
+.ad-arrow{position:absolute;top:50%;transform:translateY(-50%);width:46px;height:46px;border-radius:50%;border:1px solid rgba(255,255,255,.4);background:rgba(0,0,0,.55);color:#fff;font-size:28px;line-height:1;padding:0 0 3px;cursor:pointer;z-index:3;display:flex;align-items:center;justify-content:center;transition:background .2s,transform .15s;}
+.ad-arrow:hover{background:rgba(0,0,0,.85);transform:translateY(-50%) scale(1.08);}
+.ad-arrow:focus-visible{outline:2px solid var(--yellow);outline-offset:2px;}
+.ad-prev{left:14px;}
+.ad-next{right:14px;}
 .ad-dots{display:flex;justify-content:center;gap:8px;margin-top:12px;}
 .ad-dot{width:9px;height:9px;border-radius:50%;background:var(--border);border:none;padding:0;cursor:pointer;transition:background .2s,transform .2s;}
 .ad-dot.on{background:var(--yellow);transform:scale(1.25);}
@@ -308,6 +314,9 @@ main{max-width:1200px;margin:0 auto;padding:20px 16px 100px;width:100%;}
 @media(max-width:600px){
   .ad-banner img{aspect-ratio:4/3;}
   .ad-strip img{aspect-ratio:4/1;}
+  .ad-arrow{width:36px;height:36px;font-size:22px;}
+  .ad-prev{left:8px;}
+  .ad-next{right:8px;}
   .ad-banner-text,.ad-house{flex-direction:column;align-items:flex-start;gap:16px;padding:40px 20px 24px;min-height:260px;}
   .ad-house{padding-top:28px;}
   .ad-title{font-size:38px;}
@@ -4647,7 +4656,8 @@ function adPintarBanner(cont, k, conFade){
   const dibujar = () => {
     adIdx = ((k % n) + n) % n;
     const dots = n > 1 ? `<div class="ad-dots">${adLista.map((_, j) => `<button type="button" class="ad-dot${j === adIdx ? ' on' : ''}" aria-label="Anuncio ${j + 1} de ${n}" onclick="adIr(${j})"></button>`).join('')}</div>` : '';
-    cont.innerHTML = adBannerHTML(adLista[adIdx], 'banner') + dots;
+    const flechas = n > 1 ? `<button type="button" class="ad-arrow ad-prev" aria-label="Anuncio anterior" onclick="adIr(adIdx - 1)">&#8249;</button><button type="button" class="ad-arrow ad-next" aria-label="Anuncio siguiente" onclick="adIr(adIdx + 1)">&#8250;</button>` : '';
+    cont.innerHTML = `<div class="ad-stage">${adBannerHTML(adLista[adIdx], 'banner')}${flechas}</div>` + dots;
     const el = cont.querySelector('[data-ad-id]');
     if(el) adObservar(el, el.dataset.adId, 'banner');
   };
@@ -4674,6 +4684,8 @@ function adActualizarBanner(forzar){
   adPintarBanner(cont, 0, false);
   adIrFn = (j) => { adPintarBanner(cont, j, false); adReiniciarRotacion(cont); };
   adReiniciarRotacion(cont);
+  cont.onmouseenter = () => { if(adRotTimer){ clearInterval(adRotTimer); adRotTimer = null; } };
+  cont.onmouseleave = () => { if(adLista.length > 1 && adIrFn) adReiniciarRotacion(cont); };
   if(!adSwipeListo){
     adSwipeListo = true;
     let x0 = null;
