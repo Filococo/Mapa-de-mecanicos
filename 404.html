@@ -2651,6 +2651,16 @@ function clearAllFilters(){
   renderGrid();
 }
 
+// Ciudad aproximada del usuario: la del taller más cercano a su GPS (solo si aceptó compartir su ubicación)
+let ciudadUsuario = '';
+function calcularCiudadUsuario(){
+  if(!usingRealLocation) return;
+  let mejor = null;
+  mechanics.forEach(m => { if(m.city && m.dist != null && (!mejor || m.dist < mejor.dist)) mejor = m; });
+  // Solo se acepta si el taller más cercano está a menos de 25 km
+  ciudadUsuario = (mejor && mejor.dist <= 25) ? mejor.city : '';
+}
+
 const GRID_PAGE = 24;
 let gridLimit = GRID_PAGE;
 let gridSig = '';
@@ -3444,6 +3454,7 @@ function requestRealLocation(showAlerts){
       USER_LOCATION = { lat: position.coords.latitude, lng: position.coords.longitude };
       usingRealLocation = true;
       recalcDistances();
+      calcularCiudadUsuario();
       if (locLabel) locLabel.textContent = 'Tu ubicación actual'; const ls = document.getElementById('locStatus'); if(ls) ls.textContent = 'GPS activo';
 
       // Si el mapa ya fue inicializado, actualiza el marcador "tú estás aquí" y vuelve a centrar
@@ -4514,7 +4525,7 @@ function adVigente(s){
 }
 function adCoincide(s){
   const cat = (typeof currentFilter !== 'undefined' && currentFilter !== 'todos') ? currentFilter : null;
-  const ciudad = document.getElementById('cityFilter')?.value || '';
+  const ciudad = document.getElementById('cityFilter')?.value || ciudadUsuario || '';
   if(s.categoria && s.categoria !== cat) return false;
   if(s.ciudad && s.ciudad !== ciudad) return false;
   return true;
@@ -4528,7 +4539,7 @@ function adElegibles(slot){
 function adRegistrar(id, tipo, slot){
   try {
     sb.from('patrocinio_eventos')
-      .insert({ patrocinador_id: id, tipo, slot, ciudad: document.getElementById('cityFilter')?.value || null })
+      .insert({ patrocinador_id: id, tipo, slot, ciudad: document.getElementById('cityFilter')?.value || ciudadUsuario || null })
       .then(() => {}, () => {});
   } catch(e){}
 }
@@ -4589,7 +4600,7 @@ function adTarjetaHTML(s){
 function adActualizarBanner(forzar){
   const cont = document.getElementById('adBanner');
   if(!cont || !adListo) return;
-  const ctx = (typeof currentFilter !== 'undefined' ? currentFilter : 'todos') + '|' + (document.getElementById('cityFilter')?.value || '');
+  const ctx = (typeof currentFilter !== 'undefined' ? currentFilter : 'todos') + '|' + (document.getElementById('cityFilter')?.value || ciudadUsuario || '');
   if(!forzar && ctx === adCtxKey) return;
   adCtxKey = ctx;
   if(adRotTimer){ clearInterval(adRotTimer); adRotTimer = null; }
@@ -5102,15 +5113,6 @@ async function renderProBanner(){
       sub: mechanics.length.toLocaleString('es-CL') + ' talleres · ' + new Set(mechanics.map(m => m.city).filter(Boolean)).size + ' ciudades',
       color: 'linear-gradient(135deg, #1a0a0a, #3d0000)',
       btn: 'Registrar mi taller →',
-      accion: "document.querySelector('[data-tab=\'perfil-mecanico\']').click()"
-    },
-    {
-      tipo: 'promo',
-      titulo: '⭐ Inscripción PRO: $5.000 pago único',
-      texto: 'Aparece primero ante los clientes, con sello PRO y publicidad en nuestra pantalla principal. Sin mensualidades.',
-      sub: 'Pago único · Sin vencimiento',
-      color: 'linear-gradient(135deg, #1a1400, #3d2f00)',
-      btn: 'Inscribir mi taller →',
       accion: "document.querySelector('[data-tab=\'perfil-mecanico\']').click()"
     }
   );
