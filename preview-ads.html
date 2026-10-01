@@ -4562,7 +4562,7 @@ function adBannerHTML(s){
   const attrs = `href="${adEsc(adUrl(s.url))}" target="_blank" rel="noopener sponsored" data-ad-id="${adEsc(s.id)}" onclick="adRegistrar('${adEsc(s.id)}','clic','banner')"`;
   if(s.imagen_url){
     const mov = s.imagen_movil_url ? `<source media="(max-width:600px)" srcset="${adEsc(adUrl(s.imagen_movil_url))}">` : '';
-    return `<a class="ad-banner" ${attrs} aria-label="${adEsc(s.title)}"><picture>${mov}<img src="${adEsc(adUrl(s.imagen_url))}" alt="${adEsc(s.title)}" loading="lazy"></picture><span class="ad-tag">PUBLICIDAD</span></a>`;
+    return `<a class="ad-banner" ${attrs} aria-label="${adEsc(s.title)}"><picture>${mov}<img src="${adEsc(adUrl(s.imagen_url))}" alt="${adEsc(s.title)}" loading="eager" decoding="async"></picture><span class="ad-tag">PUBLICIDAD</span></a>`;
   }
   return `<a class="ad-banner ad-banner-text" ${attrs}><span class="ad-tag">PUBLICIDAD</span><div class="ad-text"><div class="ad-title">${adEsc(s.title)}</div><div class="ad-desc">${adEsc(s.descripcion || '')}</div></div><span class="ad-btn">${adEsc(s.texto_boton || 'Ver más')} →</span></a>`;
 }
@@ -4595,6 +4595,8 @@ function adActualizarBanner(forzar){
   if(adRotTimer){ clearInterval(adRotTimer); adRotTimer = null; }
   const lista = adElegibles('banner');
   if(!lista.length){ cont.innerHTML = adCasaHTML(); return; }
+  // Precarga las imágenes para que la rotación no deje el banner en blanco
+  lista.forEach(x => { if(x.imagen_url){ const pre = new Image(); pre.src = adUrl(x.imagen_url); if(x.imagen_movil_url){ const pre2 = new Image(); pre2.src = adUrl(x.imagen_movil_url); } } });
   let i = 0;
   const pintar = () => {
     cont.innerHTML = adBannerHTML(lista[i]);
