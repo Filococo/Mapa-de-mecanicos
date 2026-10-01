@@ -4591,9 +4591,15 @@ function adAtributos(s, slot){
   return `href="${adEsc(adUrl(s.url))}" target="_blank" rel="noopener sponsored" data-ad-id="${adEsc(s.id)}" onclick="${reg}"`;
 }
 function adEsPropio(s){ return s.anunciante === 'PANNE'; }
+// Reemplaza {talleres} y {ciudades} por las mismas cifras que muestra la portada.
+function adReemplazar(txt){
+  const t = PANNE_STATS ? PANNE_STATS.talleres : mechanics.length;
+  const c = PANNE_STATS ? PANNE_STATS.ciudades : new Set(mechanics.map(m => m.city).filter(Boolean)).size;
+  return String(txt == null ? '' : txt).replace(/\{talleres\}/g, t.toLocaleString('es-CL')).replace(/\{ciudades\}/g, c.toLocaleString('es-CL') + '+');
+}
 // Descripción: la primera línea es el texto principal; las siguientes son beneficios con visto bueno.
 function adDescripcionHTML(txt){
-  const lineas = String(txt || '').split('\n').map(l => l.trim()).filter(Boolean);
+  const lineas = adReemplazar(txt).split('\n').map(l => l.trim()).filter(Boolean);
   if(!lineas.length) return '';
   const lista = lineas.slice(1).map(l => `<li>${adEsc(l.replace(/^✓\s*/, ''))}</li>`).join('');
   return `<div class="ad-desc">${adEsc(lineas[0])}</div>` + (lista ? `<ul class="ad-benef">${lista}</ul>` : '');
@@ -4670,7 +4676,7 @@ function adTarjetaHTML(s){
     : (propio
         ? `<div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(232,25,44,.55),rgba(232,25,44,.12) 70%,#0e0e0e);display:flex;align-items:center;justify-content:center;"><img src="/logo-email.png" alt="PANNE" style="height:78%;max-height:170px;border-radius:50%;" loading="lazy"></div>`
         : `<div class="card-cover-pattern"></div><div class="card-cover-initial" style="font-size:64px;">${adEsc(ini)}</div>`);
-  const cuerpo = String(s.descripcion || '').split('\n')[0];
+  const cuerpo = adReemplazar(s.descripcion).split('\n')[0];
   return `
     <a class="card ad-card" ${attrs}>
       <div class="card-cover">${portada}<span class="ad-tag"${propio ? ' style="background:var(--red);border-color:var(--red);"' : ''}>${propio ? 'PANNE' : adEsc(String(s.etiqueta || 'PUBLICIDAD').toUpperCase())}</span></div>
@@ -5195,6 +5201,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 /* ===== CONTADORES DINÁMICOS HERO ===== */
+let PANNE_STATS = null;
 async function cargarEstadisticasHero(){
   try {
     // Traer stats reales desde RPC (sin límites)
@@ -5205,6 +5212,9 @@ async function cargarEstadisticasHero(){
       const heroTalleres = document.getElementById('heroTalleres');
       if(heroCiudades) heroCiudades.textContent = Number(statData.ciudades).toLocaleString('es-CL') + '+';
       if(heroTalleres) heroTalleres.textContent = Number(statData.talleres).toLocaleString('es-CL');
+      // Las mismas cifras se usan en los avisos de la portada ({talleres} y {ciudades}) para que siempre coincidan
+      PANNE_STATS = { talleres: Number(statData.talleres), ciudades: Number(statData.ciudades) };
+      if(typeof adListo !== 'undefined' && adListo) adActualizarBanner(true);
     }
   } catch(e) {
     console.log('Stats hero error:', e.message);
