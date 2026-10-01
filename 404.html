@@ -2463,26 +2463,34 @@ async function loadMechanicsFromSupabase(){
     // más alto pedido desde el cliente. Sin paginar, solo cargaban los primeros
     // 1000 talleres y el resto no se podía abrir ni encontrar en el directorio.
     const PAGE_SIZE = 1000;
-    let mecanicosData = [];
-    let pagina = 0;
-    while(true){
-      const desde = pagina * PAGE_SIZE;
-      const hasta = desde + PAGE_SIZE - 1;
-      const { data: pageData, error } = await sb
-        .from('mecanicos')
-        .select('id, name, address, city, phone, lat, lng, spec, rating, review_count, sells_parts, trial_ends_at, cover_url, avatar_url, whatsapp, es_pro, oferta_texto, email, claimed_at')
+    const COLS = 'id, name, address, city, phone, lat, lng, spec, rating, review_count, sells_parts, trial_ends_at, cover_url, avatar_url, whatsapp, es_pro, oferta_texto, email, claimed_at';
+    const pedirPagina = (n, conteo) => {
+      let q = sb.from('mecanicos').select(COLS, conteo ? { count: 'exact' } : undefined)
         .order('es_pro', {ascending: false}).order('name', {ascending: true})
-        .range(desde, hasta);
-
-      if(error){
-        console.error('Supabase error:', error.message);
-        showGridError('Error de conexión: ' + error.message);
-        return;
+        .order('id', {ascending: true}) // desempate: evita filas repetidas/omitidas entre páginas
+        .range(n * PAGE_SIZE, n * PAGE_SIZE + PAGE_SIZE - 1);
+      return q;
+    };
+    // Página 1 con el total; el resto de las páginas se piden en paralelo (mucho más rápido que una por una)
+    const primera = await pedirPagina(0, true);
+    if(primera.error){
+      console.error('Supabase error:', primera.error.message);
+      showGridError('Error de conexión: ' + primera.error.message);
+      return;
+    }
+    let mecanicosData = primera.data || [];
+    const totalFilas = primera.count || mecanicosData.length;
+    const totalPaginas = Math.min(Math.ceil(totalFilas / PAGE_SIZE), 21); // salvavidas: máx. ~21.000 filas
+    if(totalPaginas > 1){
+      const resto = await Promise.all(Array.from({length: totalPaginas - 1}, (_, i) => pedirPagina(i + 1, false)));
+      for(const r of resto){
+        if(r.error){
+          console.error('Supabase error:', r.error.message);
+          showGridError('Error de conexión: ' + r.error.message);
+          return;
+        }
+        mecanicosData = mecanicosData.concat(r.data || []);
       }
-      mecanicosData = mecanicosData.concat(pageData || []);
-      if(!pageData || pageData.length < PAGE_SIZE) break; // última página
-      pagina++;
-      if(pagina > 20) break; // salvavidas: no más de 20.000 filas
     }
 
     if(!mecanicosData || mecanicosData.length === 0){
@@ -4215,49 +4223,20 @@ async function guardarFicha() {
 }
 
 /* ====================== INIT ====================== */
-// Fetch directo sin función intermedia
-sb.from('mecanicos')
-  .select('id, name, address, city, phone, lat, lng, spec, rating, review_count, sells_parts, trial_ends_at, cover_url, avatar_url, whatsapp, es_pro, oferta_texto, email, claimed_at')
-  .order('es_pro', {ascending: false}).order('name', {ascending: true})
-  .limit(8000)
-  .then(({ data, error }) => {
-    if(error){ console.error('INIT error:', error.message); return; }
-    if(!data || data.length === 0){ console.warn('INIT: sin datos'); return; }
-    mechanics = data.map(m => ({
-      id: m.id,
-      name: m.name || 'Sin nombre',
-      initials: (m.name||'').split(' ').filter(Boolean).slice(0,2).map(w=>w[0]).join('').toUpperCase()||'?',
-      spec: m.spec || 'Mecánica General',
-      dist: (m.lat && m.lng && USER_LOCATION) ? haversineKm(USER_LOCATION.lat, USER_LOCATION.lng, m.lat, m.lng) : null,
-      lat: m.lat || null, lng: m.lng || null,
-      rating: m.rating || 0, reviews: m.review_count || 0,
-      parts: !!m.sells_parts, priceFrom: null, status: 'open',
-      address: m.address || '', city: m.city || '', phone: m.phone || null,
-      years: 0, tags: [], services: [], partsNote: '', reviews_list: [],
-      cover_url: m.cover_url || null,
-      avatar_url: m.avatar_url || null,
-      whatsapp: m.whatsapp || null,
-      es_pro: m.es_pro === true || m.es_pro === 'true' || m.es_pro === 1,
-      claimed: !!m.claimed_at,
-      oferta_texto: m.oferta_texto || null
-    }));
-    console.log('INIT: ' + mechanics.length + ' negocios');
-    populateCityFilter();
-    renderGrid();
-    renderMapList();
-    renderProBanner();
-    cargarEstadisticasHero();
-    // heroTalleres se actualiza via panne_stats RPC
+// Carga inicial: usa el cargador paginado (todas las filas, no solo las primeras 1000) y deja
+// funcionando patrocinadores, favoritos, reseñas y estadísticas, que se inicializan dentro de él.
+(async () => {
+  await loadMechanicsFromSupabase();
 
-    // Deep link: si la URL apunta directo a /taller/{id}/..., abrir esa ficha
-    const tallerMatch = window.location.pathname.match(/^\/taller\/([a-f0-9-]{36})/i);
-    if(tallerMatch){
-      const idFromUrl = tallerMatch[1];
-      if(mechanics.find(x => x.id === idFromUrl)){
-        openProfile(idFromUrl);
-      }
+  // Deep link: si la URL apunta directo a /taller/{id}/..., abrir esa ficha
+  const tallerMatch = window.location.pathname.match(/^\/taller\/([a-f0-9-]{36})/i);
+  if(tallerMatch){
+    const idFromUrl = tallerMatch[1];
+    if(mechanics.find(x => x.id === idFromUrl)){
+      openProfile(idFromUrl);
     }
-  });
+  }
+})();
 refreshSession();
 
 // ===== LIGHTBOX =====
