@@ -1510,30 +1510,18 @@ footer{
         <h1 class="bebas">Suma tu taller<br>a <span>PANNE</span></h1>
         <p>Llega a miles de conductores en toda Chile que buscan un taller de confianza. Crea tu ficha, recibe calificaciones verificadas y aparece en el mapa.</p>
         <div class="pricing-cards">
-          <div class="pricing-card">
+          <div class="pricing-card" style="max-width:220px;">
             <div class="pricing-label" style="margin-top:0;margin-bottom:6px;">GRATIS</div>
-            <div class="pricing-price" style="font-size:28px;">30 días</div>
-            <div class="pricing-label">Prueba sin compromiso</div>
+            <div class="pricing-price" style="font-size:28px;">Tu ficha</div>
+            <div class="pricing-label">Aparece en el directorio</div>
             <div class="pricing-desc">Sin tarjeta de crédito.<br>Sin permanencia.</div>
           </div>
-          <div class="pricing-card">
-            <div class="pricing-label" style="margin-top:0;margin-bottom:6px;">MENSUAL</div>
-            <div class="pricing-price">$9.990</div>
-            <div class="pricing-label">/mes</div>
-            <div class="pricing-desc">Cancela cuando quieras.<br>Sin compromiso.</div>
-          </div>
-          <div class="pricing-card">
-            <div class="pricing-label" style="margin-top:0;margin-bottom:6px;">SEMESTRAL</div>
-            <div class="pricing-price">$49.990</div>
-            <div class="pricing-label">/6 meses</div>
-            <div class="pricing-desc">Ahorras $9.950.<br>Equiv. $8.332/mes.</div>
-          </div>
-          <div class="pricing-card featured" style="position:relative;">
-            <div style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--red);color:#fff;font-size:9px;font-weight:700;padding:2px 10px;border-radius:20px;white-space:nowrap;letter-spacing:1px;">MEJOR VALOR</div>
-            <div class="pricing-label" style="margin-top:0;margin-bottom:6px;">ANUAL</div>
-            <div class="pricing-price">$89.990</div>
-            <div class="pricing-label">/año</div>
-            <div class="pricing-desc">Ahorras $29.890.<br>Equiv. $7.499/mes.</div>
+          <div class="pricing-card featured" style="position:relative;max-width:260px;">
+            <div style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--red);color:#fff;font-size:9px;font-weight:700;padding:2px 10px;border-radius:20px;white-space:nowrap;letter-spacing:1px;">PAGO ÚNICO</div>
+            <div class="pricing-label" style="margin-top:0;margin-bottom:6px;">INSCRIPCIÓN PRO</div>
+            <div class="pricing-price">$5.000</div>
+            <div class="pricing-label">una sola vez</div>
+            <div class="pricing-desc">Sello PRO, prioridad en las búsquedas y publicidad en nuestra pantalla principal.<br>Sin mensualidades.</div>
           </div>
         </div>
         <button class="btn-next" style="max-width:280px;margin:0 auto;display:block;" onclick="startMecanicoFlow()">Crear mi ficha gratis →</button>
@@ -1614,49 +1602,23 @@ footer{
         </div>
 
         <div class="form-step hidden" id="step-4">
-          <div class="form-section-title">Elige tu plan</div>
-          <div class="form-section-sub">Los primeros 30 días son siempre gratis. Sin tarjeta de crédito.</div>
+          <div class="form-section-title">Inscripción PRO</div>
+          <div class="form-section-sub">Tu ficha es gratis. Para aparecer primero y con sello PRO, inscríbete con un pago único de $5.000 (sin mensualidades).</div>
 
           <div style="display:grid;gap:10px;margin:16px 0;">
-            <!-- Plan gratis -->
             <label style="cursor:pointer;">
-              <input type="radio" name="planElegido" value="mensual" style="display:none;" checked>
-              <div class="plan-option" data-plan="mensual" onclick="selectPlanForm('mensual')" style="border:2px solid var(--red);border-radius:10px;padding:14px;display:flex;align-items:center;gap:12px;background:rgba(232,25,44,.06);">
+              <input type="radio" name="planElegido" value="inscripcion" style="display:none;" checked>
+              <div class="plan-option" data-plan="inscripcion" onclick="selectPlanForm('inscripcion')" style="border:2px solid var(--red);border-radius:10px;padding:14px;display:flex;align-items:center;gap:12px;background:rgba(232,25,44,.06);">
                 <div style="width:18px;height:18px;border-radius:50%;background:var(--red);border:2px solid var(--red);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><div style="width:8px;height:8px;border-radius:50%;background:#fff;"></div></div>
                 <div style="flex:1;">
-                  <div style="font-weight:700;font-size:13px;color:var(--white);">Plan Mensual — <span style="color:var(--red);">$9.990/mes</span></div>
-                  <div style="font-size:11px;color:var(--muted);margin-top:2px;">30 días gratis · Sin permanencia · Cancela cuando quieras</div>
+                  <div style="font-weight:700;font-size:13px;color:var(--white);">Inscripción PRO — <span style="color:var(--red);">$5.000 pago único</span></div>
+                  <div style="font-size:11px;color:var(--muted);margin-top:2px;">Sello PRO · Prioridad en búsquedas · Publicidad en pantalla principal · Sin vencimiento</div>
                 </div>
-              </div>
-            </label>
-
-            <label style="cursor:pointer;">
-              <input type="radio" name="planElegido" value="semestral" style="display:none;">
-              <div class="plan-option" data-plan="semestral" onclick="selectPlanForm('semestral')" style="border:1px solid var(--border);border-radius:10px;padding:14px;display:flex;align-items:center;gap:12px;">
-                <div style="width:18px;height:18px;border-radius:50%;border:2px solid var(--border);flex-shrink:0;" id="radio-semestral"></div>
-                <div style="flex:1;">
-                  <div style="font-weight:700;font-size:13px;color:var(--white);">Plan Semestral — <span style="color:var(--red);">$49.990</span></div>
-                  <div style="font-size:11px;color:var(--muted);margin-top:2px;">30 días gratis · Equiv. $8.332/mes · Ahorras $9.950</div>
-                </div>
-                <div style="background:var(--black3);border-radius:6px;padding:3px 8px;font-size:9px;color:var(--muted);">-17%</div>
-              </div>
-            </label>
-
-            <label style="cursor:pointer;">
-              <input type="radio" name="planElegido" value="anual" style="display:none;">
-              <div class="plan-option" data-plan="anual" onclick="selectPlanForm('anual')" style="border:1px solid var(--border);border-radius:10px;padding:14px;display:flex;align-items:center;gap:12px;position:relative;">
-                <div style="position:absolute;top:-9px;right:12px;background:var(--red);color:#fff;font-size:9px;font-weight:700;padding:2px 8px;border-radius:20px;">MEJOR VALOR</div>
-                <div style="width:18px;height:18px;border-radius:50%;border:2px solid var(--border);flex-shrink:0;" id="radio-anual"></div>
-                <div style="flex:1;">
-                  <div style="font-weight:700;font-size:13px;color:var(--white);">Plan Anual — <span style="color:var(--red);">$89.990</span></div>
-                  <div style="font-size:11px;color:var(--muted);margin-top:2px;">30 días gratis · Equiv. $7.499/mes · Ahorras $29.890</div>
-                </div>
-                <div style="background:rgba(232,25,44,.15);border-radius:6px;padding:3px 8px;font-size:9px;color:var(--red);">-25%</div>
               </div>
             </label>
           </div>
 
-          <div style="font-size:11px;color:var(--muted);text-align:center;">🔒 Pago seguro con Mercado Pago · Solo se cobra después del período de prueba</div>
+          <div style="font-size:11px;color:var(--muted);text-align:center;">🔒 Pago seguro con Mercado Pago · Podrás pagar desde tu panel cuando quieras</div>
 
           <div class="form-section-title" style="margin-top:20px;">Fotos <span style="font-size:11px;font-family:'Inter';color:var(--muted);font-weight:400;">(opcional)</span></div>
           <div class="form-section-sub">Sube fotos de tu taller para generar confianza (máx. 6)</div>
@@ -1675,7 +1637,7 @@ footer{
       <div class="success-box">
         <div class="success-icon">✓</div>
         <h2>¡Ficha creada!</h2>
-        <p>Tu taller ya está en PANNE. Los primeros 30 días son gratis — sin tarjeta, sin permanencia.</p>
+        <p>Tu taller ya está en PANNE. Activa tu Inscripción PRO por $5.000 (pago único) desde tu panel para aparecer primero en las búsquedas.</p>
         <div class="success-summary" id="successSummary"></div>
       </div>
     </div>
@@ -1895,7 +1857,7 @@ footer{
         </label>
         <div class="auth-error" id="authError"></div>
         <button type="button" class="btn-auth" id="authSubmit">Iniciar sesión</button>
-        <div class="trial-note hidden" id="authTrialNote">✓ 30 días de prueba gratis al registrarte como taller</div>
+        <div class="trial-note hidden" id="authTrialNote">✓ Ficha gratis · Inscripción PRO por solo $5.000 (pago único)</div>
       </div>
     </div>
   </div>
@@ -2321,14 +2283,7 @@ document.getElementById('claimSubmit')?.addEventListener('click', async () => {
   currentUserRole = 'mecanico';
   closeClaimModal();
 
-  // Intentar activar la promo 50% (primeros 100 talleres) — si no hay cupo, sigue normal sin error visible
-  let mensajeExito = '¡Listo! Tomaste el control de tu taller en PANNE. Ya puedes editar tu ficha, subir fotos y responder reseñas.';
-  try {
-    const { data: promoData } = await sb.rpc('activar_promo_50', { p_mecanico_id: claimTallerId });
-    if(promoData?.activada && !promoData?.ya_tenia){
-      mensajeExito += '\n\n🔥 Además, quedaste dentro de los primeros 100 talleres: tienes 50% de descuento en el Plan Mensual PRO por los próximos 3 meses ($4.995/mes en vez de $9.990).';
-    }
-  } catch(e){ console.warn('No se pudo evaluar promo', e); }
+  let mensajeExito = '¡Listo! Tomaste el control de tu taller en PANNE. Ya puedes editar tu ficha, subir fotos y responder reseñas. Activa tu Inscripción PRO ($5.000 pago único) desde tu panel para aparecer primero.';
 
   if(window.panneRefCode){
     try { await sb.rpc('vincular_referido', { p_mecanico_id: claimTallerId, p_codigo: window.panneRefCode }); }
@@ -2437,7 +2392,7 @@ document.getElementById('authSubmit')?.addEventListener('click', async () => {
 
     if(authSelectedRole === 'mecanico'){
       // El trigger on_auth_user_created maneja la inserción en mecanicos
-      alert('Cuenta creada. Ahora puedes completar tu ficha de mecánico — tienes 30 días de prueba gratis.');
+      alert('Cuenta creada. Ahora puedes completar tu ficha de mecánico. Después activa tu Inscripción PRO por $5.000 (pago único).');
       document.querySelector('[data-tab="perfil-mecanico"]').click();
       setTimeout(mostrarPanelMecanico, 100);
     }
@@ -3515,7 +3470,7 @@ function showStep(n){
   document.getElementById('f-next').textContent = n === totalSteps ? 'Crear mi ficha ✓' : 'Siguiente →';
   currentStep = n;
   // Al llegar al paso 4, inicializar selección de plan
-  if(n === 4) setTimeout(() => selectPlanForm(planSeleccionado || 'mensual'), 100);
+  if(n === 4) setTimeout(() => selectPlanForm(planSeleccionado || 'inscripcion'), 100);
 }
 
 function validateStep(n){
@@ -3675,12 +3630,6 @@ async function submitMecanicoForm(){
     await sb.from('servicios').insert(servicesPayload);
   }
 
-  // 3. Intentar activar promo 50% (primeros 100 talleres registrados)
-  let promoActivadaRegistro = false;
-  try {
-    const { data: promoData } = await sb.rpc('activar_promo_50', { p_mecanico_id: currentSession.user.id });
-    promoActivadaRegistro = !!(promoData?.activada && !promoData?.ya_tenia);
-  } catch(e){ console.warn('No se pudo evaluar promo', e); }
 
   if(window.panneRefCode){
     try { await sb.rpc('vincular_referido', { p_mecanico_id: currentSession.user.id, p_codigo: window.panneRefCode }); }
@@ -3691,19 +3640,16 @@ async function submitMecanicoForm(){
   submitBtn.textContent = 'Crear mi ficha ✓';
 
   const summary = document.getElementById('successSummary');
-  const trialEnd = new Date();
-  trialEnd.setDate(trialEnd.getDate() + 30);
   summary.innerHTML = `
     <div style="font-family:'Archivo Black'; font-size:15px; margin-bottom:10px;">${name}</div>
     <div style="font-family:'JetBrains Mono'; font-size:11px; color:var(--safety-orange); margin-bottom:10px;">${spec.toUpperCase()} · ${years} AÑOS</div>
     <div><b>Teléfono:</b> ${phone}</div>
     <div><b>Dirección:</b> ${address}</div>
-    ${promoActivadaRegistro ? `<div style="margin-top:10px;padding:10px 12px;background:rgba(255,214,0,.1);border:1px solid rgba(255,214,0,.4);border-radius:8px;color:#FFD600;font-weight:700;font-size:12px;">🔥 ¡Quedaste dentro de los primeros 100! 50% de descuento en el Plan Mensual PRO por 3 meses ($4.995/mes).</div>` : ''}
     <div><b>Ubicación GPS:</b> ${formTallerLocation ? 'capturada ✓' : 'no capturada'}</div>
     <div style="margin-top:8px;"><b>Servicios:</b><br>${services.length ? services.map(s=>`${s.name}: ${s.price}`).join('<br>') : 'No se agregaron servicios'}</div>
     <div style="margin-top:8px;"><b>Vende repuestos:</b> ${sellsParts ? 'Sí' : 'No'}${partsNote ? ' — ' + partsNote : ''}</div>
     <div style="margin-top:14px; padding-top:14px; border-top:1px dashed var(--line-light); color:var(--ok-green); font-weight:700;">
-      ✓ Guardado en la base de datos real. Prueba gratis activa hasta ${trialEnd.toLocaleDateString('es-CL')}.
+      ✓ Guardado en la base de datos real. Tu ficha ya es visible en PANNE.
     </div>
   `;
 
@@ -3824,47 +3770,26 @@ async function mostrarPanelMecanico() {
       }
     }
 
-    // Trial / suscripción
+    // Inscripción PRO (pago único)
     const trialEl = document.getElementById('panelTrial');
     const suscEl = document.getElementById('panelSuscripcionInfo');
-    if(mec.trial_ends_at) {
-      const trialEnd = new Date(mec.trial_ends_at);
-      const hoy = new Date();
-      const diasRestantes = Math.ceil((trialEnd - hoy) / (1000 * 60 * 60 * 24));
-      const pct = Math.max(0, Math.min(100, (diasRestantes / 30) * 100));
-
-      if(diasRestantes > 0) {
-        // Color según urgencia
-        const color = diasRestantes > 10 ? 'var(--ok-green)' : diasRestantes > 5 ? '#f59e0b' : 'var(--red)';
-        const emoji = diasRestantes > 10 ? '✓' : diasRestantes > 5 ? '⚡' : '⚠';
-
-        trialEl.innerHTML = `${diasRestantes} día${diasRestantes !== 1 ? 's' : ''} gratis`;
-        trialEl.style.background = diasRestantes > 10 ? 'var(--red)' : diasRestantes > 5 ? '#f59e0b' : '#b91c1c';
-
-        suscEl.innerHTML = `
-          <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-              <div style="font-weight:700;color:${color};font-size:15px;">${emoji} Prueba gratuita activa</div>
-              <div style="font-family:'Bebas Neue';font-size:28px;color:${color};line-height:1;">${diasRestantes}<span style="font-size:13px;font-family:'Inter';color:var(--muted);margin-left:4px;">días</span></div>
-            </div>
-            <div style="background:var(--black3);border-radius:4px;height:6px;margin-bottom:12px;overflow:hidden;">
-              <div style="height:100%;width:${pct}%;background:${color};border-radius:4px;transition:width .5s;"></div>
-            </div>
-            <div style="font-size:12px;color:var(--muted);margin-bottom:16px;">Tu prueba vence el <b style="color:var(--dim);">${trialEnd.toLocaleDateString('es-CL', {day:'numeric',month:'long',year:'numeric'})}</b>. Al vencer, tu perfil se pausará hasta que actives un plan.</div>
-            <div style="font-size:12px;color:var(--muted);">¿Listo para seguir? Elige tu plan:</div>
-            ${renderPlanes(false, mec)}
-          </div>`;
-      } else {
-        trialEl.innerHTML = 'Prueba vencida';
-        trialEl.style.background = '#555';
-
-        suscEl.innerHTML = `
-          <div style="background:var(--card);border:1px solid rgba(232,25,44,.3);border-radius:12px;padding:20px;">
-            <div style="font-weight:700;color:var(--red);font-size:15px;margin-bottom:8px;">⚠ Período de prueba vencido</div>
-            <div style="font-size:13px;color:var(--muted);margin-bottom:20px;">Tu perfil está pausado y no aparece en el directorio. Activa un plan para volver a figurar.</div>
-            ${renderPlanes(true, mec)}
-          </div>`;
-      }
+    if(mec.es_pro) {
+      trialEl.innerHTML = '⭐ PRO activo';
+      trialEl.style.background = 'var(--ok-green)';
+      suscEl.innerHTML = `
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;">
+          <div style="font-weight:700;color:var(--ok-green);font-size:15px;margin-bottom:8px;">✓ Inscripción PRO activa</div>
+          <div style="font-size:13px;color:var(--muted);line-height:1.6;">Pago único realizado. Sin vencimiento ni mensualidades. Tu taller tiene sello PRO, prioridad en las búsquedas y aparece en la pantalla principal.</div>
+        </div>`;
+    } else {
+      trialEl.innerHTML = 'Ficha gratuita';
+      trialEl.style.background = '#555';
+      suscEl.innerHTML = `
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;">
+          <div style="font-weight:700;color:#FFD600;font-size:15px;margin-bottom:8px;">⭐ Inscríbete como taller PRO</div>
+          <div style="font-size:13px;color:var(--muted);margin-bottom:4px;">Tu ficha ya es visible en el directorio. Con un pago único apareces primero en las búsquedas, con sello PRO y publicidad en nuestra pantalla principal.</div>
+          ${renderPlanes(true, mec)}
+        </div>`;
     }
 
     // Stats — reseñas y rating
@@ -3920,55 +3845,26 @@ document.querySelectorAll('.panel-tab').forEach(btn => {
 
 /* ====================== FOTOS DEL PANEL ====================== */
 function renderPlanes(destacar, mec) {
-  const tienePromo = mec?.promo50_hasta && new Date(mec.promo50_hasta) > new Date();
-  const planes = [
-    { id:'mensual', label:'Mensual', precio: tienePromo ? '$4.995' : '$9.990', precioTachado: tienePromo ? '$9.990' : null, periodo:'/mes', ahorro: tienePromo ? '🔥 50% OFF (promo 3 meses)' : '', desc:'Sin compromiso. Cancela cuando quieras.' },
-    { id:'semestral', label:'Semestral', precio:'$49.990', periodo:'/6 meses', ahorro:'Ahorras $9.950', desc:'Equivale a $8.332/mes.' },
-    { id:'anual', label:'Anual', precio:'$89.990', periodo:'/año', ahorro:'Ahorras $29.890', desc:'Equivale a $7.499/mes. El mejor valor.' },
-  ];
   return `
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px;">
-      ${planes.map((p,i) => `
-        <div style="border:${i===2?'2px solid var(--red)':(p.precioTachado?'2px solid #FFD600':'1px solid var(--border)')};border-radius:10px;padding:14px;text-align:center;position:relative;background:${i===2?'rgba(232,25,44,.06)':(p.precioTachado?'rgba(255,214,0,.06)':'var(--black3)')};">
-          ${i===2 ? '<div style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;white-space:nowrap;">MEJOR VALOR</div>' : ''}
-          ${p.precioTachado ? '<div style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:#FFD600;color:#0a0a0a;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;white-space:nowrap;">50% OFF</div>' : ''}
-          <div style="font-family:\'Bebas Neue\';font-size:13px;color:var(--muted);letter-spacing:1px;margin-bottom:6px;">${p.label}</div>
-          ${p.precioTachado ? `<div style="font-size:12px;color:var(--muted);text-decoration:line-through;">${p.precioTachado}</div>` : ''}
-          <div style="font-family:\'Bebas Neue\';font-size:24px;color:${p.precioTachado?'#FFD600':'#fff'};line-height:1;">${p.precio}</div>
-          <div style="font-size:10px;color:var(--muted);margin-bottom:6px;">${p.periodo}</div>
-          ${p.ahorro ? `<div style="font-size:10px;color:${p.precioTachado?'#FFD600':'var(--ok-green)'};margin-bottom:8px;">${p.ahorro}</div>` : '<div style="margin-bottom:18px;"></div>'}
-          <button onclick="iniciarPago('${p.id}')" style="width:100%;background:${i===2?'var(--red)':(p.precioTachado?'#FFD600':'var(--card)')};color:${p.precioTachado?'#0a0a0a':'#fff'};border:${i===2||p.precioTachado?'none':'1px solid var(--border)'};border-radius:8px;padding:8px 0;font-size:12px;font-weight:600;cursor:pointer;">
-            Contratar
-          </button>
-        </div>
-      `).join('')}
+    <div style="border:2px solid var(--red);border-radius:10px;padding:16px;text-align:center;background:rgba(232,25,44,.06);margin:14px auto 0;max-width:320px;">
+      <div style="font-family:'Bebas Neue';font-size:13px;color:var(--muted);letter-spacing:1px;margin-bottom:6px;">INSCRIPCIÓN PRO</div>
+      <div style="font-family:'Bebas Neue';font-size:34px;color:#fff;line-height:1;">$5.000</div>
+      <div style="font-size:10px;color:var(--muted);margin-bottom:10px;">pago único · sin vencimiento</div>
+      <div style="font-size:11px;color:var(--dim);line-height:1.7;margin-bottom:12px;">✅ Sello PRO ⭐<br>✅ Prioridad en las búsquedas<br>✅ Publicidad en la pantalla principal<br>✅ Contacto visible para todos</div>
+      <button onclick="iniciarPago('inscripcion')" style="width:100%;background:var(--red);color:#fff;border:none;border-radius:8px;padding:10px 0;font-size:13px;font-weight:700;cursor:pointer;">Inscribirme por $5.000</button>
     </div>
-    <p style="font-size:11px;color:var(--muted);margin-top:12px;text-align:center;">Pago seguro con Mercado Pago · Sin permanencia en plan mensual</p>
+    <p style="font-size:11px;color:var(--muted);margin-top:12px;text-align:center;">Pago seguro con Mercado Pago · Pago único, sin mensualidades</p>
   `;
 }
 
-async function iniciarPago(plan) {
-  const uidPromo = currentSession?.user?.id;
-  let precioMostrar = {
-    mensual:   '$9.990/mes',
-    semestral: '$49.990 por 6 meses',
-    anual:     '$89.990 por 1 año'
-  };
-  if(plan === 'mensual' && uidPromo){
-    const { data: mecPromo } = await sb.from('mecanicos').select('promo50_hasta').eq('id', uidPromo).maybeSingle();
-    if(mecPromo?.promo50_hasta && new Date(mecPromo.promo50_hasta) > new Date()){
-      precioMostrar.mensual = '$4.995/mes (50% OFF promo)';
-    }
-  }
-  const info = precioMostrar;
-
+async function iniciarPago(plan = 'inscripcion') {
   const user = sb.auth.getUser ? (await sb.auth.getUser()).data?.user : null;
   if (!user) {
-    alert('Debes iniciar sesión para suscribirte.');
+    alert('Debes iniciar sesión para inscribirte.');
     return;
   }
 
-  const ok = confirm(`Plan ${plan.charAt(0).toUpperCase()+plan.slice(1)}: ${info[plan]}\n\nSerás redirigido a Mercado Pago para completar el pago de forma segura.\n¿Continuar?`);
+  const ok = confirm('Inscripción PRO: $5.000 (pago único, sin vencimiento)\n\nSerás redirigido a Mercado Pago para completar el pago de forma segura.\n¿Continuar?');
   if (!ok) return;
 
   const btn = document.querySelector(`button[onclick="iniciarPago('${plan}')"]`);
@@ -3993,7 +3889,7 @@ async function iniciarPago(plan) {
     console.error('Error iniciarPago:', err);
     alert('Error de conexión. Intenta de nuevo.');
   } finally {
-    if (btn) { btn.textContent = 'Suscribirme'; btn.disabled = false; }
+    if (btn) { btn.textContent = 'Inscribirme por $5.000'; btn.disabled = false; }
   }
 }
 
@@ -4711,7 +4607,7 @@ function abrirSponsor(){
   if(pago === 'ok'){
     icon.textContent = '🎉';
     titulo.textContent = '¡Pago exitoso!';
-    texto.textContent = 'Tu plan Pro está siendo activado. En unos segundos verás el sello ⭐ en tu perfil. Revisa tu correo para la confirmación.';
+    texto.textContent = 'Tu Inscripción PRO está siendo activada. En unos segundos verás el sello ⭐ en tu perfil. Revisa tu correo para la confirmación.';
     modal.style.display = 'flex';
     // Recargar datos después de 3 segundos para mostrar Pro
     setTimeout(() => location.reload(), 4000);
@@ -4723,7 +4619,7 @@ function abrirSponsor(){
   } else if(pago === 'pendiente'){
     icon.textContent = '⏳';
     titulo.textContent = 'Pago en proceso';
-    texto.textContent = 'Tu pago está siendo procesado. Te notificaremos por correo cuando se confirme y tu plan Pro esté activo.';
+    texto.textContent = 'Tu pago está siendo procesado. Te notificaremos por correo cuando se confirme y tu Inscripción PRO esté activa.';
     modal.style.display = 'flex';
   }
 })();
@@ -4996,23 +4892,21 @@ const TUTORIALS = {
   },
   taller: {
     title: 'Registrar mi taller',
-    desc: '30 días gratis, sin tarjeta de crédito',
+    desc: 'Ficha gratis · Inscripción PRO $5.000 pago único',
     steps: [
       { screen: `<div style="text-align:center;"><div style="background:var(--black2);border:1px solid var(--border);border-radius:10px;padding:14px 20px;display:inline-block;"><div style="font-size:11px;color:var(--muted);margin-bottom:10px;">Iniciar sesión</div><div style="display:flex;gap:8px;margin-bottom:10px;"><div style="background:var(--black3);border:1px solid var(--border);border-radius:6px;padding:5px 12px;font-size:10px;color:var(--dim);">Soy cliente</div><div style="background:var(--red);border-radius:6px;padding:5px 12px;font-size:10px;color:#fff;">Soy taller ✓</div></div></div></div>`, text: 'Toca <b>"Iniciar sesión"</b> arriba a la derecha y selecciona <b>"Soy taller"</b>. Luego crea tu cuenta.' },
       { screen: `<div style="width:100%;"><div style="display:flex;justify-content:space-between;margin-bottom:10px;">${[1,2,3,4].map((n,i)=>'<div style="width:24px;height:24px;border-radius:50%;background:'+(i===0?'var(--red)':'var(--black2)')+';border:1px solid '+(i===0?'var(--red)':'var(--border)')+';display:flex;align-items:center;justify-content:center;font-size:10px;color:'+(i===0?'#fff':'var(--muted)')+';">'+n+'</div>').join('')}</div><div style="background:var(--black2);border-radius:8px;padding:10px;"><div style="font-size:9px;color:var(--muted);margin-bottom:4px;">NOMBRE DEL TALLER</div><div style="background:var(--black3);border-radius:4px;padding:5px 8px;font-size:10px;color:var(--dim);">Automotriz El Maestro</div></div></div>`, text: 'Completa los <b>4 pasos</b>: nombre del taller, especialidad, ubicación GPS y servicios que ofreces.' },
       { screen: `<div style="text-align:center;"><div style="font-size:32px;margin-bottom:8px;">📍</div><div style="background:var(--red);border-radius:8px;padding:8px 16px;font-size:11px;color:#fff;display:inline-block;margin-bottom:8px;">Capturar mi ubicación GPS</div><div style="font-size:10px;color:var(--muted);">✓ Ubicación capturada</div></div>`, text: 'Toca <b>"Capturar mi ubicación GPS"</b> para aparecer en el mapa y que los clientes te encuentren.' },
       { screen: `<div style="text-align:center;"><div style="font-size:32px;margin-bottom:8px;">📷</div><div style="font-size:12px;color:#fff;font-weight:700;margin-bottom:6px;">Sube tus fotos</div><div style="display:flex;gap:6px;justify-content:center;"><div style="width:50px;height:50px;border-radius:8px;background:var(--black2);border:1px dashed var(--border);display:flex;align-items:center;justify-content:center;font-size:18px;">🏪</div><div style="width:50px;height:50px;border-radius:8px;background:var(--black2);border:1px dashed var(--border);display:flex;align-items:center;justify-content:center;font-size:18px;">🔧</div><div style="width:50px;height:50px;border-radius:8px;background:var(--black2);border:1px dashed var(--border);display:flex;align-items:center;justify-content:center;font-size:18px;">+</div></div></div>`, text: 'Desde tu panel en "Mi ficha" sube una <b>foto de portada</b>, <b>foto de perfil</b> y fotos de trabajos realizados.' },
-      { screen: `<div style="text-align:center;"><div style="font-size:32px;margin-bottom:8px;">🎉</div><div style="font-size:13px;color:#fff;font-weight:700;margin-bottom:6px;">¡Tu taller está listo!</div><div style="background:rgba(232,25,44,.1);border:1px solid var(--red);border-radius:8px;padding:8px 16px;font-size:11px;color:var(--red);">30 días gratis activos</div></div>`, text: '¡Listo! Tu taller aparece de inmediato en el directorio. Después elige un plan desde <b>$9.990/mes</b>.' }
+      { screen: `<div style="text-align:center;"><div style="font-size:32px;margin-bottom:8px;">🎉</div><div style="font-size:13px;color:#fff;font-weight:700;margin-bottom:6px;">¡Tu taller está listo!</div><div style="background:rgba(232,25,44,.1);border:1px solid var(--red);border-radius:8px;padding:8px 16px;font-size:11px;color:var(--red);">Ficha gratis activa</div></div>`, text: '¡Listo! Tu taller aparece de inmediato en el directorio. Después activa tu <b>Inscripción PRO</b> por $5.000 (pago único).' }
     ]
   },
   planes: {
-    title: 'Planes y precios',
-    desc: 'Elige el plan que más te conviene',
+    title: 'Inscripción PRO',
+    desc: 'Un solo pago, sin mensualidades',
     steps: [
-      { screen: `<div style="text-align:center;"><div style="font-size:36px;margin-bottom:6px;">🆓</div><div style="font-family:'Bebas Neue';font-size:36px;color:var(--red);">30 DÍAS</div><div style="font-size:11px;color:var(--muted);">Sin tarjeta · Sin compromiso</div></div>`, text: 'Al registrar tu taller tienes <b>30 días completamente gratis</b>. Sin tarjeta ni permanencia.' },
-      { screen: `<div style="background:var(--black2);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center;max-width:160px;margin:0 auto;"><div style="font-size:9px;color:var(--muted);margin-bottom:4px;">PLAN MENSUAL</div><div style="font-family:'Bebas Neue';font-size:36px;color:#fff;">$9.990</div><div style="font-size:10px;color:var(--muted);">/mes</div><div style="margin-top:8px;font-size:9px;color:var(--dim);">Sin permanencia</div></div>`, text: 'El <b>Plan Mensual</b> cuesta $9.990/mes. Sin permanencia, cancela cuando quieras.' },
-      { screen: `<div style="background:var(--black2);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center;max-width:160px;margin:0 auto;"><div style="font-size:9px;color:var(--muted);margin-bottom:4px;">PLAN SEMESTRAL</div><div style="font-family:'Bebas Neue';font-size:36px;color:#fff;">$49.990</div><div style="font-size:10px;color:var(--muted);">/6 meses</div><div style="margin-top:6px;font-size:9px;color:#22c55e;">Ahorras $9.950</div></div>`, text: 'El <b>Plan Semestral</b> son $49.990 por 6 meses. Equivale a $8.332/mes.' },
-      { screen: `<div style="background:linear-gradient(135deg,rgba(232,25,44,.12),var(--black2));border:2px solid var(--red);border-radius:10px;padding:14px;text-align:center;max-width:160px;margin:0 auto;position:relative;"><div style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--red);color:#fff;font-size:8px;font-weight:700;padding:2px 8px;border-radius:20px;white-space:nowrap;">MEJOR VALOR</div><div style="font-size:9px;color:var(--muted);margin-top:6px;margin-bottom:4px;">PLAN ANUAL</div><div style="font-family:'Bebas Neue';font-size:36px;color:#fff;">$89.990</div><div style="font-size:10px;color:var(--muted);">/año</div><div style="margin-top:6px;font-size:9px;color:#22c55e;">Ahorras $29.890</div></div>`, text: 'El <b>Plan Anual</b> es el mejor valor: $89.990 al año, equivale a solo $7.499/mes.' },
+      { screen: `<div style="text-align:center;"><div style="font-size:36px;margin-bottom:6px;">🆓</div><div style="font-family:'Bebas Neue';font-size:36px;color:var(--red);">GRATIS</div><div style="font-size:11px;color:var(--muted);">Sin tarjeta · Sin compromiso</div></div>`, text: 'Crear tu ficha es <b>completamente gratis</b>. Tu taller aparece de inmediato en el directorio.' },
+      { screen: `<div style="background:linear-gradient(135deg,rgba(232,25,44,.12),var(--black2));border:2px solid var(--red);border-radius:10px;padding:14px;text-align:center;max-width:160px;margin:0 auto;position:relative;"><div style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--red);color:#fff;font-size:8px;font-weight:700;padding:2px 8px;border-radius:20px;white-space:nowrap;">PAGO ÚNICO</div><div style="font-size:9px;color:var(--muted);margin-top:6px;margin-bottom:4px;">INSCRIPCIÓN PRO</div><div style="font-family:'Bebas Neue';font-size:36px;color:#fff;">$5.000</div><div style="font-size:10px;color:var(--muted);">una sola vez</div><div style="margin-top:6px;font-size:9px;color:#22c55e;">Sin mensualidades</div></div>`, text: 'La <b>Inscripción PRO</b> cuesta $5.000 una sola vez, sin vencimiento. Incluye sello PRO, prioridad en las búsquedas y publicidad en la pantalla principal.' },
       { screen: `<div style="text-align:center;"><div style="font-size:32px;margin-bottom:8px;">💳</div><div style="font-size:12px;color:#fff;font-weight:700;margin-bottom:8px;">Pago seguro con Mercado Pago</div><div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap;"><div style="background:var(--black2);border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-size:10px;color:var(--dim);">Tarjeta</div><div style="background:var(--black2);border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-size:10px;color:var(--dim);">Débito</div><div style="background:var(--black2);border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-size:10px;color:var(--dim);">Transferencia</div></div></div>`, text: 'El pago se realiza con <b>Mercado Pago</b> — tarjeta de crédito, débito o transferencia bancaria.' }
     ]
   }
@@ -5080,7 +4974,7 @@ document.getElementById('helpModalOverlay')?.addEventListener('click', function(
 
 
 /* ===== SELECTOR DE PLAN EN FORMULARIO ===== */
-let planSeleccionado = 'mensual';
+let planSeleccionado = 'inscripcion';
 
 function selectPlanForm(plan){
   planSeleccionado = plan;
@@ -5105,9 +4999,9 @@ function selectPlanForm(plan){
   console.log('Plan seleccionado:', plan);
 }
 
-// Inicializar plan mensual cuando se llega al paso 4
+// Inicializar plan de inscripción cuando se llega al paso 4
 document.addEventListener('DOMContentLoaded', () => {
-  setTimeout(() => selectPlanForm('mensual'), 500);
+  setTimeout(() => selectPlanForm('inscripcion'), 500);
 });
 
 
@@ -5137,27 +5031,8 @@ let talleresPro = [];
 async function renderProBanner(){
   talleresPro = mechanics.filter(m => m.es_pro);
 
-  // Cupos restantes de la promo 50% (primeros 100 talleres)
-  let cuposPromo = null;
-  try {
-    const { data } = await sb.rpc('promo_50_cupos_restantes');
-    cuposPromo = typeof data === 'number' ? data : null;
-  } catch(e){ console.warn('No se pudo obtener cupos promo', e); }
-
   // Slides promocionales de PANNE (siempre aparecen)
   const slidesPromo = [];
-
-  if(cuposPromo === null || cuposPromo > 0){
-    slidesPromo.push({
-      tipo: 'promo',
-      titulo: '🔥 50% OFF para los primeros 100 talleres',
-      texto: 'Reclama o registra tu ficha ahora y paga solo $4.995/mes (en vez de $9.990) durante tus primeros 3 meses PRO.',
-      sub: cuposPromo !== null ? `Quedan ${cuposPromo} de 100 cupos` : 'Cupos limitados',
-      color: 'linear-gradient(135deg, #1a1400, #3d2f00)',
-      btn: 'Quiero mi 50% OFF →',
-      accion: "document.querySelector('[data-tab=\'perfil-mecanico\']').click()"
-    });
-  }
 
   slidesPromo.push(
     {
@@ -5171,20 +5046,11 @@ async function renderProBanner(){
     },
     {
       tipo: 'promo',
-      titulo: '⭐ Plan Mensual desde $9.990',
-      texto: 'Aparece en el directorio, recibe reseñas verificadas y destaca sobre la competencia.',
-      sub: '30 días gratis · Sin permanencia',
-      color: 'linear-gradient(135deg, #0a0a1a, #00003d)',
-      btn: 'Ver planes →',
-      accion: "document.querySelector('[data-tab=\'perfil-mecanico\']').click()"
-    },
-    {
-      tipo: 'promo',
-      titulo: '💳 Plan Anual — Mejor valor',
-      texto: '$89.990 al año. Equivale a solo $7.499/mes. Ahorra $29.890 vs plan mensual.',
-      sub: 'Pago seguro con Mercado Pago',
-      color: 'linear-gradient(135deg, #1a0800, #3d1500)',
-      btn: 'Contratar ahora →',
+      titulo: '⭐ Inscripción PRO: $5.000 pago único',
+      texto: 'Aparece primero ante los clientes, con sello PRO y publicidad en nuestra pantalla principal. Sin mensualidades.',
+      sub: 'Pago único · Sin vencimiento',
+      color: 'linear-gradient(135deg, #1a1400, #3d2f00)',
+      btn: 'Inscribir mi taller →',
       accion: "document.querySelector('[data-tab=\'perfil-mecanico\']').click()"
     }
   );
@@ -5386,14 +5252,14 @@ function mostrarModalTienda(tipo){
       <div class="help-card" onclick="showTutorial('taller')">
         <div style="display:flex;align-items:center;gap:12px;">
           <div style="width:42px;height:42px;border-radius:10px;background:rgba(232,25,44,.12);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">🔧</div>
-          <div><div class="help-card-title">Cómo registrar mi taller</div><div class="help-card-desc">Crea tu ficha gratis con 30 días de prueba</div></div>
+          <div><div class="help-card-title">Cómo registrar mi taller</div><div class="help-card-desc">Crea tu ficha gratis y activa tu Inscripción PRO</div></div>
           <div style="margin-left:auto;color:var(--muted);font-size:18px;">›</div>
         </div>
       </div>
       <div class="help-card" onclick="showTutorial('planes')">
         <div style="display:flex;align-items:center;gap:12px;">
           <div style="width:42px;height:42px;border-radius:10px;background:rgba(232,25,44,.12);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">💳</div>
-          <div><div class="help-card-title">Planes y precios</div><div class="help-card-desc">Mensual, semestral y anual desde $9.990</div></div>
+          <div><div class="help-card-title">Planes y precios</div><div class="help-card-desc">Inscripción PRO: $5.000 pago único</div></div>
           <div style="margin-left:auto;color:var(--muted);font-size:18px;">›</div>
         </div>
       </div>
@@ -5468,18 +5334,18 @@ function mostrarModalTienda(tipo){
 
         <div class="popup-card popup-card-pro">
           <div class="popup-plan">
-            <span class="popup-plan-name" style="color:#f0c040;">⭐ Plan Mensual</span>
-            <span class="popup-plan-price" style="color:#f0c040;">$9.990/mes</span>
+            <span class="popup-plan-name" style="color:#f0c040;">⭐ Inscripción PRO</span>
+            <span class="popup-plan-price" style="color:#f0c040;">$5.000 único</span>
           </div>
           <div style="background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.3);border-radius:8px;padding:6px 12px;text-align:center;font-size:12px;font-weight:700;color:#22c55e;margin-bottom:10px;">
-            🎉 30 DÍAS DE PRUEBA GRATIS — Sin tarjeta, sin compromiso
+            🎉 PAGO ÚNICO — Sin mensualidades, sin vencimiento
           </div>
           <div class="popup-benefit">✅ Sello PRO visible en el directorio</div>
           <div class="popup-benefit">✅ Apareces primero ante los clientes</div>
           <div class="popup-benefit">✅ Recibe reseñas verificadas</div>
           <div class="popup-benefit">✅ Fotos, servicios y precios en tu ficha</div>
           <div class="popup-benefit">✅ Publicidad gratuita en la pantalla principal</div>
-          <div class="popup-benefit">⭐ Semestral $49.990 · Anual $89.990</div>
+          <div class="popup-benefit">⭐ Un solo pago de $5.000, sin mensualidades</div>
           <button class="popup-cta" onclick="cerrarPopup();document.querySelector('[data-tab=\'perfil-mecanico\']').click();">Registrar mi taller gratis →</button>
         </div>
       </div>

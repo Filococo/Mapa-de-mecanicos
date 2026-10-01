@@ -230,17 +230,17 @@ tr:hover td{background:var(--bg3);}
     <!-- MÉTRICAS DE NEGOCIO (hero) -->
     <div class="hero-grid">
       <div class="hero-card hero-mrr">
-        <div class="kpi-lbl" style="display:flex;align-items:center;gap:6px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> MRR real</div>
+        <div class="kpi-lbl" style="display:flex;align-items:center;gap:6px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> Ingresos por inscripciones</div>
         <div class="hero-val" id="hMrr">—</div>
-        <div class="kpi-sub">Ingreso mensual normalizado (planes semestral/anual prorrateados)</div>
+        <div class="kpi-sub">Total acumulado de pagos únicos de $5.000</div>
       </div>
       <div class="hero-card">
-        <div class="kpi-lbl" style="display:flex;align-items:center;gap:6px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg> Conversión prueba → pago</div>
+        <div class="kpi-lbl" style="display:flex;align-items:center;gap:6px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg> Inscripciones (30 días)</div>
         <div class="hero-val" id="hConversion">—</div>
         <div class="kpi-sub" id="hConversionSub">—</div>
       </div>
       <div class="hero-card">
-        <div class="kpi-lbl" style="display:flex;align-items:center;gap:6px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg> Churn (30 días)</div>
+        <div class="kpi-lbl" style="display:flex;align-items:center;gap:6px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg> Talleres PRO sobre el directorio</div>
         <div class="hero-val" id="hChurn">—</div>
         <div class="kpi-sub" id="hChurnSub">—</div>
       </div>
@@ -316,7 +316,7 @@ tr:hover td{background:var(--bg3);}
         <div class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
         <div class="kpi-lbl">Ingreso del mes (bruto)</div>
         <div class="kpi-val" id="k3">—</div>
-        <div class="kpi-sub">Suma de planes activos — ver MRR real arriba</div>
+        <div class="kpi-sub">Suma de inscripciones PRO activas</div>
         <span class="kpi-arrow">→</span>
       </div>
     </div>
@@ -496,7 +496,7 @@ const SUPABASE_URL = 'https://vdkvbwlzjrqcmegkxslp.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_afbIDXILgu4oM1v3GUuzDQ_jWZnds9v';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const ADMIN = 'contacto@panne.cl';
-const PRECIOS = { mensual:9990, semestral:49990, anual:89990 };
+const PRECIOS = { inscripcion:5000, mensual:9990, semestral:49990, anual:89990 };
 
 // Estado global
 let _talleres=[], _subs=[], _resenas=[], _nombres={}, _totalPro=0, _totalTalleres=0, _todosPro=[], _perfiles=[], _eventosCuenta=[], _metricas={}, _errores=[];
@@ -614,22 +614,16 @@ async function cargarDatos(){
     document.getElementById('k8').textContent = v2;
     document.getElementById('k9').textContent = visitasPerfiles.toLocaleString('es-CL');
 
-    // Métricas de negocio (hero)
-    document.getElementById('hMrr').textContent = '$'+(_metricas.mrr||0).toLocaleString('es-CL');
-    if(_metricas.conversion_trial_pct !== null && _metricas.conversion_trial_pct !== undefined){
-      document.getElementById('hConversion').textContent = _metricas.conversion_trial_pct + '%';
-      document.getElementById('hConversionSub').textContent = `${_metricas.trial_convertidos||0} de ${_metricas.trial_terminados||0} pruebas vencidas`;
-    } else {
-      document.getElementById('hConversion').textContent = '—';
-      document.getElementById('hConversionSub').textContent = 'Aún no hay pruebas vencidas';
-    }
-    if(_metricas.churn_pct_30d !== null && _metricas.churn_pct_30d !== undefined){
-      document.getElementById('hChurn').textContent = _metricas.churn_pct_30d + '%';
-      document.getElementById('hChurnSub').textContent = `${_metricas.churn_cancelados_30d||0} de ${_metricas.churn_base_30d||0} suscripciones (30d)`;
-    } else {
-      document.getElementById('hChurn').textContent = '—';
-      document.getElementById('hChurnSub').textContent = 'Sin movimiento en 30 días';
-    }
+    // Métricas de negocio (hero) — modelo de inscripción de pago único
+    const inscActivas = _subs.filter(s=>s.estado==='activo' && s.plan==='inscripcion');
+    document.getElementById('hMrr').textContent = '$'+ingreso.toLocaleString('es-CL');
+    const hace30d = Date.now() - 30*864e5;
+    const insc30 = _subs.filter(s=>s.plan==='inscripcion' && s.fecha_inicio && new Date(s.fecha_inicio).getTime() >= hace30d).length;
+    document.getElementById('hConversion').textContent = insc30;
+    document.getElementById('hConversionSub').textContent = `${inscActivas.length} inscripciones activas en total`;
+    const pctPro = _totalTalleres ? (_totalPro/_totalTalleres)*100 : 0;
+    document.getElementById('hChurn').textContent = pctPro.toFixed(1).replace('.',',') + '%';
+    document.getElementById('hChurnSub').textContent = `${_totalPro.toLocaleString('es-CL')} PRO de ${_totalTalleres.toLocaleString('es-CL')} talleres (meta: 8.000)`;
 
     // Ciudades
     const maxT = topCiudadesTalleres[0]?.[1]||1;
@@ -697,8 +691,8 @@ function renderSubs(subs){
       <td><span class="badge ${planBadge}">${s.plan||'—'}</span></td>
       <td><span class="badge ${s.estado==='activo'?'ba':'bv'}">${s.estado}</span></td>
       <td style="color:var(--dim);">${s.fecha_inicio?new Date(s.fecha_inicio).toLocaleDateString('es-CL'):'—'}</td>
-      <td style="color:var(--dim);">${venc?venc.toLocaleDateString('es-CL'):'—'}</td>
-      <td><span class="num" style="color:${col};font-weight:600;">${dias!==null?dias+' días':'—'}</span></td>
+      <td style="color:var(--dim);">${s.plan==='inscripcion'?'Sin vencimiento':(venc?venc.toLocaleDateString('es-CL'):'—')}</td>
+      <td><span class="num" style="color:${col};font-weight:600;">${s.plan==='inscripcion'?'—':(dias!==null?dias+' días':'—')}</span></td>
       <td><button class="btn-d" onclick="cancelarPlan('${s.mecanico_id}')">Cancelar</button></td>
     </tr>`;
   }).join('') : '<tr><td colspan="7" class="empty">Sin suscripciones</td></tr>';
@@ -891,39 +885,24 @@ function abrirModal(tipo){
   }
 
   else if(tipo==='subs'){
-    title.textContent = 'Ingresos y suscripciones';
+    title.textContent = 'Ingresos e inscripciones';
     const activas = _subs.filter(s=>s.estado==='activo');
     const ingreso = activas.reduce((s,sub)=>s+(PRECIOS[sub.plan]||0),0);
-    const mens = activas.filter(s=>s.plan==='mensual').length;
-    const sems = activas.filter(s=>s.plan==='semestral').length;
-    const anu = activas.filter(s=>s.plan==='anual').length;
+    const insc = activas.filter(s=>s.plan==='inscripcion').length;
     body.innerHTML = `
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
         <div style="background:var(--bg);border-radius:10px;padding:16px;">
-          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Ingreso mensual estimado</div>
+          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Ingresos acumulados</div>
           <div style="font-size:28px;font-weight:900;color:var(--green);">$${ingreso.toLocaleString('es-CL')}</div>
         </div>
         <div style="background:var(--bg);border-radius:10px;padding:16px;">
-          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Proyección anual</div>
-          <div style="font-size:28px;font-weight:900;color:var(--gold);">$${(ingreso*12).toLocaleString('es-CL')}</div>
+          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Inscripciones PRO</div>
+          <div style="font-size:28px;font-weight:900;color:var(--gold);">${insc}</div>
         </div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:20px;">
-        <div style="background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);border-radius:10px;padding:12px;text-align:center;">
-          <div style="font-size:20px;font-weight:900;color:var(--blue);">${mens}</div>
-          <div style="font-size:11px;color:var(--muted);">Mensual</div>
-          <div style="font-size:10px;color:var(--blue);">$${(mens*9990).toLocaleString('es-CL')}</div>
-        </div>
-        <div style="background:rgba(168,85,247,.08);border:1px solid rgba(168,85,247,.2);border-radius:10px;padding:12px;text-align:center;">
-          <div style="font-size:20px;font-weight:900;color:#a855f7;">${sems}</div>
-          <div style="font-size:11px;color:var(--muted);">Semestral</div>
-          <div style="font-size:10px;color:#a855f7;">$${(sems*49990).toLocaleString('es-CL')}</div>
-        </div>
-        <div style="background:rgba(240,192,64,.08);border:1px solid rgba(240,192,64,.2);border-radius:10px;padding:12px;text-align:center;">
-          <div style="font-size:20px;font-weight:900;color:var(--gold);">${anu}</div>
-          <div style="font-size:11px;color:var(--muted);">Anual</div>
-          <div style="font-size:10px;color:var(--gold);">$${(anu*89990).toLocaleString('es-CL')}</div>
-        </div>
+      <div style="background:rgba(240,192,64,.08);border:1px solid rgba(240,192,64,.2);border-radius:10px;padding:12px;text-align:center;">
+        <div style="font-size:11px;color:var(--muted);">Inscripción PRO (pago único de $5.000)</div>
+        <div style="font-size:10px;color:var(--gold);">$${(insc*5000).toLocaleString('es-CL')}</div>
       </div>`;
   }
 
