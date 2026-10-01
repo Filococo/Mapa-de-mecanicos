@@ -152,6 +152,14 @@ tr:hover td{background:var(--bg3);}
 .ciudad-bar-track{background:var(--bg4);border-radius:4px;height:5px;}
 .ciudad-bar-fill{height:5px;border-radius:4px;transition:.6s;}
 
+/* FORMULARIO DE PUBLICIDAD */
+.f-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px;margin-bottom:14px;}
+.f-lbl{display:flex;flex-direction:column;gap:5px;font-size:11px;color:var(--dim);font-weight:500;}
+.f-in{background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:8px 11px;color:var(--white);font-size:12.5px;outline:none;font-family:var(--font-ui);width:100%;box-sizing:border-box;}
+.f-in:focus{border-color:var(--border-strong);}
+.btn-p{background:var(--red);border:none;color:#fff;border-radius:8px;padding:9px 18px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:var(--font-ui);}
+.btn-p:disabled{opacity:.5;cursor:default;}
+
 /* SEARCH */
 .tbl-search{background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:7px 11px;color:var(--white);font-size:12px;outline:none;width:200px;font-family:var(--font-ui);}
 .tbl-search:focus{border-color:var(--border-strong);}
@@ -206,6 +214,7 @@ tr:hover td{background:var(--bg3);}
     <div class="subnav-inner" id="subnavInner">
       <a href="#sec-resumen" data-sec="sec-resumen" class="active">Resumen</a>
       <a href="#sec-subs" data-sec="sec-subs">Suscripciones</a>
+      <a href="#sec-publicidad" data-sec="sec-publicidad">Publicidad</a>
       <a href="#sec-talleres" data-sec="sec-talleres">Talleres</a>
       <a href="#sec-perfiles" data-sec="sec-perfiles">Perfiles</a>
       <a href="#sec-cuentas" data-sec="sec-cuentas">Cuentas</a>
@@ -358,6 +367,59 @@ tr:hover td{background:var(--bg3);}
       <div style="overflow-x:auto;">
         <table><thead><tr><th>Taller</th><th>Plan</th><th>Estado</th><th>Inicio</th><th>Vencimiento</th><th>Días restantes</th><th>Acción</th></tr></thead>
         <tbody id="tSubs"><tr><td colspan="7" class="empty">Cargando...</td></tr></tbody></table>
+      </div>
+    </div>
+
+    <!-- PUBLICIDAD -->
+    <div class="section" id="sec-publicidad">
+      <div class="sec-head">
+        <div class="sec-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2"><path d="M3 11v2a1 1 0 0 0 1 1h2l5 4V6L6 10H4a1 1 0 0 0-1 1z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/></svg>
+          Publicidad
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <button class="graf-btn" data-pd="7" onclick="cargarPublicidad(7)">7 días</button>
+          <button class="graf-btn" data-pd="30" onclick="cargarPublicidad(30)">30 días</button>
+          <button class="graf-btn" data-pd="90" onclick="cargarPublicidad(90)">90 días</button>
+          <span class="sec-badge" id="bPubl">—</span>
+        </div>
+      </div>
+      <div style="overflow-x:auto;">
+        <table><thead><tr><th>Anuncio</th><th>Ubicación</th><th>Segmento</th><th>Estado</th><th>Impresiones</th><th>Clics</th><th>CTR</th><th>Acción</th></tr></thead>
+        <tbody id="tPubl"><tr><td colspan="8" class="empty">Cargando...</td></tr></tbody></table>
+      </div>
+      <div style="padding:18px 20px;border-top:1px solid var(--border);">
+        <div class="sec-title" style="margin-bottom:12px;">Nuevo anuncio</div>
+        <div class="f-grid">
+          <label class="f-lbl">Título del anuncio *<input class="f-in" id="pTitle" maxlength="80" placeholder="Ej: Neumáticos Sur"></label>
+          <label class="f-lbl">Empresa anunciante<input class="f-in" id="pAnunciante" maxlength="80" placeholder="Ej: Neumáticos Sur SpA"></label>
+          <label class="f-lbl">Enlace de destino * (https://…)<input class="f-in" id="pUrl" placeholder="https://"></label>
+          <label class="f-lbl">Texto corto<input class="f-in" id="pDesc" maxlength="140" placeholder="Ej: 15% de descuento este mes"></label>
+          <label class="f-lbl">Texto del botón<input class="f-in" id="pBoton" maxlength="24" value="Ver más"></label>
+          <label class="f-lbl">Dónde se muestra
+            <select class="f-in" id="pSlot">
+              <option value="ambos">Banner grande + entre los resultados</option>
+              <option value="banner">Solo banner grande</option>
+              <option value="resultados">Solo entre los resultados</option>
+            </select>
+          </label>
+          <label class="f-lbl">Solo para la categoría (opcional)
+            <select class="f-in" id="pCat">
+              <option value="">Todas</option>
+              <option>Mecánica General</option><option>Frenos</option><option>Suspensión</option>
+              <option>Eléctrico Automotriz</option><option>Diésel</option><option>Vulcanización</option><option>Grúa 24hrs</option>
+            </select>
+          </label>
+          <label class="f-lbl">Solo para la ciudad (opcional)<input class="f-in" id="pCiudad" placeholder="Igual que en el directorio, ej: Rancagua"></label>
+          <label class="f-lbl">Desde (opcional)<input class="f-in" type="date" id="pInicio"></label>
+          <label class="f-lbl">Hasta (opcional)<input class="f-in" type="date" id="pFin"></label>
+          <label class="f-lbl">Imagen escritorio · 1200×300<input class="f-in" type="file" id="pImg" accept="image/png,image/jpeg,image/webp"></label>
+          <label class="f-lbl">Imagen móvil · 640×240 (opcional)<input class="f-in" type="file" id="pImgMov" accept="image/png,image/jpeg,image/webp"></label>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:12px;">Imágenes PNG, JPG o WEBP de hasta 2 MB. Sin imagen, el anuncio se muestra como banner de texto. La ciudad y la categoría deben coincidir exactamente con las del directorio.</div>
+        <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--dim);margin-bottom:12px;"><input type="checkbox" id="pActivo" checked> Publicar de inmediato</label>
+        <div id="publMsg" style="font-size:12px;margin-bottom:10px;min-height:16px;"></div>
+        <button class="btn-p" id="publBtn" onclick="crearAnuncio()">Guardar anuncio</button>
       </div>
     </div>
 
@@ -518,6 +580,7 @@ function mostrarDashboard(email){
   document.getElementById('adminEmail').textContent = email;
   cargarDatos();
   cargarGrafico();
+  cargarPublicidad();
   initScrollSpy();
 }
 
@@ -813,6 +876,109 @@ function filtrarTalleres(q){
 async function togglePro(id, activar){
   await sb.from('mecanicos').update({es_pro:activar}).eq('id',id);
   cargarDatos();
+}
+
+// ===== PUBLICIDAD =====
+let _publDias = 30;
+const PUBL_SLOTS = { ambos:'Banner + resultados', banner:'Banner', resultados:'Resultados' };
+function escA(t){ return String(t==null?'':t).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+async function cargarPublicidad(dias){
+  if(dias) _publDias = dias;
+  document.querySelectorAll('[data-pd]').forEach(b => {
+    const on = Number(b.dataset.pd) === _publDias;
+    b.style.background = on ? 'var(--red)' : 'rgba(255,255,255,.05)';
+    b.style.color = on ? '#fff' : 'var(--dim)';
+    b.style.borderColor = on ? 'var(--red)' : 'var(--border)';
+  });
+  const tb = document.getElementById('tPubl');
+  const { data, error } = await sb.rpc('admin_publicidad_resumen', { p_dias: _publDias });
+  if(error){ tb.innerHTML = `<tr><td colspan="8" class="empty">Error: ${escA(error.message)}</td></tr>`; return; }
+  const lista = data || [];
+  document.getElementById('bPubl').textContent = lista.length + (lista.length === 1 ? ' anuncio' : ' anuncios');
+  tb.innerHTML = lista.length ? lista.map(a => `<tr>
+      <td style="font-weight:600;">${escA(a.title)}<div style="font-size:11px;color:var(--muted);font-weight:400;">${escA(a.anunciante || '')}</div></td>
+      <td>${PUBL_SLOTS[a.slot] || escA(a.slot)}</td>
+      <td style="color:var(--dim);">${[a.categoria, a.ciudad].filter(Boolean).map(escA).join(' · ') || 'Todos'}</td>
+      <td><span class="badge ${a.activo ? 'ba' : 'bv'}">${a.activo ? 'activo' : 'pausado'}</span></td>
+      <td><span class="num">${Number(a.impresiones).toLocaleString('es-CL')}</span></td>
+      <td><span class="num">${Number(a.clics).toLocaleString('es-CL')}</span></td>
+      <td><span class="num">${a.ctr == null ? '—' : String(a.ctr).replace('.', ',') + '%'}</span></td>
+      <td style="white-space:nowrap;">
+        <button class="btn-a" onclick="alternarAnuncio('${escA(a.patrocinador_id)}', ${!a.activo})">${a.activo ? 'Pausar' : 'Activar'}</button>
+        <button class="btn-d" onclick="borrarAnuncio('${escA(a.patrocinador_id)}')">Eliminar</button>
+      </td>
+    </tr>`).join('') : '<tr><td colspan="8" class="empty">Aún no hay anuncios. Crea el primero abajo.</td></tr>';
+}
+
+async function alternarAnuncio(id, activar){
+  const { error } = await sb.from('patrocinadores').update({ activo: activar }).eq('id', id);
+  if(error){ alert('No se pudo actualizar: ' + error.message); return; }
+  cargarPublicidad();
+}
+
+async function borrarAnuncio(id){
+  if(!confirm('¿Eliminar este anuncio y sus estadísticas? Esta acción no se puede deshacer.')) return;
+  const { error } = await sb.from('patrocinadores').delete().eq('id', id);
+  if(error){ alert('No se pudo eliminar: ' + error.message); return; }
+  cargarPublicidad();
+}
+
+async function subirImagenAnuncio(inputId){
+  const f = document.getElementById(inputId).files[0];
+  if(!f) return null;
+  if(f.size > 2 * 1024 * 1024) throw new Error('La imagen "' + f.name + '" supera los 2 MB.');
+  if(!/^image\/(png|jpe?g|webp)$/.test(f.type)) throw new Error('Formato no permitido en "' + f.name + '". Usa PNG, JPG o WEBP.');
+  const ext = f.type.split('/')[1].replace('jpeg', 'jpg');
+  const path = Date.now() + '-' + Math.random().toString(36).slice(2, 8) + '.' + ext;
+  const { error } = await sb.storage.from('publicidad').upload(path, f, { contentType: f.type, cacheControl: '31536000' });
+  if(error) throw error;
+  return sb.storage.from('publicidad').getPublicUrl(path).data.publicUrl;
+}
+
+async function crearAnuncio(){
+  const msg = document.getElementById('publMsg');
+  const btn = document.getElementById('publBtn');
+  const val = id => document.getElementById(id).value.trim();
+  const title = val('pTitle'), url = val('pUrl');
+  msg.style.color = 'var(--coral)';
+  if(!title || !url){ msg.textContent = 'Faltan el título o el enlace de destino.'; return; }
+  try { const u = new URL(url); if(u.protocol !== 'https:' && u.protocol !== 'http:') throw new Error(); }
+  catch(e){ msg.textContent = 'El enlace debe empezar con https://'; return; }
+  const ini = val('pInicio'), fin = val('pFin');
+  if(ini && fin && fin < ini){ msg.textContent = 'La fecha "Hasta" no puede ser anterior a "Desde".'; return; }
+
+  btn.disabled = true; msg.style.color = 'var(--dim)'; msg.textContent = 'Guardando…';
+  try {
+    const imagen_url = await subirImagenAnuncio('pImg');
+    const imagen_movil_url = await subirImagenAnuncio('pImgMov');
+    const { data: ult } = await sb.from('patrocinadores').select('orden').order('orden', { ascending: false }).limit(1);
+    const fila = {
+      title, url,
+      anunciante: val('pAnunciante') || null,
+      descripcion: val('pDesc') || null,
+      texto_boton: val('pBoton') || 'Ver más',
+      slot: document.getElementById('pSlot').value,
+      categoria: document.getElementById('pCat').value || null,
+      ciudad: val('pCiudad') || null,
+      fecha_inicio: ini ? new Date(ini + 'T00:00:00').toISOString() : null,
+      fecha_fin: fin ? new Date(fin + 'T23:59:59').toISOString() : null,
+      imagen_url, imagen_movil_url,
+      activo: document.getElementById('pActivo').checked,
+      orden: ((ult && ult[0] && ult[0].orden) || 0) + 1
+    };
+    const { error } = await sb.from('patrocinadores').insert(fila);
+    if(error) throw error;
+    ['pTitle','pAnunciante','pUrl','pDesc','pCiudad','pInicio','pFin','pImg','pImgMov'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('pBoton').value = 'Ver más';
+    document.getElementById('pCat').value = '';
+    msg.style.color = 'var(--green)'; msg.textContent = 'Anuncio guardado' + (fila.activo ? ' y publicado.' : ' (pausado).');
+    cargarPublicidad();
+  } catch(e){
+    msg.style.color = 'var(--coral)'; msg.textContent = 'No se pudo guardar: ' + (e.message || e);
+  } finally {
+    btn.disabled = false;
+  }
 }
 
 async function cancelarPlan(id){

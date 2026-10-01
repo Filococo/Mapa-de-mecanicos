@@ -261,6 +261,33 @@ main{max-width:1200px;margin:0 auto;padding:20px 16px 100px;width:100%;}
 }
 .hero-stat-label{font-size:10px;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;}
 
+/* ===== PUBLICIDAD (banner grande, tarjetas patrocinadas, aviso propio) ===== */
+.ad-slot{margin:0 0 20px;}
+.ad-banner{position:relative;display:block;width:100%;border-radius:14px;overflow:hidden;border:1px solid rgba(255,214,0,.28);background:var(--black2);text-decoration:none;color:inherit;transition:opacity .25s ease, transform .15s ease;}
+.ad-banner.fading{opacity:0;}
+.ad-banner:active{transform:scale(.99);}
+.ad-banner img{display:block;width:100%;height:auto;aspect-ratio:4/1;object-fit:cover;}
+.ad-tag{position:absolute;top:8px;left:8px;font-family:'JetBrains Mono';font-size:9px;letter-spacing:1px;color:#fff;background:rgba(0,0,0,.65);border:1px solid rgba(255,255,255,.25);border-radius:4px;padding:2px 6px;z-index:2;}
+.ad-banner-text{display:flex;align-items:center;gap:18px;padding:34px 24px 24px;min-height:130px;background:linear-gradient(135deg,rgba(255,214,0,.10),rgba(255,214,0,.02));}
+.ad-text{flex:1;min-width:0;}
+.ad-title{font-family:'Bebas Neue';font-size:28px;letter-spacing:1px;color:var(--white);line-height:1.1;}
+.ad-desc{font-size:14px;color:var(--dim);margin-top:6px;line-height:1.45;}
+.ad-btn{display:inline-block;background:var(--yellow);color:#0a0a0a;border:none;border-radius:10px;padding:12px 22px;font-size:13px;font-weight:800;white-space:nowrap;cursor:pointer;text-align:center;}
+.ad-house{display:flex;align-items:center;gap:18px;padding:26px 24px;min-height:130px;border-color:rgba(232,25,44,.35);background:linear-gradient(135deg,rgba(232,25,44,.22),rgba(232,25,44,.05) 60%,var(--black2));}
+.ad-house .ad-btn{background:var(--red);color:#fff;}
+.ad-house-kicker{font-family:'JetBrains Mono';font-size:10px;letter-spacing:2px;color:var(--red);margin-bottom:6px;}
+.ad-anuncia{font-size:11px;color:var(--muted);text-align:right;margin-top:6px;}
+.ad-anuncia a{color:var(--dim);}
+.ad-card{display:block;text-decoration:none;color:inherit;border-color:rgba(255,214,0,.3);}
+@media(max-width:600px){
+  .ad-banner img{aspect-ratio:8/3;}
+  .ad-banner-text,.ad-house{flex-direction:column;align-items:flex-start;gap:12px;padding:34px 16px 18px;}
+  .ad-house{padding-top:20px;}
+  .ad-title{font-size:24px;}
+  .ad-btn{width:100%;}
+  .ad-anuncia{text-align:center;}
+}
+
 /* ===== BANNER PRO DESTACADO ===== */
 .pro-banner{
   position:relative;border-radius:14px;overflow:hidden;
@@ -1372,6 +1399,9 @@ footer{
 
 
 
+    <!-- Publicidad: banner grande (anunciantes o aviso propio) -->
+    <div id="adBanner" class="ad-slot"></div>
+
     <!-- Reseñas recientes -->
     <div id="homeResenasWrap" style="display:none;margin-bottom:20px;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
@@ -1413,25 +1443,6 @@ footer{
       <button class="chip" data-filter="Diésel">Diésel</button>
       <button class="chip" data-filter="Vulcanización">Vulcanización</button>
       <button class="chip" data-filter="Grúa 24hrs">🚛 Grúa 24hrs</button>
-    </div>
-
-    <!-- Banner CTA talleres -->
-    <div style="background:linear-gradient(135deg,rgba(232,25,44,.08),rgba(232,25,44,.03));border:1px solid rgba(232,25,44,.2);border-radius:12px;padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
-      <div>
-        <div style="font-family:'Bebas Neue';font-size:16px;color:var(--white);letter-spacing:1px;">🔧 ¿Eres taller o vulcanización?</div>
-        <div style="font-size:12px;color:var(--muted);margin-top:2px;">Regístrate gratis y llega a miles de conductores en Chile</div>
-      </div>
-      <button onclick="document.querySelector('[data-tab=\'perfil-mecanico\']').click()" style="background:var(--red);color:#fff;border:none;border-radius:8px;padding:9px 18px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;">Sumar mi taller →</button>
-    </div>
-
-    <!-- Banner Patrocinado -->
-    <div class="sponsor-banner" id="sponsorBanner" style="display:none;" onclick="abrirSponsor()">
-      <span class="sponsor-tag">PUBLICIDAD</span>
-      <div class="sponsor-content">
-        <div class="sponsor-title" id="sponsorTitle">—</div>
-        <div class="sponsor-desc" id="sponsorDesc">—</div>
-      </div>
-      <button class="sponsor-btn" id="sponsorBtn" onclick="event.stopPropagation(); abrirSponsor()">Ver más →</button>
     </div>
 
     <!-- Filtro por ciudad y rating -->
@@ -2640,6 +2651,10 @@ function clearAllFilters(){
   renderGrid();
 }
 
+const GRID_PAGE = 24;
+let gridLimit = GRID_PAGE;
+let gridSig = '';
+
 function renderGrid(){
   const grid = document.getElementById('grid');
   const searchVal = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
@@ -2706,7 +2721,14 @@ function renderGrid(){
     return;
   }
 
-  grid.innerHTML = filtered.map(m => {
+  // Paginación: no se dibujan los ~6.000 talleres a la vez (en celulares lentos se congelaba la página)
+  const sigFiltros = [searchVal, cityVal, ratingVal, currentFilter, usandoBusquedaRemota].join('|');
+  if(sigFiltros !== gridSig){ gridSig = sigFiltros; gridLimit = GRID_PAGE; }
+  const visibles = filtered.slice(0, gridLimit);
+  const adsRes = adElegibles('resultados');
+  let adPos = 0;
+
+  const tarjetas = visibles.map(m => {
     const initial = m.initials || (m.name||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
     const ratingDisplay = m.rating > 0 ? m.rating.toFixed(1) : null;
     const stars = m.rating > 0 ? renderStars(m.rating, 12) : '';
@@ -2747,7 +2769,20 @@ function renderGrid(){
         </div>
       </div>
     </div>`;
-  }).join('');
+  });
+
+  // Tarjeta patrocinada tras la 4.ª ficha y luego cada 8
+  let html = '';
+  tarjetas.forEach((t, idx) => {
+    html += t;
+    if(adsRes.length && idx % 8 === 3){ html += adTarjetaHTML(adsRes[adPos % adsRes.length]); adPos++; }
+  });
+  if(filtered.length > gridLimit){
+    html += `<div style="grid-column:1/-1;text-align:center;padding:8px 0 4px;"><button type="button" class="btn-search" style="min-width:260px;" onclick="gridLimit += GRID_PAGE; renderGrid();">Mostrar más talleres (${(filtered.length - gridLimit).toLocaleString('es-CL')} restantes)</button></div>`;
+  }
+  grid.innerHTML = html;
+  grid.querySelectorAll('.ad-card[data-ad-id]').forEach(el => adObservar(el, el.dataset.adId, 'resultados'));
+  adActualizarBanner();
 }
 
 async function buscarPorNombreSupabase(termino){
@@ -4454,27 +4489,134 @@ function usarUbicacion(){
   }, { timeout: 8000, maximumAge: 60000 });
 }
 
-// ===== BANNER PATROCINADO (dinámico, desde Supabase) =====
-// Los patrocinadores se administran en la tabla `patrocinadores` de Supabase:
-// title, descripcion, url, activo, orden. No hace falta tocar el código para
-// agregar, pausar o quitar un patrocinador: solo se edita esa tabla.
+// ===== PUBLICIDAD (banner grande, tarjetas patrocinadas y medición) =====
+// Los anunciantes se administran en admin.html > Publicidad (tabla `patrocinadores`).
+// Cada anuncio puede tener imagen, ubicación (banner / resultados / ambos), segmentación por
+// categoría o ciudad y fechas de vigencia. Se registran impresiones y clics en `patrocinio_eventos`.
 let SPONSORS = [];
+let adListo = false;
+let adRotTimer = null;
+let adCtxKey = null;
+const adVistos = new Set(); // impresiones ya registradas en esta visita (anuncio|ubicación)
 
-let sponsorRotationIndex = 0;
-let sponsorRotationTimer = null;
-
-function pintarSponsor(s){
-  document.getElementById('sponsorTitle').textContent = s.title;
-  document.getElementById('sponsorDesc').textContent = s.descripcion || '';
-  document.getElementById('sponsorBanner').setAttribute('data-url', s.url);
-  document.getElementById('sponsorBanner').style.display = 'flex';
+function adEsc(s){
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
-
+function adUrl(u){
+  try { const x = new URL(u, location.href); return (x.protocol === 'https:' || x.protocol === 'http:') ? x.href : '#'; }
+  catch(e){ return '#'; }
+}
+function adVigente(s){
+  const ahora = Date.now();
+  if(s.fecha_inicio && new Date(s.fecha_inicio).getTime() > ahora) return false;
+  if(s.fecha_fin && new Date(s.fecha_fin).getTime() < ahora) return false;
+  return true;
+}
+function adCoincide(s){
+  const cat = (typeof currentFilter !== 'undefined' && currentFilter !== 'todos') ? currentFilter : null;
+  const ciudad = document.getElementById('cityFilter')?.value || '';
+  if(s.categoria && s.categoria !== cat) return false;
+  if(s.ciudad && s.ciudad !== ciudad) return false;
+  return true;
+}
+// Anuncios que se pueden mostrar ahora en una ubicación; los segmentados (categoría/ciudad) van primero.
+function adElegibles(slot){
+  return SPONSORS
+    .filter(s => adVigente(s) && (s.slot === 'ambos' || s.slot === slot) && adCoincide(s))
+    .sort((a,b) => ((b.categoria?1:0)+(b.ciudad?1:0)) - ((a.categoria?1:0)+(a.ciudad?1:0)) || (a.orden||0) - (b.orden||0));
+}
+function adRegistrar(id, tipo, slot){
+  try {
+    sb.from('patrocinio_eventos')
+      .insert({ patrocinador_id: id, tipo, slot, ciudad: document.getElementById('cityFilter')?.value || null })
+      .then(() => {}, () => {});
+  } catch(e){}
+}
+// Impresión: una vez por visita, cuando al menos la mitad del anuncio está en pantalla.
+function adObservar(el, id, slot){
+  const key = id + '|' + slot;
+  if(adVistos.has(key) || !('IntersectionObserver' in window)) return;
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(en => {
+      if(en.isIntersecting && en.intersectionRatio >= 0.5){
+        if(!adVistos.has(key)){ adVistos.add(key); adRegistrar(id, 'impresion', slot); }
+        io.disconnect();
+      }
+    });
+  }, { threshold: [0.5] });
+  io.observe(el);
+}
+function adCasaHTML(){
+  return `
+    <div class="ad-banner ad-house">
+      <div class="ad-text">
+        <div class="ad-house-kicker">PARA TALLERES Y VULCANIZADORAS</div>
+        <div class="ad-title">Aparece primero en PANNE</div>
+        <div class="ad-desc">Inscripción PRO: <b>$5.000 pago único</b>, sin mensualidades. Sello PRO, prioridad en las búsquedas y publicidad en la pantalla principal.</div>
+      </div>
+      <button type="button" class="ad-btn" onclick="document.querySelector('[data-tab=\'perfil-mecanico\']').click()">Inscribir mi taller →</button>
+    </div>
+    <div class="ad-anuncia">¿Quieres anunciar tu marca aquí? <a href="mailto:contacto@panne.cl?subject=Quiero%20anunciar%20en%20PANNE">Escríbenos</a></div>`;
+}
+function adBannerHTML(s){
+  const attrs = `href="${adEsc(adUrl(s.url))}" target="_blank" rel="noopener sponsored" data-ad-id="${adEsc(s.id)}" onclick="adRegistrar('${adEsc(s.id)}','clic','banner')"`;
+  if(s.imagen_url){
+    const mov = s.imagen_movil_url ? `<source media="(max-width:600px)" srcset="${adEsc(adUrl(s.imagen_movil_url))}">` : '';
+    return `<a class="ad-banner" ${attrs} aria-label="${adEsc(s.title)}"><picture>${mov}<img src="${adEsc(adUrl(s.imagen_url))}" alt="${adEsc(s.title)}" loading="eager" decoding="async"></picture><span class="ad-tag">PUBLICIDAD</span></a>`;
+  }
+  return `<a class="ad-banner ad-banner-text" ${attrs}><span class="ad-tag">PUBLICIDAD</span><div class="ad-text"><div class="ad-title">${adEsc(s.title)}</div><div class="ad-desc">${adEsc(s.descripcion || '')}</div></div><span class="ad-btn">${adEsc(s.texto_boton || 'Ver más')} →</span></a>`;
+}
+function adTarjetaHTML(s){
+  const attrs = `href="${adEsc(adUrl(s.url))}" target="_blank" rel="noopener sponsored" data-ad-id="${adEsc(s.id)}" onclick="adRegistrar('${adEsc(s.id)}','clic','resultados')"`;
+  const ini = (s.title || '?').split(' ').filter(Boolean).slice(0,2).map(w => w[0]).join('').toUpperCase();
+  const portada = s.imagen_url
+    ? `<img src="${adEsc(adUrl(s.imagen_url))}" alt="${adEsc(s.title)}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" loading="lazy">`
+    : `<div class="card-cover-pattern"></div><div class="card-cover-initial">${adEsc(ini)}</div>`;
+  return `
+    <a class="card ad-card" ${attrs}>
+      <div class="card-cover">${portada}<span class="ad-tag">PUBLICIDAD</span></div>
+      <div class="card-body">
+        <div class="card-name" style="margin-bottom:6px;">${adEsc(s.title)}</div>
+        <div class="rating-row"><span class="rating-count" style="color:var(--dim);">${adEsc(s.descripcion || '')}</span></div>
+        <div class="card-footer">
+          <span class="price-txt">${adEsc(s.anunciante || 'Anunciante')}</span>
+          <span class="btn-card">${adEsc(s.texto_boton || 'Ver más')} →</span>
+        </div>
+      </div>
+    </a>`;
+}
+// Pinta el banner grande según la categoría/ciudad elegidas. Sin anunciantes, muestra el aviso propio de PANNE.
+function adActualizarBanner(forzar){
+  const cont = document.getElementById('adBanner');
+  if(!cont || !adListo) return;
+  const ctx = (typeof currentFilter !== 'undefined' ? currentFilter : 'todos') + '|' + (document.getElementById('cityFilter')?.value || '');
+  if(!forzar && ctx === adCtxKey) return;
+  adCtxKey = ctx;
+  if(adRotTimer){ clearInterval(adRotTimer); adRotTimer = null; }
+  const lista = adElegibles('banner');
+  if(!lista.length){ cont.innerHTML = adCasaHTML(); return; }
+  // Precarga las imágenes para que la rotación no deje el banner en blanco
+  lista.forEach(x => { if(x.imagen_url){ const pre = new Image(); pre.src = adUrl(x.imagen_url); if(x.imagen_movil_url){ const pre2 = new Image(); pre2.src = adUrl(x.imagen_movil_url); } } });
+  let i = 0;
+  const pintar = () => {
+    cont.innerHTML = adBannerHTML(lista[i]);
+    const el = cont.querySelector('[data-ad-id]');
+    if(el) adObservar(el, el.dataset.adId, 'banner');
+  };
+  pintar();
+  if(lista.length > 1){
+    adRotTimer = setInterval(() => {
+      const el = cont.firstElementChild;
+      if(el) el.classList.add('fading');
+      setTimeout(() => { i = (i + 1) % lista.length; pintar(); }, 250);
+    }, 8000);
+  }
+}
 async function cargarSponsor(){
   try {
     const { data, error } = await sb
       .from('patrocinadores')
-      .select('id, title, descripcion, url, activo, orden')
+      .select('id, title, descripcion, url, orden, anunciante, imagen_url, imagen_movil_url, texto_boton, slot, categoria, ciudad, fecha_inicio, fecha_fin')
       .eq('activo', true)
       .order('orden', { ascending: true });
     if(error) throw error;
@@ -4483,71 +4625,10 @@ async function cargarSponsor(){
     console.log('No se pudieron cargar patrocinadores:', e);
     SPONSORS = [];
   }
-
-  if(!SPONSORS.length){
-    document.getElementById('sponsorBanner').style.display = 'none';
-    if(sponsorRotationTimer){ clearInterval(sponsorRotationTimer); sponsorRotationTimer = null; }
-    return;
-  }
-
-  sponsorRotationIndex = Math.floor(Math.random() * SPONSORS.length);
-  pintarSponsor(SPONSORS[sponsorRotationIndex]);
-
-  // Si hay más de un patrocinador activo, rota entre ellos automáticamente
-  if(sponsorRotationTimer){ clearInterval(sponsorRotationTimer); sponsorRotationTimer = null; }
-  if(SPONSORS.length > 1){
-    sponsorRotationTimer = setInterval(() => {
-      const banner = document.getElementById('sponsorBanner');
-      if(!banner || banner.style.display === 'none') return;
-      banner.classList.add('fading');
-      setTimeout(() => {
-        if(!SPONSORS.length) return;
-        sponsorRotationIndex = (sponsorRotationIndex + 1) % SPONSORS.length;
-        pintarSponsor(SPONSORS[sponsorRotationIndex]);
-        banner.classList.remove('fading');
-      }, 250);
-    }, 8000); // rota cada 8 segundos
-  }
-}
-
-// Al tocar el banner se muestran TODAS las opciones activas (no solo la que
-// estaba visible en ese momento), para que el usuario elija cuál abrir.
-function abrirSponsor(){
-  if(!SPONSORS.length) return;
-
-  if(SPONSORS.length === 1){
-    window.open(SPONSORS[0].url, '_blank', 'noopener');
-    return;
-  }
-
-  const overlay = document.createElement('div');
-  overlay.className = 'modal-overlay';
-  overlay.innerHTML = `
-    <div class="modal" style="max-width:380px;">
-      <div class="modal-head">
-        <span class="modal-title">Patrocinadores</span>
-        <button class="modal-close" id="sponsorModalClose">✕</button>
-      </div>
-      <div class="modal-body" style="display:flex;flex-direction:column;gap:10px;">
-        ${SPONSORS.map(s => `
-          <button class="sponsor-option" data-url="${s.url}" style="display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;width:100%;background:var(--black2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;cursor:pointer;">
-            <span style="font-size:13.5px;font-weight:700;color:var(--white);">${s.title}</span>
-            <span style="font-size:12px;color:var(--muted);">${s.descripcion || ''}</span>
-          </button>
-        `).join('')}
-      </div>
-    </div>`;
-  document.body.appendChild(overlay);
-
-  const cerrar = () => overlay.remove();
-  overlay.querySelector('#sponsorModalClose').addEventListener('click', cerrar);
-  overlay.addEventListener('click', (e) => { if(e.target === overlay) cerrar(); });
-  overlay.querySelectorAll('.sponsor-option').forEach(btn => {
-    btn.addEventListener('click', () => {
-      window.open(btn.getAttribute('data-url'), '_blank', 'noopener');
-      cerrar();
-    });
-  });
+  adListo = true;
+  adActualizarBanner(true);
+  // Si hay anuncios para los resultados, volver a pintar el listado para intercalarlos
+  if(SPONSORS.some(s => s.slot === 'resultados' || s.slot === 'ambos') && typeof renderGrid === 'function') renderGrid();
 }
 
 // Registrar visita a la página
@@ -5018,7 +5099,7 @@ async function renderProBanner(){
       tipo: 'promo',
       titulo: '🔧 ¿Eres taller mecánico?',
       texto: 'Llega a miles de conductores en Chile. Regístrate gratis y activa tu ficha hoy.',
-      sub: '5.707 talleres · 289 ciudades',
+      sub: mechanics.length.toLocaleString('es-CL') + ' talleres · ' + new Set(mechanics.map(m => m.city).filter(Boolean)).size + ' ciudades',
       color: 'linear-gradient(135deg, #1a0a0a, #3d0000)',
       btn: 'Registrar mi taller →',
       accion: "document.querySelector('[data-tab=\'perfil-mecanico\']').click()"
