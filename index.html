@@ -263,30 +263,59 @@ main{max-width:1200px;margin:0 auto;padding:20px 16px 100px;width:100%;}
 
 .claim-link{color:var(--yellow);font-size:12px;font-weight:600;text-decoration:underline;text-underline-offset:2px;}
 .claim-link:hover{filter:brightness(1.15);}
-/* ===== PUBLICIDAD (banner grande, tarjetas patrocinadas, aviso propio) ===== */
-.ad-slot{margin:0 0 20px;}
-.ad-banner{position:relative;display:block;width:100%;border-radius:14px;overflow:hidden;border:1px solid rgba(255,214,0,.28);background:var(--black2);text-decoration:none;color:inherit;transition:opacity .25s ease, transform .15s ease;}
+/* ===== PUBLICIDAD (banner principal, franja por categoría, tarjeta doble y aviso propio) ===== */
+.ad-slot{margin:0 0 24px;}
+.ad-slot:empty{display:none;margin:0;}
+.ad-banner{position:relative;display:block;width:100%;border-radius:16px;overflow:hidden;border:1px solid rgba(255,214,0,.35);background:var(--black2);text-decoration:none;color:inherit;transition:opacity .3s ease, box-shadow .25s ease, transform .15s ease;}
+.ad-banner:hover{box-shadow:0 0 0 2px rgba(255,214,0,.5), 0 10px 32px rgba(255,214,0,.14);}
 .ad-banner.fading{opacity:0;}
-.ad-banner:active{transform:scale(.99);}
-.ad-banner img{display:block;width:100%;height:auto;aspect-ratio:4/1;object-fit:cover;}
-.ad-tag{position:absolute;top:8px;left:8px;font-family:'JetBrains Mono';font-size:9px;letter-spacing:1px;color:#fff;background:rgba(0,0,0,.65);border:1px solid rgba(255,255,255,.25);border-radius:4px;padding:2px 6px;z-index:2;}
-.ad-banner-text{display:flex;align-items:center;gap:18px;padding:34px 24px 24px;min-height:130px;background:linear-gradient(135deg,rgba(255,214,0,.10),rgba(255,214,0,.02));}
+.ad-banner:active{transform:scale(.995);}
+.ad-banner img{display:block;width:100%;height:auto;aspect-ratio:3/1;object-fit:cover;}
+.ad-tag{position:absolute;top:10px;left:10px;font-family:'JetBrains Mono';font-size:10px;letter-spacing:1px;color:#fff;background:rgba(0,0,0,.7);border:1px solid rgba(255,255,255,.28);border-radius:4px;padding:3px 7px;z-index:2;}
+.ad-banner-text{display:flex;align-items:center;gap:28px;padding:52px 44px 44px;min-height:300px;background:linear-gradient(135deg,rgba(255,214,0,.18),rgba(255,214,0,.03) 62%,var(--black2));}
 .ad-text{flex:1;min-width:0;}
-.ad-title{font-family:'Bebas Neue';font-size:28px;letter-spacing:1px;color:var(--white);line-height:1.1;}
-.ad-desc{font-size:14px;color:var(--dim);margin-top:6px;line-height:1.45;}
-.ad-btn{display:inline-block;background:var(--yellow);color:#0a0a0a;border:none;border-radius:10px;padding:12px 22px;font-size:13px;font-weight:800;white-space:nowrap;cursor:pointer;text-align:center;}
-.ad-house{display:flex;align-items:center;gap:18px;padding:26px 24px;min-height:130px;border-color:rgba(232,25,44,.35);background:linear-gradient(135deg,rgba(232,25,44,.22),rgba(232,25,44,.05) 60%,var(--black2));}
+.ad-title{font-family:'Bebas Neue';font-size:54px;letter-spacing:1px;color:var(--white);line-height:1;}
+.ad-desc{font-size:18px;color:var(--dim);margin-top:12px;line-height:1.45;max-width:660px;}
+.ad-btn{display:inline-block;background:var(--yellow);color:#0a0a0a;border:none;border-radius:12px;padding:16px 32px;font-size:16px;font-weight:800;white-space:nowrap;cursor:pointer;text-align:center;}
+.ad-house{display:flex;align-items:center;gap:28px;padding:44px;min-height:300px;border-color:rgba(232,25,44,.55);background:linear-gradient(135deg,rgba(232,25,44,.34),rgba(232,25,44,.07) 62%,var(--black2));}
+.ad-house:hover{box-shadow:0 0 0 2px rgba(232,25,44,.55), 0 10px 32px rgba(232,25,44,.18);}
+.ad-house .ad-title{font-size:64px;}
 .ad-house .ad-btn{background:var(--red);color:#fff;}
-.ad-house-kicker{font-family:'JetBrains Mono';font-size:10px;letter-spacing:2px;color:var(--red);margin-bottom:6px;}
-.ad-anuncia{font-size:11px;color:var(--muted);text-align:right;margin-top:6px;}
+.ad-house-kicker{font-family:'JetBrains Mono';font-size:11px;letter-spacing:2px;color:#ff6b78;margin-bottom:10px;}
+.ad-dots{display:flex;justify-content:center;gap:8px;margin-top:12px;}
+.ad-dot{width:9px;height:9px;border-radius:50%;background:var(--border);border:none;padding:0;cursor:pointer;transition:background .2s,transform .2s;}
+.ad-dot.on{background:var(--yellow);transform:scale(1.25);}
+.ad-anuncia{font-size:11px;color:var(--muted);text-align:right;margin-top:8px;}
 .ad-anuncia a{color:var(--dim);}
-.ad-card{display:block;text-decoration:none;color:inherit;border-color:rgba(255,214,0,.3);}
+.ad-strip{border-radius:12px;}
+.ad-strip img{aspect-ratio:10/1;}
+.ad-strip .ad-banner-text{min-height:96px;padding:28px 28px 20px;gap:18px;}
+.ad-strip .ad-title{font-size:30px;}
+.ad-strip .ad-desc{font-size:14px;margin-top:4px;}
+.ad-strip .ad-btn{padding:11px 22px;font-size:14px;}
+.ad-card{display:block;text-decoration:none;color:inherit;border-color:rgba(255,214,0,.35);transition:box-shadow .25s ease;}
+.ad-card:hover{box-shadow:0 0 0 2px rgba(255,214,0,.5), 0 10px 32px rgba(255,214,0,.14);}
+.ad-card{grid-column:1/-1;}
+.ad-card .card-cover{height:auto;aspect-ratio:2/1;position:relative;}
+.ad-card .card-body{padding:18px 20px;}
+@media(min-width:700px){
+  .ad-card{display:flex;flex-direction:row;align-items:stretch;}
+  .ad-card .card-cover{flex:0 0 64%;aspect-ratio:8/3;}
+  .ad-card .card-body{flex:1;display:flex;flex-direction:column;justify-content:center;gap:10px;padding:24px;}
+  .ad-card .card-name{font-size:24px !important;}
+  .ad-card .card-footer{margin-top:8px;}
+}
 @media(max-width:600px){
-  .ad-banner img{aspect-ratio:8/3;}
-  .ad-banner-text,.ad-house{flex-direction:column;align-items:flex-start;gap:12px;padding:34px 16px 18px;}
-  .ad-house{padding-top:20px;}
-  .ad-title{font-size:24px;}
-  .ad-btn{width:100%;}
+  .ad-banner img{aspect-ratio:4/3;}
+  .ad-strip img{aspect-ratio:4/1;}
+  .ad-banner-text,.ad-house{flex-direction:column;align-items:flex-start;gap:16px;padding:40px 20px 24px;min-height:260px;}
+  .ad-house{padding-top:28px;}
+  .ad-title{font-size:38px;}
+  .ad-house .ad-title{font-size:42px;}
+  .ad-desc{font-size:15px;}
+  .ad-btn{width:100%;padding:15px 20px;}
+  .ad-strip .ad-banner-text{min-height:0;padding:34px 16px 16px;}
+  .ad-strip .ad-title{font-size:26px;}
   .ad-anuncia{text-align:center;}
 }
 
@@ -435,6 +464,7 @@ main{max-width:1200px;margin:0 auto;padding:20px 16px 100px;width:100%;}
 
 /* ===== DIRECTORY GRID ===== */
 .grid{
+  grid-auto-flow:dense;
   display:grid;
   grid-template-columns:repeat(auto-fill,minmax(min(300px,100%),1fr));
   gap:16px;
@@ -1412,30 +1442,6 @@ footer{
       <div id="homeResenasList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;"></div>
     </div>
 
-    <!-- Por qué PANNE -->
-    <div class="why-panne">
-      <div class="why-card">
-        <div class="why-icon">📍</div>
-        <div class="why-title">GPS en tiempo real</div>
-        <div class="why-desc">Encuentra el taller más cercano a donde estás ahora</div>
-      </div>
-      <div class="why-card">
-        <div class="why-icon">⭐</div>
-        <div class="why-title">Reseñas verificadas</div>
-        <div class="why-desc">Calificaciones reales de clientes que visitaron el taller</div>
-      </div>
-      <div class="why-card">
-        <div class="why-icon">🇨🇱</div>
-        <div class="why-title">Todo Chile</div>
-        <div class="why-desc">Desde Arica hasta Punta Arenas, incluso en pueblos rurales</div>
-      </div>
-      <div class="why-card">
-        <div class="why-icon">🆓</div>
-        <div class="why-title">Gratis para clientes</div>
-        <div class="why-desc">Busca, compara y contacta talleres sin costo</div>
-      </div>
-    </div>
-
     <div class="filter-row" id="filterBar">
       <button class="chip active" data-filter="todos">Todos</button>
       <button class="chip" data-filter="Mecánica General">Mecánica</button>
@@ -1475,7 +1481,33 @@ footer{
       <button id="clearFiltersBtn" onclick="clearAllFilters()" style="display:none;background:none;border:1px solid var(--border);color:var(--muted);padding:8px 12px;border-radius:8px;font-size:12px;cursor:pointer;">✕ Limpiar</button>
     </div>
 
+    <div id="adCategoria" class="ad-slot" style="margin-bottom:16px;"></div>
+
     <div class="grid" id="grid"></div>
+
+    <!-- Por qué PANNE -->
+    <div class="why-panne" style="margin-top:28px;">
+      <div class="why-card">
+        <div class="why-icon">📍</div>
+        <div class="why-title">GPS en tiempo real</div>
+        <div class="why-desc">Encuentra el taller más cercano a donde estás ahora</div>
+      </div>
+      <div class="why-card">
+        <div class="why-icon">⭐</div>
+        <div class="why-title">Reseñas verificadas</div>
+        <div class="why-desc">Calificaciones reales de clientes que visitaron el taller</div>
+      </div>
+      <div class="why-card">
+        <div class="why-icon">🇨🇱</div>
+        <div class="why-title">Todo Chile</div>
+        <div class="why-desc">Desde Arica hasta Punta Arenas, incluso en pueblos rurales</div>
+      </div>
+      <div class="why-card">
+        <div class="why-icon">🆓</div>
+        <div class="why-title">Gratis para clientes</div>
+        <div class="why-desc">Busca, compara y contacta talleres sin costo</div>
+      </div>
+    </div>
   </section>
 
   <!-- PERFIL -->
@@ -4516,6 +4548,10 @@ let SPONSORS = [];
 let adListo = false;
 let adRotTimer = null;
 let adCtxKey = null;
+let adLista = [];
+let adIdx = 0;
+let adIrFn = null;
+let adSwipeListo = false;
 const adVistos = new Set(); // impresiones ya registradas en esta visita (anuncio|ubicación)
 
 function adEsc(s){
@@ -4541,7 +4577,7 @@ function adCoincide(s){
 // Anuncios que se pueden mostrar ahora en una ubicación; los segmentados (categoría/ciudad) van primero.
 function adElegibles(slot){
   return SPONSORS
-    .filter(s => adVigente(s) && (s.slot === 'ambos' || s.slot === slot) && adCoincide(s))
+    .filter(s => adVigente(s) && (slot === 'categoria' ? s.slot === 'categoria' : (s.slot === 'ambos' || s.slot === slot)) && adCoincide(s))
     .sort((a,b) => ((b.categoria?1:0)+(b.ciudad?1:0)) - ((a.categoria?1:0)+(a.ciudad?1:0)) || (a.orden||0) - (b.orden||0));
 }
 function adRegistrar(id, tipo, slot){
@@ -4577,34 +4613,52 @@ function adCasaHTML(){
     </div>
     <div class="ad-anuncia">¿Quieres anunciar tu marca aquí? <a href="mailto:contacto@panne.cl?subject=Quiero%20anunciar%20en%20PANNE">Escríbenos</a></div>`;
 }
-function adBannerHTML(s){
-  const attrs = `href="${adEsc(adUrl(s.url))}" target="_blank" rel="noopener sponsored" data-ad-id="${adEsc(s.id)}" onclick="adRegistrar('${adEsc(s.id)}','clic','banner')"`;
+function adBannerHTML(s, slot, extraClase){
+  const attrs = `href="${adEsc(adUrl(s.url))}" target="_blank" rel="noopener sponsored" data-ad-id="${adEsc(s.id)}" onclick="adRegistrar('${adEsc(s.id)}','clic','${slot}')"`;
+  const clase = 'ad-banner' + (extraClase ? ' ' + extraClase : '');
   if(s.imagen_url){
     const mov = s.imagen_movil_url ? `<source media="(max-width:600px)" srcset="${adEsc(adUrl(s.imagen_movil_url))}">` : '';
-    return `<a class="ad-banner" ${attrs} aria-label="${adEsc(s.title)}"><picture>${mov}<img src="${adEsc(adUrl(s.imagen_url))}" alt="${adEsc(s.title)}" loading="eager" decoding="async"></picture><span class="ad-tag">PUBLICIDAD</span></a>`;
+    return `<a class="${clase}" ${attrs} aria-label="${adEsc(s.title)}"><picture>${mov}<img src="${adEsc(adUrl(s.imagen_url))}" alt="${adEsc(s.title)}" loading="eager" decoding="async"></picture><span class="ad-tag">PUBLICIDAD</span></a>`;
   }
-  return `<a class="ad-banner ad-banner-text" ${attrs}><span class="ad-tag">PUBLICIDAD</span><div class="ad-text"><div class="ad-title">${adEsc(s.title)}</div><div class="ad-desc">${adEsc(s.descripcion || '')}</div></div><span class="ad-btn">${adEsc(s.texto_boton || 'Ver más')} →</span></a>`;
+  return `<a class="${clase} ad-banner-text" ${attrs}><span class="ad-tag">PUBLICIDAD</span><div class="ad-text"><div class="ad-title">${adEsc(s.title)}</div><div class="ad-desc">${adEsc(s.descripcion || '')}</div></div><span class="ad-btn">${adEsc(s.texto_boton || 'Ver más')} →</span></a>`;
 }
 function adTarjetaHTML(s){
   const attrs = `href="${adEsc(adUrl(s.url))}" target="_blank" rel="noopener sponsored" data-ad-id="${adEsc(s.id)}" onclick="adRegistrar('${adEsc(s.id)}','clic','resultados')"`;
   const ini = (s.title || '?').split(' ').filter(Boolean).slice(0,2).map(w => w[0]).join('').toUpperCase();
   const portada = s.imagen_url
     ? `<img src="${adEsc(adUrl(s.imagen_url))}" alt="${adEsc(s.title)}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" loading="lazy">`
-    : `<div class="card-cover-pattern"></div><div class="card-cover-initial">${adEsc(ini)}</div>`;
+    : `<div class="card-cover-pattern"></div><div class="card-cover-initial" style="font-size:64px;">${adEsc(ini)}</div>`;
   return `
     <a class="card ad-card" ${attrs}>
       <div class="card-cover">${portada}<span class="ad-tag">PUBLICIDAD</span></div>
       <div class="card-body">
-        <div class="card-name" style="margin-bottom:6px;">${adEsc(s.title)}</div>
+        <div class="card-name" style="margin-bottom:6px;font-size:18px;">${adEsc(s.title)}</div>
         <div class="rating-row"><span class="rating-count" style="color:var(--dim);">${adEsc(s.descripcion || '')}</span></div>
         <div class="card-footer">
           <span class="price-txt">${adEsc(s.anunciante || 'Anunciante')}</span>
-          <span class="btn-card">${adEsc(s.texto_boton || 'Ver más')} →</span>
+          <span class="btn-card" style="background:var(--yellow);color:#0a0a0a;">${adEsc(s.texto_boton || 'Ver más')} →</span>
         </div>
       </div>
     </a>`;
 }
-// Pinta el banner grande según la categoría/ciudad elegidas. Sin anunciantes, muestra el aviso propio de PANNE.
+// Banner principal: rota entre anunciantes con puntos y deslizamiento; sin anunciantes muestra el aviso propio de PANNE.
+function adPintarBanner(cont, k, conFade){
+  const n = adLista.length;
+  const dibujar = () => {
+    adIdx = ((k % n) + n) % n;
+    const dots = n > 1 ? `<div class="ad-dots">${adLista.map((_, j) => `<button type="button" class="ad-dot${j === adIdx ? ' on' : ''}" aria-label="Anuncio ${j + 1} de ${n}" onclick="adIr(${j})"></button>`).join('')}</div>` : '';
+    cont.innerHTML = adBannerHTML(adLista[adIdx], 'banner') + dots;
+    const el = cont.querySelector('[data-ad-id]');
+    if(el) adObservar(el, el.dataset.adId, 'banner');
+  };
+  const actual = cont.querySelector('.ad-banner');
+  if(conFade && actual){ actual.classList.add('fading'); setTimeout(dibujar, 280); } else dibujar();
+}
+function adIr(j){ if(adIrFn) adIrFn(j); }
+function adReiniciarRotacion(cont){
+  if(adRotTimer){ clearInterval(adRotTimer); adRotTimer = null; }
+  if(adLista.length > 1) adRotTimer = setInterval(() => adPintarBanner(cont, adIdx + 1, true), 7000);
+}
 function adActualizarBanner(forzar){
   const cont = document.getElementById('adBanner');
   if(!cont || !adListo) return;
@@ -4612,24 +4666,34 @@ function adActualizarBanner(forzar){
   if(!forzar && ctx === adCtxKey) return;
   adCtxKey = ctx;
   if(adRotTimer){ clearInterval(adRotTimer); adRotTimer = null; }
-  const lista = adElegibles('banner');
-  if(!lista.length){ cont.innerHTML = adCasaHTML(); return; }
-  // Precarga las imágenes para que la rotación no deje el banner en blanco
-  lista.forEach(x => { if(x.imagen_url){ const pre = new Image(); pre.src = adUrl(x.imagen_url); if(x.imagen_movil_url){ const pre2 = new Image(); pre2.src = adUrl(x.imagen_movil_url); } } });
-  let i = 0;
-  const pintar = () => {
-    cont.innerHTML = adBannerHTML(lista[i]);
-    const el = cont.querySelector('[data-ad-id]');
-    if(el) adObservar(el, el.dataset.adId, 'banner');
-  };
-  pintar();
-  if(lista.length > 1){
-    adRotTimer = setInterval(() => {
-      const el = cont.firstElementChild;
-      if(el) el.classList.add('fading');
-      setTimeout(() => { i = (i + 1) % lista.length; pintar(); }, 250);
-    }, 8000);
+  adActualizarFranja();
+  adLista = adElegibles('banner');
+  adIrFn = null;
+  if(!adLista.length){ cont.innerHTML = adCasaHTML(); return; }
+  adLista.forEach(x => { if(x.imagen_url){ const pre = new Image(); pre.src = adUrl(x.imagen_url); if(x.imagen_movil_url){ const pre2 = new Image(); pre2.src = adUrl(x.imagen_movil_url); } } });
+  adPintarBanner(cont, 0, false);
+  adIrFn = (j) => { adPintarBanner(cont, j, false); adReiniciarRotacion(cont); };
+  adReiniciarRotacion(cont);
+  if(!adSwipeListo){
+    adSwipeListo = true;
+    let x0 = null;
+    cont.addEventListener('touchstart', e => { x0 = e.touches[0].clientX; }, { passive: true });
+    cont.addEventListener('touchend', e => {
+      if(x0 == null || adLista.length < 2) { x0 = null; return; }
+      const dx = e.changedTouches[0].clientX - x0; x0 = null;
+      if(Math.abs(dx) > 50 && adIrFn) adIrFn(adIdx + (dx < 0 ? 1 : -1));
+    }, { passive: true });
   }
+}
+// Franja bajo las categorías: solo aparece si hay un anunciante para la categoría o ciudad que el visitante está mirando.
+function adActualizarFranja(){
+  const cont = document.getElementById('adCategoria');
+  if(!cont) return;
+  const lista = adElegibles('categoria');
+  if(!lista.length){ cont.innerHTML = ''; return; }
+  cont.innerHTML = adBannerHTML(lista[0], 'categoria', 'ad-strip');
+  const el = cont.querySelector('[data-ad-id]');
+  if(el) adObservar(el, el.dataset.adId, 'categoria');
 }
 async function cargarSponsor(){
   try {

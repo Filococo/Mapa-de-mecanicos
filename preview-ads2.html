@@ -295,10 +295,15 @@ main{max-width:1200px;margin:0 auto;padding:20px 16px 100px;width:100%;}
 .ad-strip .ad-btn{padding:11px 22px;font-size:14px;}
 .ad-card{display:block;text-decoration:none;color:inherit;border-color:rgba(255,214,0,.35);transition:box-shadow .25s ease;}
 .ad-card:hover{box-shadow:0 0 0 2px rgba(255,214,0,.5), 0 10px 32px rgba(255,214,0,.14);}
+.ad-card{grid-column:1/-1;}
 .ad-card .card-cover{height:auto;aspect-ratio:2/1;position:relative;}
+.ad-card .card-body{padding:18px 20px;}
 @media(min-width:700px){
-  .ad-card{grid-column:span 2;}
-  .ad-card .card-cover{aspect-ratio:8/3;}
+  .ad-card{display:flex;flex-direction:row;align-items:stretch;}
+  .ad-card .card-cover{flex:0 0 64%;aspect-ratio:8/3;}
+  .ad-card .card-body{flex:1;display:flex;flex-direction:column;justify-content:center;gap:10px;padding:24px;}
+  .ad-card .card-name{font-size:24px !important;}
+  .ad-card .card-footer{margin-top:8px;}
 }
 @media(max-width:600px){
   .ad-banner img{aspect-ratio:4/3;}
@@ -459,6 +464,7 @@ main{max-width:1200px;margin:0 auto;padding:20px 16px 100px;width:100%;}
 
 /* ===== DIRECTORY GRID ===== */
 .grid{
+  grid-auto-flow:dense;
   display:grid;
   grid-template-columns:repeat(auto-fill,minmax(min(300px,100%),1fr));
   gap:16px;
