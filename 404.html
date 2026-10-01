@@ -338,6 +338,25 @@ main{max-width:1200px;margin:0 auto;padding:20px 16px 100px;width:100%;}
   .ad-anuncia{text-align:center;}
 }
 
+/* ===== URGENCIAS, AVISO DE UBICACIÓN, CELULAR ===== */
+.urgencias{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0 12px;}
+.urg-btn{min-height:48px;border-radius:10px;border:1px solid rgba(255,255,255,.2);background:#1d1d1d;color:var(--white);font-weight:700;font-size:13px;cursor:pointer;padding:6px 4px;transition:background .15s,transform .1s;}
+.urg-btn:hover{background:#2a2a2a;}
+.urg-btn:active{transform:scale(.97);}
+.gps-aviso{margin:10px 0 0;padding:12px 14px;border:1px solid rgba(255,214,0,.45);background:rgba(255,214,0,.08);border-radius:10px;font-size:13px;line-height:1.5;color:var(--white);}
+.gps-aviso-btn{display:block;margin-top:10px;width:100%;min-height:44px;border:none;border-radius:8px;background:var(--yellow);color:#0a0a0a;font-weight:800;font-size:14px;cursor:pointer;}
+.stat-oculta{display:none !important;}
+.hero-stats{grid-template-columns:repeat(2,1fr);}
+@media(max-width:600px){
+  .topbar-right a[href*="instagram.com"],.topbar-right a[href*="tiktok.com"]{display:none !important;}
+  .help-btn{right:auto !important;left:14px !important;bottom:16px !important;width:46px !important;height:46px !important;font-size:20px !important;}
+  .ad-banner img{max-height:250px;}
+  .ad-banner-text{min-height:0;padding:34px 18px 20px;}
+  .ad-house{min-height:0;}
+  .ad-title{font-size:32px;}
+  .ad-house .ad-title{font-size:34px;}
+  .ad-benef li:nth-child(n+2){display:none;}
+}
 /* ===== BANNER PRO DESTACADO ===== */
 .pro-banner{
   position:relative;border-radius:14px;overflow:hidden;
@@ -1415,8 +1434,15 @@ footer{
       <!-- Botón GPS prominente -->
       <button onclick="usarUbicacion()" id="btnGpsHero" style="display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;border:none;border-radius:12px;padding:12px 20px;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:14px;width:100%;justify-content:center;box-shadow:0 4px 14px rgba(34,197,94,.3);">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3"/><circle cx="12" cy="12" r="9" stroke-dasharray="2 3"/></svg>
-        📍 Usar mi ubicación — encontrar talleres cercanos
+        📍 Buscar talleres cerca de mí
       </button>
+      <div id="gpsAviso" style="display:none;"></div>
+
+      <div class="urgencias" role="group" aria-label="Ayuda rápida">
+        <button type="button" class="urg-btn" onclick="urgencia('Grúa 24hrs')">🚛 Grúa 24 hrs</button>
+        <button type="button" class="urg-btn" onclick="urgencia('Vulcanización')">🛞 Vulcanización</button>
+        <button type="button" class="urg-btn" onclick="urgencia('Mecánica General')">🔧 Mecánico</button>
+      </div>
 
       <div class="search-row">
         <input type="search" class="search-input" id="searchInput" placeholder="Buscar por nombre, especialidad o ciudad…" autocomplete="new-password" autocorrect="off" autocapitalize="off" spellcheck="false" name="panne-search-x" readonly onfocus="this.removeAttribute('readonly')" onkeydown="if(event.key==='Enter')applySearch()" oninput="if(!this.value.trim())applySearch()">
@@ -1440,11 +1466,11 @@ footer{
           <div class="hero-stat-num" id="heroCiudades" style="font-size:32px;">288+</div>
           <div class="hero-stat-label">Ciudades cubiertas</div>
         </div>
-        <div class="hero-stat">
+        <div class="hero-stat stat-oculta">
           <div class="hero-stat-num" id="heroUsuarios" style="font-size:32px;">110+</div>
           <div class="hero-stat-label">Usuarios registrados</div>
         </div>
-        <div class="hero-stat">
+        <div class="hero-stat stat-oculta">
           <div class="hero-stat-num" style="font-size:32px;">🇨🇱</div>
           <div class="hero-stat-label">Cobertura nacional</div>
         </div>
@@ -1469,13 +1495,13 @@ footer{
 
     <div class="filter-row" id="filterBar">
       <button class="chip active" data-filter="todos">Todos</button>
+      <button class="chip" data-filter="Grúa 24hrs">🚛 Grúa 24hrs</button>
+      <button class="chip" data-filter="Vulcanización">Vulcanización</button>
       <button class="chip" data-filter="Mecánica General">Mecánica</button>
       <button class="chip" data-filter="Frenos">Frenos</button>
       <button class="chip" data-filter="Suspensión">Suspensión</button>
       <button class="chip" data-filter="Eléctrico Automotriz">Eléctrico</button>
       <button class="chip" data-filter="Diésel">Diésel</button>
-      <button class="chip" data-filter="Vulcanización">Vulcanización</button>
-      <button class="chip" data-filter="Grúa 24hrs">🚛 Grúa 24hrs</button>
     </div>
 
     <!-- Filtro por ciudad y rating -->
@@ -2029,6 +2055,10 @@ footer{
 /* ====================== SUPABASE ====================== */
 const SUPABASE_URL = 'https://vdkvbwlzjrqcmegkxslp.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_afbIDXILgu4oM1v3GUuzDQ_jWZnds9v';
+const PARAMS_INICIALES = new URLSearchParams(location.search);
+const EN_APP = (/Instagram/i.test(navigator.userAgent) ? 'instagram' : /FBAN|FBAV/i.test(navigator.userAgent) ? 'facebook' : /musical_ly|TikTok|Bytedance/i.test(navigator.userAgent) ? 'tiktok' : '');
+// Eventos de uso para Google Analytics (GPS, botones de urgencia, llamadas, WhatsApp, reclamos, inscripción)
+function track(nombre, params){ try { if(typeof gtag === 'function') gtag('event', nombre, params || {}); } catch(e){} }
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // Monitoreo de errores: captura errores JS y promesas no manejadas y las
@@ -2279,6 +2309,7 @@ let claimTallerId = null;
 let claimTallerNombre = null;
 
 function openClaimModal(mecanicoId, nombre){
+  track('reclamar_abrir');
   claimTallerId = mecanicoId;
   claimTallerNombre = nombre || null;
   document.getElementById('claim-phone').value = '';
@@ -3012,8 +3043,8 @@ async function openProfile(id){
           <a>${m.address}</a>
         </span>
         ${m.phone ? `<div style="display:flex;gap:8px;margin-top:8px;margin-bottom:4px;">
-          <a href="tel:${m.phone}" style="flex:1;background:var(--red);color:#fff;border-radius:8px;padding:10px 0;font-size:13px;font-weight:700;text-align:center;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:6px;">📞 Llamar</a>
-          <a href="https://wa.me/${(m.whatsapp||m.phone).replace(/[^0-9]/g,'')}" target="_blank" style="flex:1;background:#25D366;color:#fff;border-radius:8px;padding:10px 0;font-size:13px;font-weight:700;text-align:center;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:6px;">💬 WhatsApp</a>
+          <a href="tel:${m.phone}" onclick="track('ficha_llamar')" style="flex:1;background:var(--red);color:#fff;border-radius:8px;padding:10px 0;font-size:13px;font-weight:700;text-align:center;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:6px;">📞 Llamar</a>
+          <a href="https://wa.me/${(m.whatsapp||m.phone).replace(/[^0-9]/g,'')}" target="_blank" onclick="track('ficha_whatsapp')" style="flex:1;background:#0d7a5f;color:#fff;border-radius:8px;padding:10px 0;font-size:13px;font-weight:700;text-align:center;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:6px;">💬 WhatsApp</a>
         </div>` : ''}
         <span class="profile-meta-item">
 
@@ -3673,6 +3704,7 @@ document.getElementById('f-photos').addEventListener('change', (e) => {
 });
 
 function startMecanicoFlow(){
+  track('registrar_taller_inicio');
   if(!currentSession){
     authMode = 'signup';
     document.getElementById('authTitle').textContent = 'Crear cuenta';
@@ -3977,6 +4009,7 @@ function renderPlanes(destacar, mec) {
 }
 
 async function iniciarPago(plan = 'inscripcion') {
+  track('pago_iniciar');
   const user = sb.auth.getUser ? (await sb.auth.getUser()).data?.user : null;
   if (!user) {
     alert('Debes iniciar sesión para inscribirte.');
@@ -4338,6 +4371,7 @@ async function guardarFicha() {
 // funcionando patrocinadores, favoritos, reseñas y estadísticas, que se inicializan dentro de él.
 (async () => {
   await loadMechanicsFromSupabase();
+  aplicarEnlaceProfundo();
 
   // Deep link: si la URL apunta directo a /taller/{id}/..., abrir esa ficha
   const tallerMatch = window.location.pathname.match(/^\/taller\/([a-f0-9-]{36})/i);
@@ -4535,12 +4569,27 @@ async function cargarResenasHome(){
 }
 
 // ===== BOTÓN GPS HERO =====
+function avisoUbicacion(msg, conComuna){
+  const el = document.getElementById('gpsAviso');
+  if(!el){ alert(msg); return; }
+  if(!msg){ el.style.display = 'none'; el.innerHTML = ''; return; }
+  const extraApp = EN_APP ? ' Estás en el navegador de ' + (EN_APP === 'instagram' ? 'Instagram' : EN_APP === 'facebook' ? 'Facebook' : 'TikTok') + ': toca los tres puntos (⋯) y elige «Abrir en el navegador».' : '';
+  el.innerHTML = `<div class="gps-aviso">${msg}${extraApp}${conComuna ? `<button type="button" class="gps-aviso-btn" onclick="elegirComuna()">Elegir mi comuna</button>` : ''}</div>`;
+  el.style.display = 'block';
+}
+function elegirComuna(){
+  document.getElementById('cityDropdownWrap')?.scrollIntoView({behavior:'smooth', block:'center'});
+  setTimeout(() => { if(typeof toggleCityDropdown === 'function') toggleCityDropdown(); }, 400);
+}
 function usarUbicacion(){
+  track('gps_click');
   const btn = document.getElementById('btnGpsHero');
+  const textoBtn = '📍 Buscar talleres cerca de mí';
   if(btn){ btn.innerHTML = '⏳ Obteniendo ubicación...'; btn.disabled = true; }
+  avisoUbicacion('');
   if(!navigator.geolocation){
-    alert('Tu navegador no soporta geolocalización.');
-    if(btn){ btn.innerHTML = '📍 Usar mi ubicación — encontrar talleres cercanos'; btn.disabled = false; }
+    avisoUbicacion('Tu navegador no permite usar la ubicación.', true);
+    if(btn){ btn.innerHTML = textoBtn; btn.disabled = false; }
     return;
   }
   navigator.geolocation.getCurrentPosition(pos => {
@@ -4556,13 +4605,30 @@ function usarUbicacion(){
       }
     });
     renderGrid();
+    track('gps_ok');
     if(btn){ btn.innerHTML = '✅ Mostrando talleres cercanos a ti'; btn.style.background = 'linear-gradient(135deg,#16a34a,#15803d)'; btn.disabled = false; }
     document.getElementById('grid')?.scrollIntoView({behavior:'smooth', block:'start'});
   }, (err) => {
-    if(btn){ btn.innerHTML = '📍 Usar mi ubicación — encontrar talleres cercanos'; btn.disabled = false; }
-    if(err.code === 1) alert('Permiso de ubicación denegado. Actívalo en configuración del navegador.');
-    else alert('No pudimos obtener tu ubicación. Intenta de nuevo.');
+    track('gps_error', { codigo: err && err.code });
+    if(btn){ btn.innerHTML = textoBtn; btn.disabled = false; }
+    avisoUbicacion(err && err.code === 1 ? 'No pudimos usar tu ubicación porque el permiso está bloqueado.' : 'No pudimos obtener tu ubicación.', true);
   }, { timeout: 8000, maximumAge: 60000 });
+}
+
+// Botones de urgencia: filtran por categoría y piden la ubicación para ordenar por cercanía.
+function urgencia(cat){
+  track('urgencia_click', { categoria: cat });
+  document.querySelector('#filterBar .chip[data-filter="' + cat + '"]')?.click();
+  if(typeof userLat === 'undefined') usarUbicacion();
+  else document.getElementById('grid')?.scrollIntoView({behavior:'smooth', block:'start'});
+}
+// Enlaces para historias y redes: ?cat=grua|vulcanizacion|mecanica|frenos|suspension|electrico|diesel y &gps=1
+function aplicarEnlaceProfundo(){
+  const q = PARAMS_INICIALES;
+  const mapa = { grua:'Grúa 24hrs', vulcanizacion:'Vulcanización', mecanica:'Mecánica General', frenos:'Frenos', suspension:'Suspensión', electrico:'Eléctrico Automotriz', diesel:'Diésel' };
+  const cat = mapa[(q.get('cat') || '').toLowerCase()];
+  if(cat) document.querySelector('#filterBar .chip[data-filter="' + cat + '"]')?.click();
+  if(q.get('gps') === '1' && typeof userLat === 'undefined') setTimeout(usarUbicacion, 700);
 }
 
 // ===== PUBLICIDAD (banner grande, tarjetas patrocinadas y medición) =====
@@ -4776,9 +4842,14 @@ async function cargarSponsor(){
 // Registrar visita a la página
 (async function registrarVisita(){
   try {
+    const q = PARAMS_INICIALES;
     await sb.from('visitas_pagina').insert({
       referrer: document.referrer || null,
-      ciudad: null
+      ciudad: null,
+      fuente: (q.get('utm_source') || EN_APP || '').slice(0, 40) || null,
+      medio: (q.get('utm_medium') || '').slice(0, 40) || null,
+      campana: (q.get('utm_campaign') || '').slice(0, 60) || null,
+      en_app: EN_APP || null
     });
   } catch(e) {}
 })();
@@ -5240,23 +5311,12 @@ async function renderProBanner(){
   // Slides promocionales de PANNE (siempre aparecen)
   const slidesPromo = [];
 
-  slidesPromo.push(
-    {
-      tipo: 'promo',
-      titulo: '🔧 ¿Eres taller mecánico?',
-      texto: 'Llega a miles de conductores en Chile. Regístrate gratis y activa tu ficha hoy.',
-      sub: mechanics.length.toLocaleString('es-CL') + ' talleres · ' + new Set(mechanics.map(m => m.city).filter(Boolean)).size + ' ciudades',
-      color: 'linear-gradient(135deg, #1a0a0a, #3d0000)',
-      btn: 'Registrar mi taller →',
-      accion: "document.querySelector('[data-tab=\'perfil-mecanico\']').click()"
-    }
-  );
-
   // Combinar slides promo + talleres Pro
   const todosLosSlides = [...slidesPromo, ...talleresPro];
   talleresPro = todosLosSlides;
 
   const wrap = document.getElementById('proBannerWrap');
+  if(!talleresPro.length){ if(wrap) wrap.style.display = 'none'; return; }
   if(wrap) wrap.style.display = 'block';
 
   // Dots
