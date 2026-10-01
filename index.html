@@ -261,6 +261,8 @@ main{max-width:1200px;margin:0 auto;padding:20px 16px 100px;width:100%;}
 }
 .hero-stat-label{font-size:10px;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;}
 
+.claim-link{color:var(--yellow);font-size:12px;font-weight:600;text-decoration:underline;text-underline-offset:2px;}
+.claim-link:hover{filter:brightness(1.15);}
 /* ===== PUBLICIDAD (banner grande, tarjetas patrocinadas, aviso propio) ===== */
 .ad-slot{margin:0 0 20px;}
 .ad-banner{position:relative;display:block;width:100%;border-radius:14px;overflow:hidden;border:1px solid rgba(255,214,0,.28);background:var(--black2);text-decoration:none;color:inherit;transition:opacity .25s ease, transform .15s ease;}
@@ -2665,6 +2667,12 @@ const GRID_PAGE = 24;
 let gridLimit = GRID_PAGE;
 let gridSig = '';
 
+function reclamarDesdeTarjeta(ev, id){
+  ev.preventDefault(); ev.stopPropagation();
+  const m = mechanics.find(x => x.id === id);
+  openClaimModal(id, m ? m.name : '');
+}
+
 function renderGrid(){
   const grid = document.getElementById('grid');
   const searchVal = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
@@ -2771,7 +2779,7 @@ function renderGrid(){
 
         </div>
         <div class="card-footer">
-          <span class="price-txt">${m.priceFrom ? `Desde <b>${fmtCLP(m.priceFrom)}</b>` : 'Consultar'}</span>
+          <span class="price-txt">${m.priceFrom ? `Desde <b>${fmtCLP(m.priceFrom)}</b>` : (!m.claimed && !m.es_pro ? `<a href="#" class="claim-link" onclick="reclamarDesdeTarjeta(event,'${m.id}')">¿Es tu taller? Reclámalo</a>` : 'Consultar')}</span>
           <div style="display:flex;gap:8px;align-items:center;">
             <button onclick="event.stopPropagation();toggleFavorito('${m.id}')" id="fav-btn-${m.id}" style="background:none;border:1px solid var(--border);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:16px;transition:.2s;" title="Guardar favorito">${isFavorito(m.id) ? '❤️' : '🤍'}</button>
             <button class="btn-card" onclick="event.stopPropagation();openProfile('${m.id}')">Ver ficha →</button>
