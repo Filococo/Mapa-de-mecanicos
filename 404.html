@@ -272,7 +272,7 @@ main{max-width:1200px;margin:0 auto;padding:20px 16px 100px;width:100%;}
 .ad-banner:active{transform:scale(.995);}
 .ad-banner img{display:block;width:100%;height:auto;aspect-ratio:3/1;object-fit:cover;}
 .ad-tag{position:absolute;top:10px;left:10px;font-family:'JetBrains Mono';font-size:10px;letter-spacing:1px;color:#fff;background:rgba(0,0,0,.7);border:1px solid rgba(255,255,255,.28);border-radius:4px;padding:3px 7px;z-index:2;}
-.ad-banner-text{display:flex;align-items:center;gap:28px;padding:52px 44px 44px;min-height:300px;background:linear-gradient(135deg,rgba(255,214,0,.18),rgba(255,214,0,.03) 62%,var(--black2));}
+.ad-banner-text{display:flex;align-items:center;gap:28px;padding:52px 78px 44px;min-height:300px;background:linear-gradient(135deg,rgba(255,214,0,.18),rgba(255,214,0,.03) 62%,var(--black2));}
 .ad-text{flex:1;min-width:0;}
 .ad-title{font-family:'Bebas Neue';font-size:54px;letter-spacing:1px;color:var(--white);line-height:1;}
 .ad-desc{font-size:18px;color:var(--dim);margin-top:12px;line-height:1.45;max-width:660px;}
@@ -288,7 +288,8 @@ main{max-width:1200px;margin:0 auto;padding:20px 16px 100px;width:100%;}
 .ad-arrow:focus-visible{outline:2px solid var(--yellow);outline-offset:2px;}
 .ad-prev{left:14px;}
 .ad-next{right:14px;}
-.ad-dots{display:flex;justify-content:center;gap:8px;margin-top:12px;}
+.ad-dots{display:flex;justify-content:center;align-items:center;gap:8px;margin-top:12px;}
+.ad-nav{display:none;width:38px;height:38px;border-radius:50%;border:1px solid var(--border);background:var(--card);color:var(--white);font-size:22px;line-height:1;padding:0 0 3px;margin:0 8px;cursor:pointer;align-items:center;justify-content:center;}
 .ad-dot{width:9px;height:9px;border-radius:50%;background:var(--border);border:none;padding:0;cursor:pointer;transition:background .2s,transform .2s;}
 .ad-dot.on{background:var(--yellow);transform:scale(1.25);}
 .ad-anuncia{font-size:11px;color:var(--muted);text-align:right;margin-top:8px;}
@@ -321,10 +322,10 @@ main{max-width:1200px;margin:0 auto;padding:20px 16px 100px;width:100%;}
 @media(max-width:600px){
   .ad-banner img{aspect-ratio:4/3;}
   .ad-strip img{aspect-ratio:4/1;}
-  .ad-arrow{width:36px;height:36px;font-size:22px;}
-  .ad-prev{left:8px;}
-  .ad-next{right:8px;}
+  .ad-arrow{display:none;}
+  .ad-nav{display:flex;}
   .ad-banner-text,.ad-house{flex-direction:column;align-items:flex-start;gap:16px;padding:40px 20px 24px;min-height:260px;}
+  .ad-strip .ad-banner-text{padding:34px 16px 16px;}
   .ad-house{padding-top:28px;}
   .ad-title{font-size:38px;}
   .ad-house .ad-title{font-size:42px;}
@@ -396,6 +397,8 @@ main{max-width:1200px;margin:0 auto;padding:20px 16px 100px;width:100%;}
   position:relative;
   overflow:hidden;
 }
+.resumen-hero::before{display:none;}
+.resumen-hero{padding:18px 24px;}
 .search-hero::before{
   content:'PANNE';
   font-family:'Bebas Neue';
@@ -1420,8 +1423,15 @@ footer{
         <button class="btn-search" onclick="applySearch()">Buscar</button>
       </div>
 
+    </div>
+
+    <!-- Publicidad: banner grande (anunciantes o aviso propio), justo bajo el buscador -->
+    <div id="adBanner" class="ad-slot"></div>
+
+    <!-- Resumen: cifras y carrusel PRO (más abajo que la publicidad) -->
+    <div class="search-hero resumen-hero">
       <!-- Stats dinámicas GRANDES -->
-      <div class="hero-stats" style="margin-top:16px;">
+      <div class="hero-stats" style="margin-top:0;">
         <div class="hero-stat">
           <div class="hero-stat-num" id="heroTalleres" style="font-size:32px;">5.206</div>
           <div class="hero-stat-label">Talleres registrados</div>
@@ -1448,9 +1458,6 @@ footer{
     </div>
 
 
-
-    <!-- Publicidad: banner grande (anunciantes o aviso propio) -->
-    <div id="adBanner" class="ad-slot"></div>
 
     <!-- Reseñas recientes -->
     <div id="homeResenasWrap" style="display:none;margin-bottom:20px;">
@@ -4695,7 +4702,7 @@ function adPintarBanner(cont, k, conFade){
   const n = adLista.length;
   const dibujar = () => {
     adIdx = ((k % n) + n) % n;
-    const dots = n > 1 ? `<div class="ad-dots">${adLista.map((_, j) => `<button type="button" class="ad-dot${j === adIdx ? ' on' : ''}" aria-label="Anuncio ${j + 1} de ${n}" onclick="adIr(${j})"></button>`).join('')}</div>` : '';
+    const dots = n > 1 ? `<div class="ad-dots"><button type="button" class="ad-nav" aria-label="Anuncio anterior" onclick="adIr(adIdx - 1)">&#8249;</button>${adLista.map((_, j) => `<button type="button" class="ad-dot${j === adIdx ? ' on' : ''}" aria-label="Anuncio ${j + 1} de ${n}" onclick="adIr(${j})"></button>`).join('')}<button type="button" class="ad-nav" aria-label="Anuncio siguiente" onclick="adIr(adIdx + 1)">&#8250;</button></div>` : '';
     const flechas = n > 1 ? `<button type="button" class="ad-arrow ad-prev" aria-label="Anuncio anterior" onclick="adIr(adIdx - 1)">&#8249;</button><button type="button" class="ad-arrow ad-next" aria-label="Anuncio siguiente" onclick="adIr(adIdx + 1)">&#8250;</button>` : '';
     cont.innerHTML = `<div class="ad-stage">${adBannerHTML(adLista[adIdx], 'banner')}${flechas}</div>` + dots;
     const el = cont.querySelector('[data-ad-id]');
