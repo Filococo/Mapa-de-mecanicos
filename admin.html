@@ -398,9 +398,10 @@ tr:hover td{background:var(--bg3);}
           <label class="f-lbl">Texto del botón<input class="f-in" id="pBoton" maxlength="24" value="Ver más"></label>
           <label class="f-lbl">Dónde se muestra
             <select class="f-in" id="pSlot">
-              <option value="ambos">Banner grande + entre los resultados</option>
-              <option value="banner">Solo banner grande</option>
-              <option value="resultados">Solo entre los resultados</option>
+              <option value="ambos">Banner principal + tarjeta entre resultados</option>
+              <option value="banner">Solo banner principal (1200×400)</option>
+              <option value="categoria">Franja bajo las categorías (1200×120, móvil 640×160)</option>
+              <option value="resultados">Solo tarjeta doble entre resultados (800×300)</option>
             </select>
           </label>
           <label class="f-lbl">Solo para la categoría (opcional)
@@ -413,10 +414,10 @@ tr:hover td{background:var(--bg3);}
           <label class="f-lbl">Solo para la ciudad (opcional)<input class="f-in" id="pCiudad" placeholder="Igual que en el directorio, ej: Rancagua"></label>
           <label class="f-lbl">Desde (opcional)<input class="f-in" type="date" id="pInicio"></label>
           <label class="f-lbl">Hasta (opcional)<input class="f-in" type="date" id="pFin"></label>
-          <label class="f-lbl">Imagen escritorio · 1200×300<input class="f-in" type="file" id="pImg" accept="image/png,image/jpeg,image/webp"></label>
-          <label class="f-lbl">Imagen móvil · 640×240 (opcional)<input class="f-in" type="file" id="pImgMov" accept="image/png,image/jpeg,image/webp"></label>
+          <label class="f-lbl">Imagen escritorio · banner 1200×400<input class="f-in" type="file" id="pImg" accept="image/png,image/jpeg,image/webp"></label>
+          <label class="f-lbl">Imagen móvil · banner 720×540 (opcional)<input class="f-in" type="file" id="pImgMov" accept="image/png,image/jpeg,image/webp"></label>
         </div>
-        <div style="font-size:11px;color:var(--muted);margin-bottom:12px;">Imágenes PNG, JPG o WEBP de hasta 2 MB. Sin imagen, el anuncio se muestra como banner de texto. La ciudad y la categoría deben coincidir exactamente con las del directorio.</div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:12px;">Imágenes PNG, JPG o WEBP de hasta 2 MB. Medidas: banner principal 1200×400 px, franja de categoría 1200×120 px y tarjeta doble 800×300 px. Sin imagen, el anuncio se muestra como banner de texto. La ciudad y la categoría deben coincidir exactamente con las del directorio.</div>
         <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--dim);margin-bottom:12px;"><input type="checkbox" id="pActivo" checked> Publicar de inmediato</label>
         <div id="publMsg" style="font-size:12px;margin-bottom:10px;min-height:16px;"></div>
         <button class="btn-p" id="publBtn" onclick="crearAnuncio()">Guardar anuncio</button>
@@ -880,7 +881,7 @@ async function togglePro(id, activar){
 
 // ===== PUBLICIDAD =====
 let _publDias = 30;
-const PUBL_SLOTS = { ambos:'Banner + resultados', banner:'Banner', resultados:'Resultados' };
+const PUBL_SLOTS = { ambos:'Banner + resultados', banner:'Banner principal', categoria:'Franja de categoría', resultados:'Tarjeta en resultados' };
 function escA(t){ return String(t==null?'':t).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
 async function cargarPublicidad(dias){
